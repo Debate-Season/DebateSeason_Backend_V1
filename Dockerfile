@@ -22,8 +22,8 @@ FROM eclipse-temurin:17-jre
 WORKDIR /app
 
 # 빌드 이미지에서 생성된 JAR 파일을 런타임 이미지로 복사
-COPY --from=build /app/build/libs/toronchul-backend-0.0.1-SNAPSHOT.jar /app/toronchul.jar
+COPY --from=build /app/build/libs/debateSeason-backend-0.0.1-SNAPSHOT.jar /app/debateSeason.jar
 
 EXPOSE 8080
 ENTRYPOINT ["java"]
-CMD ["-jar", "toronchul.jar"]
+CMD ["-jar", "debateSeason.jar"]

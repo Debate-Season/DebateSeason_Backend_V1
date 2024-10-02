@@ -2,12 +2,12 @@ name: Backend Build and Push
 
 on:
   push:
-    branches:
-      # main 브랜치에 push될 때 워크플로우가 실행됩니다.
-      - main, dev
-    paths:
-      - 'toronchul-backend/**'
-      
+    # main 브랜치에 push 될 때 워크플로우가 실행됩니다.
+    branches: [ main ]
+  pull_request:
+    # main 브랜치에 pull request 될 때 워크플로우가 실행됩니다.
+    branches: [ main ]
+
 jobs:
   build-and-push:
     # 가장 최신의 Ubuntu 러너를 사용합니다.
@@ -34,10 +34,11 @@ jobs:
       uses: docker/build-push-action@v2
       with:
         # Dockerfile이 있는 위치입니다.
-        context: ./toronchul-backend
+        context: .
         # Dockerfile의 경로입니다. 이미지 빌드
-        file: ./toronchul-backend/Dockerfile
+        file: ./Dockerfile
         # 이미지를 레지스트리에 푸시합니다.
         push: true
-        tags: ${{ secrets.DOCKERHUB_USERNAME }}/toronchul-backend:${{ github.sha }}
+        # 이미지의 태그를 커밋의 id로 설정합니다.
+        tags: ${{ secrets.DOCKERHUB_USERNAME }}/debateSeason-backend:${{ github.sha }}
         platforms: linux/amd64,linux/arm64

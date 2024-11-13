@@ -1,6 +1,6 @@
 package com.debateseason_backend_v1.domain.chat.model.response;
 
-import com.debateseason_backend_v1.domain.chat.model.E_Message;
+import com.debateseason_backend_v1.domain.chat.model.Chat;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.util.List;
@@ -9,5 +9,5 @@ import java.util.List;
 public record E_ChatListResponse(
 
         @Schema(description = "return Message : []")
-        List<E_Message> result
+        List<Chat> result
 ) {}

@@ -1,7 +1,7 @@
 package com.debateseason_backend_v1.domain.chat.controller;
 
 import com.debateseason_backend_v1.domain.chat.model.response.E_ChatListResponse;
-import com.debateseason_backend_v1.domain.chat.service.ChatServiceV1;
+import com.debateseason_backend_v1.domain.chat.service.ChatService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -17,7 +17,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class E_ChatControllerV1 {
 
-    private final ChatServiceV1 chatServiceV1;
+    /*
+    private final ChatService chatServiceV1;
 
     @Operation(
             summary = "채팅 리스트 가져 옵니다.",
@@ -31,4 +32,6 @@ public class E_ChatControllerV1 {
         return chatServiceV1.chatList(from, to);
     }
 
+
+     */
 }

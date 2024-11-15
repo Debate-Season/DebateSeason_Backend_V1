@@ -52,3 +52,10 @@ dependencies {
 tasks.named('test') {
     useJUnitPlatform()
 }
+
+bootJar {
+    // 계층화 Jar
+    layered {
+        enabled = true
+    }
+}

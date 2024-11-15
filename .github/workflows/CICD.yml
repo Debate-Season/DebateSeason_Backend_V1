@@ -1,17 +1,14 @@
 name: CI/CD
 
 on:
+  push:
+    branches:
+      - "main"
+      - "develop"
   pull_request:
     branches:
       - "main"
       - "develop"
-  release:
-    types: [published]
-
-env:
-  GRADLE_OPTS: "-Dorg.gradle.daemon=false"
-  DOCKER_BUILDKIT: "1"
-
 
 jobs:
   build:
@@ -31,7 +28,7 @@ jobs:
         run: chmod +x gradlew
 
       - name: Build with Gradle
-        run: ./gradlew clean build -x test
+        run: ./gradlew bootJar -x test
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
@@ -76,7 +73,7 @@ jobs:
 
   deploy:
     needs: [build, test]
-    if: github.event_name == 'release'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
 
     steps:
@@ -90,7 +87,7 @@ jobs:
           path: build/libs
 
       - name: Set version
-        run: echo "VERSION=${{ github.event.release.tag_name }}" >> $GITHUB_ENV
+        run: echo "VERSION=${GITHUB_SHA::7}" >> $GITHUB_ENV
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -107,6 +104,7 @@ jobs:
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
+          DOCKER_BUILDKIT: "1"
         run: |
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:${{ env.VERSION }} .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:${{ env.VERSION }}

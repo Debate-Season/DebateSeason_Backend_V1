@@ -1,4 +1,4 @@
-package com.debateseason_backend_v1.domain.user.model;
+package com.debateseason_backend_v1.domain.repository.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -17,6 +17,10 @@ public class User {
     @Id @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "user_id")
     private long id;
-    private String name;
+
+    private String username;
+    private String password;
+    private String role;
+
     private String community;
 }

@@ -1,13 +1,13 @@
 package com.debateseason_backend_v1.domain.user.servcie;
 
-import com.debateseason_backend_v1.domain.issue.model.Issue;
+import com.debateseason_backend_v1.domain.repository.entity.Issue;
 import com.debateseason_backend_v1.domain.repository.IssueRepository;
 import com.debateseason_backend_v1.domain.repository.UserIssueRepository;
 import com.debateseason_backend_v1.domain.repository.UserRepository;
 import com.debateseason_backend_v1.domain.user.dto.UserIssueDTO;
-import com.debateseason_backend_v1.domain.user.model.User;
+import com.debateseason_backend_v1.domain.repository.entity.User;
 
-import com.debateseason_backend_v1.domain.user.model.UserIssue;
+import com.debateseason_backend_v1.domain.repository.entity.UserIssue;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -28,10 +28,10 @@ public class UserIssueService {
     // 1. userIssue에 저장하기
     public ResponseEntity<?> saveUserIssue(UserIssueDTO userIssueDTO){
 
-        String name = userIssueDTO.getName();
+        String username = userIssueDTO.getName();
         String title = userIssueDTO.getTitle();
 
-        User user = userRepository.findByName(name);
+        User user = userRepository.findByUsername(username);
         Issue issue = issueRepository.findByTitle(title);
 
         UserIssue userIssue = UserIssue.builder()

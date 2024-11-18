@@ -2,10 +2,10 @@ package com.debateseason_backend_v1.domain.chatroom.service;
 
 import com.debateseason_backend_v1.domain.chat.dto.ChatDAO;
 import com.debateseason_backend_v1.domain.chat.dto.ResponseDTO;
-import com.debateseason_backend_v1.domain.chat.model.Chat;
+import com.debateseason_backend_v1.domain.repository.entity.Chat;
 import com.debateseason_backend_v1.domain.chatroom.dto.ChatRoomDTO;
-import com.debateseason_backend_v1.domain.chatroom.model.ChatRoom;
-import com.debateseason_backend_v1.domain.issue.model.Issue;
+import com.debateseason_backend_v1.domain.repository.entity.ChatRoom;
+import com.debateseason_backend_v1.domain.repository.entity.Issue;
 import com.debateseason_backend_v1.domain.repository.ChatRepository;
 import com.debateseason_backend_v1.domain.repository.ChatRoomRepository;
 import com.debateseason_backend_v1.domain.repository.IssueRepository;

@@ -1,4 +1,4 @@
-package com.debateseason_backend_v1.domain.issue.model;
+package com.debateseason_backend_v1.domain.repository.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

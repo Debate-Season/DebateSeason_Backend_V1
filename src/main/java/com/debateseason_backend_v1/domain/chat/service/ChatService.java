@@ -1,8 +1,8 @@
 package com.debateseason_backend_v1.domain.chat.service;
 
 import com.debateseason_backend_v1.domain.chat.dto.ChatDTO;
-import com.debateseason_backend_v1.domain.chat.model.Chat;
-import com.debateseason_backend_v1.domain.chatroom.model.ChatRoom;
+import com.debateseason_backend_v1.domain.repository.entity.Chat;
+import com.debateseason_backend_v1.domain.repository.entity.ChatRoom;
 import com.debateseason_backend_v1.domain.repository.ChatRepository;
 import com.debateseason_backend_v1.domain.repository.ChatRoomRepository;
 import lombok.AllArgsConstructor;

@@ -1,7 +1,7 @@
 package com.debateseason_backend_v1.domain.repository;
 
-import com.debateseason_backend_v1.domain.chat.model.Chat;
-import com.debateseason_backend_v1.domain.chatroom.model.ChatRoom;
+import com.debateseason_backend_v1.domain.repository.entity.Chat;
+import com.debateseason_backend_v1.domain.repository.entity.ChatRoom;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

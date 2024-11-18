@@ -1,21 +1,19 @@
 package com.debateseason_backend_v1.domain.issue.service;
 
-import com.debateseason_backend_v1.domain.chatroom.model.ChatRoom;
+import com.debateseason_backend_v1.domain.repository.entity.ChatRoom;
 import com.debateseason_backend_v1.domain.issue.dto.IssueDAO;
 import com.debateseason_backend_v1.domain.issue.dto.IssueDTO;
-import com.debateseason_backend_v1.domain.issue.model.Issue;
+import com.debateseason_backend_v1.domain.repository.entity.Issue;
 import com.debateseason_backend_v1.domain.repository.ChatRoomRepository;
 import com.debateseason_backend_v1.domain.repository.IssueRepository;
 import com.debateseason_backend_v1.domain.repository.UserIssueRepository;
-import com.debateseason_backend_v1.domain.repository.UserRepository;
-import com.debateseason_backend_v1.domain.user.model.User;
-import com.debateseason_backend_v1.domain.user.model.UserIssue;
+import com.debateseason_backend_v1.domain.repository.entity.User;
+import com.debateseason_backend_v1.domain.repository.entity.UserIssue;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 
 import java.util.*;

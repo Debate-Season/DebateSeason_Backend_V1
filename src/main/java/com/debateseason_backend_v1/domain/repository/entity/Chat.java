@@ -1,6 +1,6 @@
-package com.debateseason_backend_v1.domain.chat.model;
+package com.debateseason_backend_v1.domain.repository.entity;
 
-import com.debateseason_backend_v1.domain.chatroom.model.ChatRoom;
+import com.debateseason_backend_v1.domain.repository.entity.ChatRoom;
 import jakarta.persistence.*;
 import lombok.*;
 

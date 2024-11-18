@@ -1,6 +1,6 @@
 package com.debateseason_backend_v1.domain.chat.model.response;
 
-import com.debateseason_backend_v1.domain.chat.model.Chat;
+import com.debateseason_backend_v1.domain.repository.entity.Chat;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.util.List;

@@ -1,6 +1,6 @@
-package com.debateseason_backend_v1.domain.chatroom.model;
+package com.debateseason_backend_v1.domain.repository.entity;
 
-import com.debateseason_backend_v1.domain.issue.model.Issue;
+import com.debateseason_backend_v1.domain.repository.entity.Issue;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

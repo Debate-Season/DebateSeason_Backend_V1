@@ -1,11 +1,26 @@
 package com.debateseason_backend_v1.domain.user.dto;
 
+import jakarta.validation.constraints.NotBlank;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
+@Builder
+@AllArgsConstructor
 public class UserDTO {
-    private String name;
+
+    // 이거 쓰려면 validation 의존성을 추가해야만 한다.
+    @NotBlank
+    private final String username;
+
+    @NotBlank
+    private final String password;
+    
+    // 소속 커뮤니티
     private String community;
+
+
 }

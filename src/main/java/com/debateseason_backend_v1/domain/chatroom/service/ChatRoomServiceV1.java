@@ -21,7 +21,7 @@ import java.util.List;
 
 @AllArgsConstructor
 @Service
-public class ChatRoomService {
+public class ChatRoomServiceV1 {
 
     private final ChatRoomRepository chatRoomRepository;
     private final IssueRepository issueRepository; // 혹시나 Service쓰면, 나중에 순환참조 발생할 것 같아서 Repository로 함.
@@ -30,7 +30,7 @@ public class ChatRoomService {
     private final ObjectMapper objectMapper;
 
     // 1. 채팅방 저장하기
-    public ResponseEntity<?> saveChatRoom(ChatRoomDTO chatRoomDTO,long issueId){
+    public ResponseEntity<?> save(ChatRoomDTO chatRoomDTO,long issueId){
 
         // 1. Issue 찾기
         Issue issue = issueRepository.findById(issueId).orElseThrow(
@@ -57,7 +57,7 @@ public class ChatRoomService {
     // 2. 채팅방 찬반 투표하기
     // Dirty Checking을 위해서 Transactional을 통한 변경감지
     @Transactional
-    public ResponseEntity<?> voteChatRoom(String opinion,Long chatRoomId){
+    public ResponseEntity<?> vote(String opinion,Long chatRoomId){
 
         //1. 채팅방 가져오기
         ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId).orElseThrow(
@@ -78,7 +78,7 @@ public class ChatRoomService {
     }
 
     // 3. 채팅방 단건 불러오기
-    public ResponseEntity<?> fetchChatRoom(Long chatRoomId){
+    public ResponseEntity<?> fetch(Long chatRoomId){
         
         // 1. 채팅방 불러오기
         ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)

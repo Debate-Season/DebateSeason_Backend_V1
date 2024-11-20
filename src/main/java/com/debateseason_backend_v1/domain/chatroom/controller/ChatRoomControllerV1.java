@@ -1,47 +1,47 @@
 package com.debateseason_backend_v1.domain.chatroom.controller;
 
 import com.debateseason_backend_v1.domain.chat.dto.ChatDTO;
-import com.debateseason_backend_v1.domain.chat.service.ChatService;
+import com.debateseason_backend_v1.domain.chat.service.ChatServiceV1;
 import com.debateseason_backend_v1.domain.chatroom.dto.ChatRoomDTO;
-import com.debateseason_backend_v1.domain.chatroom.service.ChatRoomService;
+import com.debateseason_backend_v1.domain.chatroom.service.ChatRoomServiceV1;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/api/v1/room")
-public class ChatRoomController {
+@RequestMapping("/api/v1")
+public class ChatRoomControllerV1 {
 
-    private final ChatRoomService chatRoomService;
-    private final ChatService chatService;
+    private final ChatRoomServiceV1 chatRoomServiceV1;
+    private final ChatServiceV1 chatServiceV1;
 
     // 4. 채팅방(=안건=토론방)생성하기, title,content -> JSON, issue_id = 쿼리스트링
-    @PostMapping("/")
+    @PostMapping("/room")
     public ResponseEntity<?> createChatRoom(@RequestBody ChatRoomDTO chatRoomDTO,
                                             @RequestParam(name = "issue-id") Long issue_id){
-        return chatRoomService.saveChatRoom(chatRoomDTO,issue_id);
+        return chatRoomServiceV1.save(chatRoomDTO,issue_id);
     }
 
 
     // 4. 채팅방 단건 불러오기
-    @GetMapping("/")
+    @GetMapping("/room")
     public ResponseEntity<?> getChatRoom(@RequestParam(name = "chatroom-id")Long chatRoomId){
-        return chatRoomService.fetchChatRoom(chatRoomId);
+        return chatRoomServiceV1.fetch(chatRoomId);
     }
 
     // 5. 채팅방 찬성/반대 투표하기, opinion, chatroomid = 쿼리스트링
-    @PostMapping("/vote")
+    @PostMapping("/room/vote")
     public ResponseEntity<?> voteChatRoom(@RequestParam(name = "opinion")String opinion,
                                           @RequestParam(name = "chatroom-id") Long chatRoomId){
-        return chatRoomService.voteChatRoom(opinion,chatRoomId);
+        return chatRoomServiceV1.vote(opinion,chatRoomId);
     }
 
     // 6. 채팅메시지 발송
     // 쿼리스트링은 chatRoomId
-    @PostMapping("/send")
+    @PostMapping("/room/send")
     public ResponseEntity<?> sendChat(@RequestBody ChatDTO chatDTO,
                                       @RequestParam(name="chatroom-id")Long chatRoomId){
-        return chatService.saveChat(chatDTO,chatRoomId);
+        return chatServiceV1.save(chatDTO,chatRoomId);
     }
 }

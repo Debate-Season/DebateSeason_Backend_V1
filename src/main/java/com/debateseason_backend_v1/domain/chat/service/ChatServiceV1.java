@@ -11,12 +11,12 @@ import org.springframework.stereotype.Service;
 
 @AllArgsConstructor
 @Service
-public class ChatService {
+public class ChatServiceV1 {
 
     private final ChatRoomRepository chatRoomRepository;
     private final ChatRepository chatRepository;
 
-    public ResponseEntity<?> saveChat(ChatDTO chatDTO,Long chatRoomId){
+    public ResponseEntity<?> save(ChatDTO chatDTO,Long chatRoomId){
 
         // 1. chatRoom 조회하기
         ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)

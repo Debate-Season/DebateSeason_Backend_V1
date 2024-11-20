@@ -6,6 +6,6 @@ import lombok.Setter;
 @Getter
 @Setter
 public class UserIssueDTO {
-    private String name;
-    private String title;
+    private Long userId;
+    private Long issueId;
 }

@@ -5,18 +5,18 @@ import com.debateseason_backend_v1.domain.repository.entity.User;
 import com.debateseason_backend_v1.domain.user.dto.UserDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+
 import org.springframework.stereotype.Service;
 
 @RequiredArgsConstructor
 @Service
-public class UserService {
+public class UserServiceV1 {
 
     private final UserRepository userRepository;
 
 
     // 1. User 등록하기
-    public ResponseEntity<?> saveUser(UserDTO userDTO){
+    public ResponseEntity<?> save(UserDTO userDTO){
 
         Boolean isExist = userRepository.existsByUsername(userDTO.getUsername());
 
@@ -28,7 +28,7 @@ public class UserService {
                 .username(userDTO.getUsername())
                 .password(userDTO.getPassword())
                 .community(userDTO.getCommunity())
-                .role("ROLE_ADMIN")
+                .role("ROLE_USER")
                 .build()
                 ;
 

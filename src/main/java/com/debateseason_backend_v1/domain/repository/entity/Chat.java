@@ -1,19 +1,15 @@
 package com.debateseason_backend_v1.domain.repository.entity;
 
-import com.debateseason_backend_v1.domain.repository.entity.ChatRoom;
 import jakarta.persistence.*;
 import lombok.*;
-
+@NoArgsConstructor
+@AllArgsConstructor
 @Getter
 @Setter
-@AllArgsConstructor
 @Builder
 @Entity
 public class Chat {
 
-    public Chat(){
-
-    }
 
     @Id @GeneratedValue(strategy = GenerationType.AUTO)
     private long id;

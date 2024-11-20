@@ -16,7 +16,7 @@ import org.springframework.stereotype.Service;
 @AllArgsConstructor
 @Service
 @Slf4j
-public class UserIssueService {
+public class UserIssueServiceV1 {
     // User와 Issue를 조회한다, -> UserIssue에 등록을 한다.
 
     //
@@ -26,13 +26,18 @@ public class UserIssueService {
     private final UserIssueRepository userIssueRepository;
     
     // 1. userIssue에 저장하기
-    public ResponseEntity<?> saveUserIssue(UserIssueDTO userIssueDTO){
+    public ResponseEntity<?> save(UserIssueDTO userIssueDTO){
 
-        String username = userIssueDTO.getName();
-        String title = userIssueDTO.getTitle();
+        Long userId = userIssueDTO.getUserId();
+        Long issueId = userIssueDTO.getIssueId();
 
-        User user = userRepository.findByUsername(username);
-        Issue issue = issueRepository.findByTitle(title);
+        // 이 부분 나중에 GlobalExceptionHandler 만들어서 예외처리 할 예정 <- 수정해야 할 부분
+        User user = userRepository.findById(userId).orElseThrow(
+                ()-> new RuntimeException("There is no user : "+userId )
+        );
+        Issue issue = issueRepository.findById(issueId).orElseThrow(
+                ()-> new RuntimeException("There is no relevant issue : " + issueId)
+        );
 
         UserIssue userIssue = UserIssue.builder()
                 .user(user)

@@ -2,7 +2,7 @@ package com.debateseason_backend_v1.domain.repository.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-
+@NoArgsConstructor
 @AllArgsConstructor
 @Getter
 @Setter
@@ -10,9 +10,6 @@ import lombok.*;
 @Entity
 public class User {
 
-    public User(){
-
-    }
 
     @Id @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "user_id")

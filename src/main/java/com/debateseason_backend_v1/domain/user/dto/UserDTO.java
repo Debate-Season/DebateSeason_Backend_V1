@@ -1,5 +1,6 @@
 package com.debateseason_backend_v1.domain.user.dto;
 
+import jakarta.persistence.Enumerated;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -18,7 +19,10 @@ public class UserDTO {
 
     @NotBlank
     private final String password;
-    
+
+
+    private final String role;
+
     // 소속 커뮤니티
     private String community;
 

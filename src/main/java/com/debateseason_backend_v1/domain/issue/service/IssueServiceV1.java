@@ -20,7 +20,7 @@ import java.util.*;
 
 @AllArgsConstructor
 @Service
-public class IssueService {
+public class IssueServiceV1 {
 
     private final IssueRepository issueRepository;
     private final UserIssueRepository userIssueRepository;
@@ -29,7 +29,7 @@ public class IssueService {
     private final ObjectMapper objectMapper;
 
     // 1. save 이슈방
-    public ResponseEntity<?> saveIssue(IssueDTO issueDTO){
+    public ResponseEntity<?> save(IssueDTO issueDTO){
 
         Issue issue = Issue.builder()
                 .title(issueDTO.getTitle())
@@ -43,7 +43,7 @@ public class IssueService {
     
     //2. fetch 이슈방
     @Transactional
-    public ResponseEntity<?> fetchIssue(Long issueId){
+    public ResponseEntity<?> fetch(Long issueId){
 
         // 1. 이슈방 불러오기
         Issue issue = issueRepository.findById(issueId).orElseThrow(

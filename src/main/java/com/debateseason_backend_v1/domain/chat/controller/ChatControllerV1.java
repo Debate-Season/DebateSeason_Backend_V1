@@ -36,7 +36,7 @@ public class ChatControllerV1 {
             @Parameter(description = "발신자 이름", required = true)
             @RequestParam("from") @Valid String from
     ){
-        return chatServiceV1.chatList(from, to);
+        return chatServiceV1.findChatsBetweenUsers(from, to);
     }
 
 }

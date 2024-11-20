@@ -22,7 +22,7 @@ public class WebSocketControllerV1 {
     @Operation(summary = "채팅 메시지 전송")
     @MessageMapping("/chat.sendMessage")
     @SendTo("/topic/public")
-    public ChatMessage sendMessage(
+    public ChatMessage broadcastChatMessage(
             @Parameter(description = "사용자 입장 정보")
             @Payload ChatMessage chatMessage) {
 
@@ -37,7 +37,7 @@ public class WebSocketControllerV1 {
     @Operation(summary = "사용자 입장")
     @MessageMapping("/chat.addUser")
     @SendTo("/topic/public")
-    public ChatMessage addUser(
+    public ChatMessage announceUserJoin (
             @Parameter(description = "사용자 입장 정보")
             @Payload ChatMessage chatMessage
     ) {

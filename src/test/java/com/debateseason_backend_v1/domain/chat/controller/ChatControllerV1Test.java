@@ -50,7 +50,7 @@ class ChatControllerV1Test {
                 .totalNumberOfMessages(1)
                 .build();
 
-        Mockito.when(chatServiceV1.chatList(from, to)).thenReturn(response);
+        Mockito.when(chatServiceV1.findChatsBetweenUsers(from, to)).thenReturn(response);
 
         //when & //then
         mockMvc.perform(get("/api/v1/chat/chat-list")

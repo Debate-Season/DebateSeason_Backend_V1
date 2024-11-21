@@ -9,11 +9,12 @@ import com.debateseason_backend_v1.domain.repository.entity.User;
 
 import com.debateseason_backend_v1.domain.repository.entity.UserIssue;
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Service
 @Slf4j
 public class UserIssueServiceV1 {

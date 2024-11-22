@@ -13,11 +13,13 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
 
+@Slf4j
 @AllArgsConstructor
 @Service
 public class IssueServiceV1 {
@@ -41,7 +43,7 @@ public class IssueServiceV1 {
 
     }
     
-    //2. fetch 이슈방
+    //2. fetch 단건 이슈방
     @Transactional
     public ResponseEntity<?> fetch(Long issueId){
 
@@ -112,10 +114,36 @@ public class IssueServiceV1 {
         try {
             json = objectMapper.writeValueAsString(issueDAO);
         } catch (JsonProcessingException e) {
+            log.error("IssueServiceV1.fetch : "+e.getMessage());
             throw new RuntimeException(e);
         }
 
         return ResponseEntity.ok(json);
+
+    }
+
+    //3. fetch 전체 이슈방(인덱스 페이지용) <- 나중에 수정할듯
+    public ResponseEntity<?> fetchAll(){
+        List<Issue> issueList = issueRepository.findAll();
+
+        // Gson,JSONArray이 없어서 Map으로 반환을 한다.
+        Map<Integer,Issue> issueMap = new LinkedHashMap<>();
+
+        for(int i=0; i<issueList.size(); i++){
+            issueMap.put(i,issueList.get(i));
+        }
+
+        String json;
+
+        try {
+            json = objectMapper.writeValueAsString(issueMap);
+        } catch (JsonProcessingException e) {
+            log.error("IssueServiceV1.fetchAll : "+e.getMessage());
+            throw new RuntimeException(e);
+        }
+
+        return ResponseEntity.ok(json);
+
 
     }
 

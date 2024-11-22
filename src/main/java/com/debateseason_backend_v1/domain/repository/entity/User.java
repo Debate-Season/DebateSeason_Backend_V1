@@ -8,6 +8,7 @@ import lombok.*;
 @Setter
 @Builder
 @Entity
+@Table(name = "client") // H2에서는 USER는 예약어라서 사용이 불가함.
 public class User {
 
 

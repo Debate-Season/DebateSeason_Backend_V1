@@ -4,10 +4,12 @@ import com.debateseason_backend_v1.domain.repository.UserRepository;
 import com.debateseason_backend_v1.domain.repository.entity.User;
 import com.debateseason_backend_v1.domain.user.dto.UserDTO;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class UserServiceV1 {
@@ -21,6 +23,7 @@ public class UserServiceV1 {
         Boolean isExist = userRepository.existsByUsername(userDTO.getUsername());
 
         if(isExist){
+            log.error("There is already username + "+userDTO.getUsername());
             return ResponseEntity.ok("There is already username + "+userDTO.getUsername());
         }
 

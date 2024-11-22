@@ -14,12 +14,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class ChatRoomServiceV1 {
@@ -116,6 +118,7 @@ public class ChatRoomServiceV1 {
         try {
             json = objectMapper.writeValueAsString(responseDTO);
         } catch (JsonProcessingException e) {
+            log.error("ChatRoomSeviceV1 : "+e.getMessage());
             throw new RuntimeException(e);
         }
         return ResponseEntity.ok(json);

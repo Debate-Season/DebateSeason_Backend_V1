@@ -7,8 +7,8 @@ import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfi
 @SpringBootApplication(exclude = SecurityAutoConfiguration.class)
 public class DebateSeasonBackendV1Application {
 
-    public static void main(String[] args) {
-        SpringApplication.run(DebateSeasonBackendV1Application.class, args);
-    }
+	public static void main(String[] args) {
+		SpringApplication.run(DebateSeasonBackendV1Application.class, args);
+	}
 
 }

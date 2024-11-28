@@ -1,0 +1,54 @@
+spring:
+  config:
+    activate:
+      on-profile: prod
+  jpa:
+    hibernate:
+      ddl-auto: validate
+
+  datasource:
+    driver-class-name: ${DB_DRIVER_CLASS_NAME}
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      connection-timeout: 20000
+
+logging:
+  pattern:
+    console: "[%d{yyyy-MM-dd HH:mm:ss}] [%thread] %-5level %logger{36} - %msg%n"
+
+  level:
+    root: error
+    com.debateseason_backend_v1: info
+
+    # Database & ORM
+    org.hibernate.SQL: warn  # SQL 쿼리 로깅
+    org.hibernate.orm.jdbc.bind: warn # SQL 파라미터 바인딩
+    com.zaxxer.hikari: warn # 커넥션 풀 관련
+
+    # Network & Performance
+    org.apache.tomcat: warn # Tomcat 서버 관련
+    org.apache.coyote: warn # HTTP 커넥터 관련
+
+    # Spring Framework
+    org.springframework.web: warn
+    org.springframework.security: warn
+    org.springframework.cache: warn
+    org.springframework.transaction: warn
+
+    # WebSocket & STOMP 관련
+    org.springframework.web.socket: warn  # 프로덕션에서는 WARN
+    org.springframework.messaging: warn   # STOMP 메시징 관련
+    org.springframework.web.socket.messaging: warn  # STOMP 메시지 처리
+
+    # Application Layers
+    com.debateseason_backend_v1.domain.*.controller: info   # API 요청/응답
+    com.debateseason_backend_v1.domain.*.service: warn      # 비즈니스 로직 경고/에러
+    com.debateseason_backend_v1.domain.*.repository: warn   # 데이터 접근 경고/에러
+
+server:
+  port: 80

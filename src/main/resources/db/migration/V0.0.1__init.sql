@@ -20,7 +20,7 @@ CREATE TABLE chat_room (
     id BIGINT NOT NULL,
     issue_issue_id BIGINT,
     title VARCHAR(255),
-    content TEXT, ,
+    content TEXT,
     yes INTEGER NOT NULL,
     no INTEGER NOT NULL,
     PRIMARY KEY (id)

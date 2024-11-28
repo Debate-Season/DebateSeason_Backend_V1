@@ -1,0 +1,39 @@
+spring:
+  #autoconfigure:
+  #  exclude: #  JPA/Database 비활성화
+  #    - org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+  #    - org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration\
+  datasource:
+    driver-class-name: org.mariadb.jdbc.Driver
+    url: jdbc:mariadb://127.0.0.1:3307/debate?serverTimezone=Asia/Seoul
+    username: root
+    password: "1234"
+
+  jpa:
+    database: mysql # 명시적으로 선언
+    open-in-view: true
+    hibernate:
+      ddl-auto: update #update,none,create(프로젝트시작시,테이블새로생성, 그래서 초기에만 create 그 이후는 update로 설정변경)
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+      #use-new-id-generator-mappings: false # false-> jpa가 사용하는 기본 넘버링 전략 포기, true면 그 반대
+    show-sql: true # Console창에  Entity 결과를 보여준다. hibernate.format_sql: false
+
+    properties:
+      hibernate:
+      format_sql: true
+
+
+
+
+
+    # ===============================
+    # = 로깅 설정
+    # ===============================
+    #logging:
+    #level:
+    # hibernate 로그 레벨 설정
+    #org.hibernate.SQL: debug  # SQL 쿼리 로그
+    #org.hibernate.type: trace  # SQL 쿼리 파라미터 로그
+    # 스프링 프레임워크 로그 레벨
+    #org.springframework: info

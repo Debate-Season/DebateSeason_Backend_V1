@@ -17,7 +17,7 @@ public class WebSecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/ws-stomp/**","/login/**","/").permitAll()
+                        .requestMatchers("/actuator/**","/ws-stomp/**","/login/**","/").permitAll()
                         .anyRequest().authenticated()
                 )
             .formLogin(AbstractAuthenticationFilterConfigurer::permitAll);

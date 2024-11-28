@@ -43,6 +43,10 @@ dependencies {
     // H2database
     testRuntimeOnly 'com.h2database:h2'
 
+    // flyway
+    implementation 'org.flywaydb:flyway-core'
+    implementation 'org.flywaydb:flyway-mysql'
+
     // Lombok
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'

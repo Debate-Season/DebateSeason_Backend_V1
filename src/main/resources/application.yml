@@ -1,24 +1,51 @@
 spring:
-  autoconfigure:
-    exclude: #  JPA/Database 비활성화
-      - org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
-      - org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration
-  jpa:
-    show-sql: true  # SQL 쿼리 출력
-    properties:
-      hibernate:
-        format_sql: true  # SQL 쿼리 포맷팅
-        highlight_sql: true  # SQL 쿼리 하이라이트
-        use_sql_comments: true  # SQL 쿼리 주석 표시
+  #autoconfigure:
+  #  exclude: #  JPA/Database 비활성화
+  #    - org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+  #    - org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration\
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
 
-# ===============================
-# = 로깅 설정
-# ===============================
-logging:
-  level:
+  datasource:
+    driver-class-name: org.h2.Driver
+    url: 'jdbc:h2:mem:test'
+    username: root
+    password: 1234
+
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: create       # DB 초기화 전략 (none, create, create-drop, update, validate)
+    properties:
+      dialect: org.hibernate.dialect.H2Dialect
+      format_sql: true      # 쿼리 로그 포맷 (정렬)
+      show_sql: true        # 쿼리 로그 출력
+
+  # 로그 구별할 수 있게 색 입히기
+  output:
+    ansi:
+      enabled: always
+
+
+
+
+
+
+
+
+    # ===============================
+    # = 로깅 설정
+    # ===============================
+    #logging:
+    #level:
     # hibernate 로그 레벨 설정
     org.hibernate.SQL: debug  # SQL 쿼리 로그
-    org.hibernate.type: trace  # SQL 쿼리 파라미터 로그
+    org.hibernate.type: debug  # SQL 쿼리 파라미터 로그
     # 스프링 프레임워크 로그 레벨
-    org.springframework: info
-
+    org.springframework: debug
+    org:
+      springframework:
+        web:
+          socket: debug

@@ -12,16 +12,17 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableWebSecurity
 public class WebSecurityConfig {
 
-    @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http
-                .csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/actuator/**","/ws-stomp/**","/login/**","/").permitAll()
-                        .anyRequest().authenticated()
-                )
-            .formLogin(AbstractAuthenticationFilterConfigurer::permitAll);
-        return http.build();
-    }
+	@Bean
+	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+		http
+			.csrf(AbstractHttpConfigurer::disable)
+			.authorizeHttpRequests(auth -> auth
+					.anyRequest().permitAll()
+				// .requestMatchers("/swagger-ui/**", "/actuator/**", "/ws-stomp/**", "/login/**", "/").permitAll()
+				// .anyRequest().authenticated()
+			)
+			.formLogin(AbstractAuthenticationFilterConfigurer::permitAll);
+		return http.build();
+	}
 
 }

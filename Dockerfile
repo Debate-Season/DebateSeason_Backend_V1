@@ -1,31 +1,25 @@
-FROM amazoncorretto:17.0.7-al2023-headless AS builder
+FROM eclipse-temurin:17-jre-jammy AS extractor
 
-WORKDIR /build
-
-# 빌드 결과물 복사
+WORKDIR /extract
 COPY build/libs/*.jar app.jar
 RUN java -Djarmode=layertools -jar app.jar extract
 
 # Run stage
-FROM amazoncorretto:17.0.7-al2023-headless
+FROM eclipse-temurin:17-jre-jammy
 
 WORKDIR /app
 
-RUN dnf install -y shadow-utils && \
-    useradd -r -s /bin/false spring && \
-    dnf clean all
-
-COPY --from=builder /build/dependencies/ ./
-COPY --from=builder /build/spring-boot-loader/ ./
-COPY --from=builder /build/snapshot-dependencies/ ./
-COPY --from=builder /build/application/ ./
-
-RUN chown -R spring:spring /app
+RUN adduser --system --group spring
 USER spring
+
+COPY --from=extractor /extract/dependencies/ ./
+COPY --from=extractor /extract/spring-boot-loader/ ./
+COPY --from=extractor /extract/snapshot-dependencies/ ./
+COPY --from=extractor /extract/application/ ./
 
 EXPOSE 8080
 ENTRYPOINT ["java"]
 CMD ["-XX:+UseContainerSupport", \
      "-XX:MaxRAMPercentage=75.0", \
      "-Djava.security.egd=file:/dev/./urandom", \
-     "org.springframework.boot.loader.launch.JarLauncher"]
+     "org.springframework.boot.loader.JarLauncher"]

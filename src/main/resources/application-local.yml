@@ -1,0 +1,40 @@
+spring:
+  config:
+    activate:
+      on-profile: local
+  jpa:
+    properties:
+      hibernate:
+        format_sql: true
+        show-sql: true
+        highlight_sql: true
+    hibernate:
+      ddl-auto: create
+
+  datasource:
+    hikari:
+      maximum-pool-size: 5
+      minimum-idle: 2
+      connection-timeout: 11000
+
+  flyway:
+    enabled: false
+
+  output:
+    ansi:
+      enabled: always
+
+logging.level:
+  root: info
+
+  # Database & ORM
+  org.hibernate.SQL: debug
+  org.hibernate.orm.jdbc.bind: trace  # 파라미터 바인딩 확인용
+
+  # WebSocket & STOMP 디버깅용
+  org.springframework.web.socket: debug
+  org.springframework.messaging: debug
+  org.springframework.web.socket.messaging: debug
+
+server:
+  port: 8080

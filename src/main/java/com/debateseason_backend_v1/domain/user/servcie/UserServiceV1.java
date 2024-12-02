@@ -1,5 +1,6 @@
 package com.debateseason_backend_v1.domain.user.servcie;
 
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 @Transactional(readOnly = true)
 public class UserServiceV1 {
 
+	private final BCryptPasswordEncoder bCryptPasswordEncoder;
 	private final UserRepository userRepository;
 	private final UserValidator userValidator;
 
@@ -26,7 +28,7 @@ public class UserServiceV1 {
 
 		User user = User.builder()
 			.username(registerDTO.getUsername())
-			.password(registerDTO.getPassword())
+			.password(bCryptPasswordEncoder.encode(registerDTO.getPassword()))
 			.role(registerDTO.getRole())
 			.community(registerDTO.getCommunity())
 			.build();

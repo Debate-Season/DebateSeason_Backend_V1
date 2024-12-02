@@ -4,22 +4,24 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
 @Setter
 @Builder
+@NoArgsConstructor
 @AllArgsConstructor
 public class RegisterDTO {
 
 	@NotBlank
-	private final String username;
+	private String username;
 
 	@NotBlank
-	private final String password;
+	private String password;
 
 	@NotBlank
-	private final String role;
+	private String role;
 
 	private String community;
 }

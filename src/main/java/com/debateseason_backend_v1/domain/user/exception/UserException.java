@@ -4,7 +4,7 @@ import com.debateseason_backend_v1.common.exception.CodeInterface;
 import com.debateseason_backend_v1.common.exception.CustomException;
 
 public class UserException extends CustomException {
-	
+
 	public UserException(CodeInterface errorCode) {
 		super(errorCode);
 	}

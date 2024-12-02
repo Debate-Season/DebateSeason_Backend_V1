@@ -12,6 +12,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import com.debateseason_backend_v1.security.jwt.JwtFilter;
 import com.debateseason_backend_v1.security.jwt.JwtUtil;
 import com.debateseason_backend_v1.security.jwt.LoginFilter;
 
@@ -25,6 +26,17 @@ public class WebSecurityConfig {
 	private final JwtUtil jwtUtil;
 	private final AuthenticationConfiguration authenticationConfiguration;
 
+	private static final String[] PUBLIC_URLS = {
+		"/",
+		"/actuator/**",
+		"/ws-stomp/**",
+		"/swagger-ui/**",
+		"/v3/api-docs/**",
+		"/api/v1/auth/login",
+		"/api/v1/users/register",
+		"/api/v1/users/register/**",
+	};
+
 	@Bean
 	public BCryptPasswordEncoder bCryptPasswordEncoder() {
 		return new BCryptPasswordEncoder();
@@ -37,22 +49,26 @@ public class WebSecurityConfig {
 
 	@Bean
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-		http
+		return http
 			.csrf(AbstractHttpConfigurer::disable)
 			.formLogin(AbstractHttpConfigurer::disable)
 			.httpBasic(AbstractHttpConfigurer::disable)
 			.sessionManagement((session) -> session
 				.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 			.authorizeHttpRequests(auth -> auth
-					.anyRequest().permitAll()
-				// .requestMatchers("/swagger-ui/**", "/actuator/**", "/ws-stomp/**", "/login/**", "/").permitAll()
-				// .anyRequest().authenticated()
+				.requestMatchers(PUBLIC_URLS).permitAll()
+				.anyRequest().authenticated()
 			)
 			.addFilterAt(
 				new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil),
 				UsernamePasswordAuthenticationFilter.class
-			);
-		return http.build();
+			)
+			.addFilterBefore(
+				new JwtFilter(jwtUtil),
+				LoginFilter.class
+			)
+
+			.build();
 	}
 
 }

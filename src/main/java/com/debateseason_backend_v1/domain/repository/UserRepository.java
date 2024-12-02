@@ -9,4 +9,6 @@ import com.debateseason_backend_v1.domain.repository.entity.User;
 public interface UserRepository extends JpaRepository<User, Long> {
 
 	Boolean existsByUsername(String username);
+
+	User findByUsername(String username);
 }

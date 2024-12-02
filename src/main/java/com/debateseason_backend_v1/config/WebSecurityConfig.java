@@ -12,6 +12,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import com.debateseason_backend_v1.security.jwt.JwtUtil;
 import com.debateseason_backend_v1.security.jwt.LoginFilter;
 
 import lombok.RequiredArgsConstructor;
@@ -21,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class WebSecurityConfig {
 
+	private final JwtUtil jwtUtil;
 	private final AuthenticationConfiguration authenticationConfiguration;
 
 	@Bean
@@ -47,7 +49,7 @@ public class WebSecurityConfig {
 				// .anyRequest().authenticated()
 			)
 			.addFilterAt(
-				new LoginFilter(authenticationManager(authenticationConfiguration)),
+				new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil),
 				UsernamePasswordAuthenticationFilter.class
 			);
 		return http.build();

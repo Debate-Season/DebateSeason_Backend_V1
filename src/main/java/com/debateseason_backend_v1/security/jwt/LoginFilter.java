@@ -11,8 +11,10 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import com.debateseason_backend_v1.security.dto.AuthResponse;
+import com.debateseason_backend_v1.common.exception.ErrorCode;
+import com.debateseason_backend_v1.common.response.ApiResponse.ApiResponse;
 import com.debateseason_backend_v1.security.dto.CustomUserDetails;
+import com.debateseason_backend_v1.security.dto.LoginResponseDto;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.servlet.FilterChain;
@@ -27,7 +29,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 	private final ObjectMapper objectMapper;
 
 	public LoginFilter(AuthenticationManager authenticationManager, JwtUtil jwtUtil) {
-		
+
 		this.authenticationManager = authenticationManager;
 		this.jwtUtil = jwtUtil;
 		this.objectMapper = new ObjectMapper();
@@ -66,14 +68,14 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 		String token = jwtUtil.createJwt(username, role, 60 * 60 * 24 * 30L);
 		addJwtCookie(response, token);
 
-		AuthResponse authResponse = AuthResponse.builder()
-			.status(HttpStatus.OK.value())
-			.message("로그인에 성공했습니다.")
+		LoginResponseDto loginResponseDto = LoginResponseDto.builder()
 			.username(username)
 			.role(role)
 			.build();
 
-		writeJsonResponse(response, HttpStatus.OK.value(), authResponse);
+		ApiResponse<LoginResponseDto> apiResponse = ApiResponse.success("로그인 성공", loginResponseDto);
+
+		writeJsonResponse(response, HttpStatus.OK.value(), apiResponse);
 	}
 
 	@Override
@@ -84,25 +86,22 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 	) throws IOException {
 
 		HttpStatus status;
-		String errorMessage;
+		ErrorCode errorCode;
 
 		if (failed instanceof BadCredentialsException) {
 			status = HttpStatus.UNAUTHORIZED;
-			errorMessage = "아이디 또는 비밀번호가 올바르지 않습니다.";
+			errorCode = ErrorCode.INVALID_CREDENTIALS;
 		} else if (failed instanceof InternalAuthenticationServiceException) {
 			status = HttpStatus.NOT_FOUND;
-			errorMessage = "존재하지 않는 사용자입니다.";
+			errorCode = ErrorCode.USER_NOT_FOUND;
 		} else {
 			status = HttpStatus.INTERNAL_SERVER_ERROR;
-			errorMessage = "인증 중 오류가 발생했습니다.";
+			errorCode = ErrorCode.AUTHENTICATION_FAILED;
 		}
 
-		AuthResponse authResponse = AuthResponse.builder()
-			.status(status.value())
-			.message(errorMessage)
-			.build();
+		ApiResponse<Void> apiResponse = ApiResponse.error(status, errorCode);
 
-		writeJsonResponse(response, status.value(), authResponse);
+		writeJsonResponse(response, status.value(), apiResponse);
 	}
 
 	private void addJwtCookie(HttpServletResponse response, String token) {
@@ -118,12 +117,12 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 	private void writeJsonResponse(
 		HttpServletResponse response,
 		int status,
-		AuthResponse authResponse
+		ApiResponse<?> apiResponse
 	) throws IOException {
 		response.setStatus(status);
 		response.setContentType("application/json");
 		response.setCharacterEncoding("UTF-8");
-		objectMapper.writeValue(response.getWriter(), authResponse);
+		objectMapper.writeValue(response.getWriter(), apiResponse);
 	}
 
 }

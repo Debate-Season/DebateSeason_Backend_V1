@@ -1,4 +1,4 @@
-package com.debateseason_backend_v1.domain.user.servcie;
+package com.debateseason_backend_v1.domain.user.service;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;

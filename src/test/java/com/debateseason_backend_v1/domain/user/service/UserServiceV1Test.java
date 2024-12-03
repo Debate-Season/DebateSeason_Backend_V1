@@ -1,4 +1,4 @@
-package com.debateseason_backend_v1.domain.user.servcie;
+package com.debateseason_backend_v1.domain.user.service;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.*;

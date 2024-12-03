@@ -15,6 +15,11 @@ public enum ErrorCode implements CodeInterface {
 	EMPTY_PASSWORD(-4, "EMPTY_PASSWORD"),
 	MIS_MATCH_PASSWORD(-5, "MIS_MATCH_PASSWORD"),
 	INVALID_ROLE(-6, "INVALID_USER_ROLE"),
+
+	// 2000번대 로그인 에러
+	INVALID_CREDENTIALS(2000, "아이디 또는 비밀번호가 올바르지 않습니다."),
+	USER_NOT_FOUND(2001, "존재하지 않는 사용자입니다."),
+	AUTHENTICATION_FAILED(2002, "인증 중 오류가 발생했습니다."),
 	;
 
 	private final Integer code;

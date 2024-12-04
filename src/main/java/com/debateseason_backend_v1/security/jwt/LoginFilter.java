@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.InternalAuthenticationServiceException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -14,14 +15,25 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import com.debateseason_backend_v1.common.exception.ErrorCode;
 import com.debateseason_backend_v1.common.response.ApiResponse.ApiResponse;
 import com.debateseason_backend_v1.security.dto.CustomUserDetails;
-import com.debateseason_backend_v1.security.dto.LoginResponseDto;
+import com.debateseason_backend_v1.security.dto.LoginRequestDTO;
+import com.debateseason_backend_v1.security.dto.LoginResponseDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
+import io.swagger.v3.oas.annotations.security.SecurityScheme;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+@SecurityScheme(
+	name = "bearerAuth",
+	type = SecuritySchemeType.HTTP,
+	bearerFormat = "JWT",
+	scheme = "bearer"
+)
+@Tag(name = "Auth", description = "인증 관련 API")
 public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
 	private final AuthenticationManager authenticationManager;
@@ -41,16 +53,25 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 		HttpServletRequest request,
 		HttpServletResponse response
 	) throws AuthenticationException {
+		try {
+			// JSON 요청 본문을 LoginRequestDTO 객체로 변환
+			LoginRequestDTO loginRequestDTO = objectMapper.readValue(
+				request.getInputStream(),
+				LoginRequestDTO.class
+			);
 
-		String username = obtainUsername(request);
-		String password = obtainPassword(request);
+			UsernamePasswordAuthenticationToken authToken =
+				new UsernamePasswordAuthenticationToken(
+					loginRequestDTO.username(),  // record의 경우
+					loginRequestDTO.password(),
+					null
+				);
 
-		UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-			username,
-			password,
-			null);
+			return authenticationManager.authenticate(authToken);
 
-		return authenticationManager.authenticate(authToken);
+		} catch (IOException e) {
+			throw new AuthenticationServiceException("Failed to parse authentication request body", e);
+		}
 	}
 
 	@Override
@@ -68,12 +89,9 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 		String token = jwtUtil.createJwt(username, role, 60 * 60 * 24 * 30L);
 		addJwtCookie(response, token);
 
-		LoginResponseDto loginResponseDto = LoginResponseDto.builder()
-			.username(username)
-			.role(role)
-			.build();
+		LoginResponseDTO loginResponseDTO = new LoginResponseDTO(username, role);
 
-		ApiResponse<LoginResponseDto> apiResponse = ApiResponse.success("로그인 성공", loginResponseDto);
+		ApiResponse<LoginResponseDTO> apiResponse = ApiResponse.success("로그인 성공", loginResponseDTO);
 
 		writeJsonResponse(response, HttpStatus.OK.value(), apiResponse);
 	}
@@ -108,7 +126,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
 		Cookie cookie = new Cookie("JWT_TOKEN", token);
 		cookie.setHttpOnly(true);
-		cookie.setSecure(false);
+		cookie.setSecure(true);
 		cookie.setPath("/");
 		cookie.setMaxAge(60 * 60 * 24 * 30);
 		response.addCookie(cookie);

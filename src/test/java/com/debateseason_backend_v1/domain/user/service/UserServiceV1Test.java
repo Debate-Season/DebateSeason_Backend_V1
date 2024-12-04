@@ -24,7 +24,7 @@ class UserServiceV1Test {
 
 	@Test
 	@DisplayName("올바른 정보로 회원가입하면 성공한다")
-	void registerUser() {
+	void registerUserTest() {
 		// given
 		RegisterDTO registerDTO = RegisterDTO.builder()
 			.username("tester")
@@ -41,7 +41,7 @@ class UserServiceV1Test {
 
 	@Test
 	@DisplayName("중복된 사용자명으로 가입 시도하면 DUPLICATE_USERNAME 예외가 발생한다")
-	void duplicateUsername() {
+	void duplicateUsernameTest() {
 		// given
 		RegisterDTO registerDTO = RegisterDTO.builder()
 			.username("tester")
@@ -59,7 +59,7 @@ class UserServiceV1Test {
 
 	@Test
 	@DisplayName("빈 비밀번호로 가입 시도하면 EMPTY_PASSWORD 예외가 발생한다")
-	void emptyPassword() {
+	void emptyPasswordTest() {
 		// given
 		RegisterDTO registerDTO = RegisterDTO.builder()
 			.username("tester")
@@ -75,7 +75,7 @@ class UserServiceV1Test {
 
 	@Test
 	@DisplayName("잘못된 역할로 가입 시도하면 INVALID_ROLE 예외가 발생한다")
-	void invalidRole() {
+	void invalidRoleTest() {
 		// given
 		RegisterDTO registerDTO = RegisterDTO.builder()
 			.username("tester")

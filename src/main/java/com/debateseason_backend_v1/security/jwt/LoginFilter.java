@@ -54,7 +54,6 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 		HttpServletResponse response
 	) throws AuthenticationException {
 		try {
-			// JSON 요청 본문을 LoginRequestDTO 객체로 변환
 			LoginRequestDTO loginRequestDTO = objectMapper.readValue(
 				request.getInputStream(),
 				LoginRequestDTO.class
@@ -62,7 +61,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
 			UsernamePasswordAuthenticationToken authToken =
 				new UsernamePasswordAuthenticationToken(
-					loginRequestDTO.username(),  // record의 경우
+					loginRequestDTO.username(),
 					loginRequestDTO.password(),
 					null
 				);

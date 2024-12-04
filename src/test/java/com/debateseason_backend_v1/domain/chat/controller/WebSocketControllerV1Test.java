@@ -90,7 +90,7 @@ class WebSocketControllerV1Test {
                 .sender("testUser")
                 .build();
 
-        stompSession.send("/app/chat.sendMessage", message);
+        stompSession.send("/stomp/chat.sendMessage", message);
 
         // 메시지 큐 확인 (큐가 비어있으면 테스트 실패)
         ChatMessage received = blockingQueue.poll(5, TimeUnit.SECONDS);

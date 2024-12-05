@@ -8,11 +8,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.debateseason_backend_v1.domain.chat.dto.ChatDTO;
 import com.debateseason_backend_v1.domain.chat.service.ChatServiceV1;
 import com.debateseason_backend_v1.domain.chatroom.dto.ChatRoomDTO;
 import com.debateseason_backend_v1.domain.chatroom.service.ChatRoomServiceV1;
 
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
@@ -23,6 +23,9 @@ public class ChatRoomControllerV1 {
 	private final ChatRoomServiceV1 chatRoomServiceV1;
 	private final ChatServiceV1 chatServiceV1;
 
+	@Operation(
+		summary = "채팅방(=안건=토론방)생성하기",
+		description = "title,content -> JSON, issue_id = 쿼리스트링")
 	// 4. 채팅방(=안건=토론방)생성하기, title,content -> JSON, issue_id = 쿼리스트링
 	@PostMapping("/room")
 	public ResponseEntity<?> createChatRoom(@RequestBody ChatRoomDTO chatRoomDTO,
@@ -31,23 +34,23 @@ public class ChatRoomControllerV1 {
 	}
 
 	// 4. 채팅방 단건 불러오기
+	@Operation(
+		summary = "채팅방 단건 불러오기",
+		description = "채팅방 상세 상세보기")
 	@GetMapping("/room")
 	public ResponseEntity<?> getChatRoom(@RequestParam(name = "chatroom-id") Long chatRoomId) {
 		return chatRoomServiceV1.fetch(chatRoomId);
 	}
 
 	// 5. 채팅방 찬성/반대 투표하기, opinion, chatroomid = 쿼리스트링
+	@Operation(
+		summary = "채팅방 찬성/반대 투표하기",
+		description = "opinion, chatroomid = 쿼리스트링")
 	@PostMapping("/room/vote")
 	public ResponseEntity<?> voteChatRoom(@RequestParam(name = "opinion") String opinion,
-		@RequestParam(name = "chatroom-id") Long chatRoomId) {
-		return chatRoomServiceV1.vote(opinion, chatRoomId);
+		@RequestParam(name = "chatroom-id") Long chatRoomId,
+		@RequestParam(name = "user-id") Long userId) {
+		return chatRoomServiceV1.vote(opinion, chatRoomId, userId);
 	}
-
-	// 6. 채팅메시지 발송
-	// 쿼리스트링은 chatRoomId
-	@PostMapping("/room/send")
-	public ResponseEntity<?> sendChat(@RequestBody ChatDTO chatDTO,
-		@RequestParam(name = "chatroom-id") Long chatRoomId) {
-		return chatServiceV1.save(chatDTO, chatRoomId);
-	}
+	
 }

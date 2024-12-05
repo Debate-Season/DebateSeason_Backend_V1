@@ -1,10 +1,10 @@
 package com.debateseason_backend_v1.domain.repository.entity;
 
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.ManyToOne;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -17,13 +17,17 @@ import lombok.Setter;
 @Setter
 @Builder
 @Entity
-public class Issue {
+public class UserChatRoom {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "issue_id")
 	private long id;
 
-	private String title;
+	@ManyToOne
+	private User user;
 
+	@ManyToOne
+	private ChatRoom chatRoom;
+
+	private String opinion;
 }

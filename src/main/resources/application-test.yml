@@ -17,6 +17,9 @@ spring:
   flyway:
     enabled: false
 
+  jwt:
+    secret: "test-secret-key-test-secret-key-test-secret-key"
+
 logging.level:
   root: error
   org.hibernate.SQL: debug

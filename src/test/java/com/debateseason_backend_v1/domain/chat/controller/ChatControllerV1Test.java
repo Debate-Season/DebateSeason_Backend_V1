@@ -1,8 +1,12 @@
 package com.debateseason_backend_v1.domain.chat.controller;
 
-import com.debateseason_backend_v1.domain.chat.model.ChatMessage;
-import com.debateseason_backend_v1.domain.chat.model.response.ChatListResponse;
-import com.debateseason_backend_v1.domain.chat.service.ChatServiceV1;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+import java.util.Arrays;
+import java.util.List;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -13,15 +17,10 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import com.debateseason_backend_v1.common.enums.MessageType;
+import com.debateseason_backend_v1.domain.chat.model.ChatMessage;
+import com.debateseason_backend_v1.domain.chat.model.response.ChatListResponse;
+import com.debateseason_backend_v1.domain.chat.service.ChatServiceV1;
 
 @ActiveProfiles("test")
 @WebMvcTest(ChatControllerV1.class)
@@ -42,7 +41,7 @@ class ChatControllerV1Test {
         String to = "user2";
 
         List<ChatMessage> messageList = Arrays.asList(ChatMessage.builder()
-                .type(ChatMessage.MessageType.CHAT)
+                .type(MessageType.CHAT)
                 .content("안녕하세요")
                 .sender(from)
                 //.timeStamp(LocalDateTime.now())

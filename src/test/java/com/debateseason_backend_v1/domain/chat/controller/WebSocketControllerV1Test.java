@@ -1,7 +1,12 @@
 package com.debateseason_backend_v1.domain.chat.controller;
 
-import com.debateseason_backend_v1.domain.chat.model.ChatMessage;
-import lombok.extern.slf4j.Slf4j;
+import static org.junit.jupiter.api.Assertions.*;
+
+import java.lang.reflect.Type;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -19,12 +24,10 @@ import org.springframework.web.socket.client.WebSocketClient;
 import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 import org.springframework.web.socket.messaging.WebSocketStompClient;
 
-import java.lang.reflect.Type;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
+import com.debateseason_backend_v1.common.enums.MessageType;
+import com.debateseason_backend_v1.domain.chat.model.ChatMessage;
 
-import static org.junit.jupiter.api.Assertions.*;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @ActiveProfiles("test")
@@ -82,12 +85,12 @@ class WebSocketControllerV1Test {
 
         // 메시지 생성 및 전송
         ChatMessage message = ChatMessage.builder()
-                .type(ChatMessage.MessageType.CHAT)
+                .type(MessageType.CHAT)
                 .content("테스트 메시지")
                 .sender("testUser")
                 .build();
 
-        stompSession.send("/app/chat.sendMessage", message);
+        stompSession.send("/stomp/chat.sendMessage", message);
 
         // 메시지 큐 확인 (큐가 비어있으면 테스트 실패)
         ChatMessage received = blockingQueue.poll(5, TimeUnit.SECONDS);

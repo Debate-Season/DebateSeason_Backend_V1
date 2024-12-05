@@ -13,7 +13,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import com.debateseason_backend_v1.common.exception.ErrorCode;
-import com.debateseason_backend_v1.common.response.ApiResponse.ApiResponse;
+import com.debateseason_backend_v1.common.response.ApiResponse;
 import com.debateseason_backend_v1.security.dto.CustomUserDetails;
 import com.debateseason_backend_v1.security.dto.LoginRequestDTO;
 import com.debateseason_backend_v1.security.dto.LoginResponseDTO;

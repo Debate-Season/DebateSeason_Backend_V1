@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.debateseason_backend_v1.common.response.ApiResponse.ApiResponse;
+import com.debateseason_backend_v1.common.response.ApiResponse;
 import com.debateseason_backend_v1.domain.issue.service.IssueServiceV1;
 import com.debateseason_backend_v1.domain.user.dto.RegisterDTO;
 import com.debateseason_backend_v1.domain.user.dto.RegisterResponseDTO;

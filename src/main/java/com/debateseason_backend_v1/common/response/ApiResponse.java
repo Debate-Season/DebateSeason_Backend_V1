@@ -1,4 +1,4 @@
-package com.debateseason_backend_v1.common.response.ApiResponse;
+package com.debateseason_backend_v1.common.response;
 
 import org.springframework.http.HttpStatus;
 
@@ -29,6 +29,17 @@ public class ApiResponse<T> {
 	@Schema(description = "응답 데이터")
 	private T data;
 
+	// 커스텀 status 성공 응답
+	public static <T> ApiResponse<T> of(HttpStatus status, String message, T data) {
+		return ApiResponse.<T>builder()
+			.status(status.value())
+			.code(ErrorCode.SUCCESS)
+			.message(message)
+			.data(data)
+			.build();
+	}
+
+	// 200 응답
 	public static <T> ApiResponse<T> success(String message, T data) {
 		return ApiResponse.<T>builder()
 			.status(HttpStatus.OK.value())
@@ -38,6 +49,7 @@ public class ApiResponse<T> {
 			.build();
 	}
 
+	// 에러 응답
 	public static <T> ApiResponse<T> error(HttpStatus status, ErrorCode errorCode) {
 		return ApiResponse.<T>builder()
 			.status(status.value())

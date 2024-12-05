@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.debateseason_backend_v1.common.response.ApiResponse;
+import com.debateseason_backend_v1.common.response.ApiResult;
 import com.debateseason_backend_v1.domain.issue.service.IssueServiceV1;
 import com.debateseason_backend_v1.domain.user.dto.RegisterDTO;
 import com.debateseason_backend_v1.domain.user.dto.RegisterResponseDTO;
@@ -24,14 +24,14 @@ public class UserControllerV1 {
 	private final IssueServiceV1 issueServiceV1;
 
 	@PostMapping("/register")
-	public ApiResponse<?> register(@RequestBody RegisterDTO registerDTO) {
+	public ApiResult<?> register(@RequestBody RegisterDTO registerDTO) {
 		Long userId = userServiceV1.register(registerDTO);
 
 		RegisterResponseDTO registerResponseDTO = RegisterResponseDTO.builder()
 			.userId(userId)
 			.build();
 
-		return ApiResponse.success("회원가입 성공", registerResponseDTO);
+		return ApiResult.success("회원가입 성공", registerResponseDTO);
 	}
 
 	// 2. 인덱스 페이지(홈)

@@ -13,7 +13,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import com.debateseason_backend_v1.common.exception.ErrorCode;
-import com.debateseason_backend_v1.common.response.ApiResponse;
+import com.debateseason_backend_v1.common.response.ApiResult;
 import com.debateseason_backend_v1.security.dto.CustomUserDetails;
 import com.debateseason_backend_v1.security.dto.LoginRequestDTO;
 import com.debateseason_backend_v1.security.dto.LoginResponseDTO;
@@ -90,7 +90,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
 		LoginResponseDTO loginResponseDTO = new LoginResponseDTO(username, role);
 
-		ApiResponse<LoginResponseDTO> apiResponse = ApiResponse.success("로그인 성공", loginResponseDTO);
+		ApiResult<LoginResponseDTO> apiResponse = ApiResult.success("로그인 성공", loginResponseDTO);
 
 		writeJsonResponse(response, HttpStatus.OK.value(), apiResponse);
 	}
@@ -116,7 +116,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 			errorCode = ErrorCode.AUTHENTICATION_FAILED;
 		}
 
-		ApiResponse<Void> apiResponse = ApiResponse.error(status, errorCode);
+		ApiResult<Void> apiResponse = ApiResult.error(status, errorCode);
 
 		writeJsonResponse(response, status.value(), apiResponse);
 	}
@@ -134,7 +134,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 	private void writeJsonResponse(
 		HttpServletResponse response,
 		int status,
-		ApiResponse<?> apiResponse
+		ApiResult<?> apiResponse
 	) throws IOException {
 		response.setStatus(status);
 		response.setContentType("application/json");

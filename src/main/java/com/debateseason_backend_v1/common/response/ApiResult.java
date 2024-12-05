@@ -15,7 +15,7 @@ import lombok.Getter;
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Schema(description = "API 응답 공통 형식")
-public class ApiResponse<T> {
+public class ApiResult<T> {
 
 	@Schema(description = "HTTP 상태 코드", example = "200")
 	private int status;
@@ -30,8 +30,8 @@ public class ApiResponse<T> {
 	private T data;
 
 	// 커스텀 status 성공 응답
-	public static <T> ApiResponse<T> of(HttpStatus status, String message, T data) {
-		return ApiResponse.<T>builder()
+	public static <T> ApiResult<T> of(HttpStatus status, String message, T data) {
+		return ApiResult.<T>builder()
 			.status(status.value())
 			.code(ErrorCode.SUCCESS)
 			.message(message)
@@ -40,8 +40,8 @@ public class ApiResponse<T> {
 	}
 
 	// 200 응답
-	public static <T> ApiResponse<T> success(String message, T data) {
-		return ApiResponse.<T>builder()
+	public static <T> ApiResult<T> success(String message, T data) {
+		return ApiResult.<T>builder()
 			.status(HttpStatus.OK.value())
 			.code(ErrorCode.SUCCESS)
 			.message(message)
@@ -50,8 +50,8 @@ public class ApiResponse<T> {
 	}
 
 	// 에러 응답
-	public static <T> ApiResponse<T> error(HttpStatus status, ErrorCode errorCode) {
-		return ApiResponse.<T>builder()
+	public static <T> ApiResult<T> error(HttpStatus status, ErrorCode errorCode) {
+		return ApiResult.<T>builder()
 			.status(status.value())
 			.code(errorCode)
 			.message(errorCode.getMessage())

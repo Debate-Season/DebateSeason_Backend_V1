@@ -33,6 +33,7 @@ public class WebSocketControllerV1 {
             .sender(chatMessage.getSender())
             .content(chatMessage.getContent())
             .opinionType(chatMessage.getOpinionType())
+            .userCommunity(chatMessage.getUserCommunity())
             .timeStamp(LocalDateTime.now())
             .build();
     }
@@ -49,6 +50,7 @@ public class WebSocketControllerV1 {
                 .sender(chatMessage.getSender())
                 .content(chatMessage.getContent())
                 .opinionType(chatMessage.getOpinionType())
+                .userCommunity(chatMessage.getUserCommunity())
                 .timeStamp(LocalDateTime.now())
                 .build();
     }
@@ -61,10 +63,12 @@ public class WebSocketControllerV1 {
             @Payload ChatMessage chatMessage
     ) {
         return ChatMessage.builder()
-                .type(MessageType.JOIN)
-                .sender(chatMessage.getSender())
-                .content(chatMessage.getSender() + " joined!")
-                .timeStamp(LocalDateTime.now())
-                .build();
+            .type(MessageType.JOIN)
+            .sender(chatMessage.getSender())
+            .content(chatMessage.getContent() + " joined!")
+            .opinionType(chatMessage.getOpinionType())
+            .userCommunity(chatMessage.getUserCommunity())
+            .timeStamp(LocalDateTime.now())
+            .build();
     }
 }

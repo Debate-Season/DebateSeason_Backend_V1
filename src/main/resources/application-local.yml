@@ -8,8 +8,7 @@ spring:
         format_sql: true
         show-sql: true
         highlight_sql: true
-    hibernate:
-      ddl-auto: create
+
 
   datasource:
     hikari:

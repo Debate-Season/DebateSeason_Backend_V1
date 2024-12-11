@@ -95,7 +95,7 @@ jobs:
       id-token: write
       contents: read
     needs: [ build, test ]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
     runs-on: ubuntu-latest
 
     steps:

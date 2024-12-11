@@ -34,6 +34,9 @@ public class ChatMessage {
     private String sender;
     @Schema(description = "토론찬반", example = "AGREE")
     private OpinionType opinionType;
+    @Schema(description = "사용자 소속 커뮤니티", example = "에펨코리아")
+    private String userCommunity;
+
     @JsonSerialize(using = LocalDateTimeSerializer.class) // 직렬화 시 필요
     @JsonDeserialize(using = LocalDateTimeDeserializer.class) // 역직렬화 시 필요
     @Schema(description = "메시지 받은 날짜 시간")

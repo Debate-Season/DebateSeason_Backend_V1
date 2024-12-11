@@ -26,8 +26,8 @@ public class Chat {
 	@Column(name = "chat_id")
 	private Long id;
 
-	@ManyToOne
-	@JoinColumn(name = "chat_room_id")
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "chat_room_id", nullable = false)
 	private ChatRoom chatRoom;
 
 	// 발신자

@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.lang.reflect.Type;
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -24,6 +25,9 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.socket.client.WebSocketClient;
 import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 import org.springframework.web.socket.messaging.WebSocketStompClient;
+import org.springframework.web.socket.sockjs.client.SockJsClient;
+import org.springframework.web.socket.sockjs.client.Transport;
+import org.springframework.web.socket.sockjs.client.WebSocketTransport;
 
 import com.debateseason_backend_v1.common.enums.MessageType;
 import com.debateseason_backend_v1.domain.chat.model.ChatMessage;
@@ -67,7 +71,8 @@ class WebSocketControllerV1Test {
 		blockingQueue = new LinkedBlockingQueue<>();
 
 		// WebSocket 클라이언트 설정
-		WebSocketClient webSocketClient = new StandardWebSocketClient();
+		List<Transport> transports = List.of(new WebSocketTransport(new StandardWebSocketClient()));
+		WebSocketClient webSocketClient = new SockJsClient(transports);
 		stompClient = new WebSocketStompClient(webSocketClient);
 		stompClient.setMessageConverter(new MappingJackson2MessageConverter());
 

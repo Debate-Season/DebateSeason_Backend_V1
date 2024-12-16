@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class SocialLoginRequest {
 
-	private String authCode;
+	private String externalId;
 	private SocialType socialType;
-	
+
 }

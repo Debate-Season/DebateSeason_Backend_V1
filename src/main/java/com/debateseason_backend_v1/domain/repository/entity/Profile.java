@@ -41,6 +41,9 @@ public class Profile {
 	@Column(name = "nickname")
 	private String nickname;
 
+	@Column(name = "community")
+	private String community;
+
 	@LastModifiedDate
 	@Column(name = "updated_at")
 	private LocalDateTime updatedAt;

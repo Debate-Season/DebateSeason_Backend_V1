@@ -5,13 +5,9 @@ import java.time.LocalDateTime;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import com.debateseason_backend_v1.common.enums.SocialType;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -26,26 +22,21 @@ import lombok.NoArgsConstructor;
 @Getter
 @Builder
 @AllArgsConstructor
-@Table(name = "users")
+@Table(name = "refresh_tokens")
 @EntityListeners(AuditingEntityListener.class)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class User {
+public class RefreshToken {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "user_id")
+	@Column(name = "refresh_token_id")
 	private String id;
 
-	@Enumerated(EnumType.STRING)
-	@Column(name = "social_type")
-	private SocialType socialType;
+	@Column(name = "user_id")
+	private String userId;
 
-	@Column(name = "external_id")
-	private String externalId;
-
-	// TODO: IssueServiceV1 에러 때문에 User 엔티티에 위치, Profile 로 옮겨야 함.
-	@Column(name = "community")
-	private String community;
+	@Column(name = "refresh_token")
+	private String refreshToken;
 
 	@CreatedDate
 	@Column(name = "created_at", updatable = false)

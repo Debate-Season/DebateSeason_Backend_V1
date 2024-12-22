@@ -6,7 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.debateseason_backend_v1.domain.repository.ProfileRepository;
 import com.debateseason_backend_v1.domain.repository.UserRepository;
 import com.debateseason_backend_v1.domain.repository.entity.User;
-import com.debateseason_backend_v1.domain.user.controller.request.SocialLoginRequest;
+import com.debateseason_backend_v1.domain.user.service.request.SocialLoginServiceRequest;
 import com.debateseason_backend_v1.domain.user.service.response.AuthResponse;
 import com.debateseason_backend_v1.security.JwtUtil;
 
@@ -24,33 +24,31 @@ public class UserServiceV1 {
 	private final JwtUtil jwtUtil;
 
 	@Transactional
-	public AuthResponse processSocialLogin(SocialLoginRequest loginRequest) {
+	public AuthResponse socialLogin(SocialLoginServiceRequest loginRequest) {
 
-		User user = userRepository.findBySocialTypeAndExternalId(
-				loginRequest.socialType(),
-				loginRequest.externalId()
+		Long userId = userRepository.findBySocialTypeAndExternalId(
+				loginRequest.getSocialType(),
+				loginRequest.getExternalId()
 			)
-			.orElseGet(() -> createUser(loginRequest));
+			.orElseGet(() -> saveUser(loginRequest))
+			.getId();
 
-		String accessToken = jwtUtil.createJwt("access", user.getId(), 600000L);
-		String refreshToken = jwtUtil.createJwt("refresh", user.getId(), 86400000L);
+		String accessToken = jwtUtil.createJwt("access", userId, 600000L);
+		String refreshToken = jwtUtil.createJwt("refresh", userId, 86400000L);
 
-		boolean isRegistered = profileRepository.existsByUserId(user.getId());
+		boolean isRegistered = profileRepository.existsByUserId(userId);
 
 		return AuthResponse.builder()
 			.accessToken(accessToken)
 			.refreshToken(refreshToken)
-			.socialType(user.getSocialType())
+			.socialType(loginRequest.getSocialType())
 			.isRegistered(isRegistered)
 			.build();
 	}
 
-	private User createUser(SocialLoginRequest request) {
+	private User saveUser(SocialLoginServiceRequest request) {
 
-		User user = User.builder()
-			.socialType(request.socialType())
-			.externalId(request.externalId())
-			.build();
+		User user = User.of(request.getSocialType(), request.getExternalId());
 
 		return userRepository.save(user);
 	}

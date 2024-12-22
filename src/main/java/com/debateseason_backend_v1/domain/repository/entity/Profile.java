@@ -13,15 +13,12 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
-@Builder
-@AllArgsConstructor
 @Table(name = "profile")
 @EntityListeners(AuditingEntityListener.class)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -53,5 +50,17 @@ public class Profile {
 	@LastModifiedDate
 	@Column(name = "updated_at")
 	private LocalDateTime updatedAt;
+
+	@Builder
+	private Profile(Long userId, String nickname, String imageUrl,
+		String community, String gender, String ageRange) {
+
+		this.userId = userId;
+		this.nickname = nickname;
+		this.imageUrl = imageUrl;
+		this.community = community;
+		this.gender = gender;
+		this.ageRange = ageRange;
+	}
 
 }

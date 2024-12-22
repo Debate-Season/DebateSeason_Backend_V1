@@ -17,15 +17,12 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
-@Builder
-@AllArgsConstructor
 @Table(name = "users")
 @EntityListeners(AuditingEntityListener.class)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -50,5 +47,19 @@ public class User {
 	@CreatedDate
 	@Column(name = "created_at", updatable = false)
 	private LocalDateTime createdAt;
+
+	@Builder
+	private User(SocialType socialType, String externalId) {
+
+		this.socialType = socialType;
+		this.externalId = externalId;
+	}
+
+	public static User of(SocialType socialType, String externalId) {
+		return User.builder()
+			.socialType(socialType)
+			.externalId(externalId)
+			.build();
+	}
 
 }

@@ -26,7 +26,7 @@ public class UserControllerV1 {
 	@PostMapping("/login")
 	public ApiResult<?> socialLogin(@RequestBody SocialLoginRequest request) {
 
-		AuthResponse authResponse = userServiceV1.processSocialLogin(request);
+		AuthResponse authResponse = userServiceV1.socialLogin(request.toServiceRequest());
 
 		return ApiResult.success("소셜 로그인 성공", authResponse);
 	}

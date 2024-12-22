@@ -13,15 +13,12 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
-@Builder
-@AllArgsConstructor
 @Table(name = "refresh_tokens")
 @EntityListeners(AuditingEntityListener.class)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -33,7 +30,7 @@ public class RefreshToken {
 	private Long id;
 
 	@Column(name = "user_id")
-	private String userId;
+	private Long userId;
 
 	@Column(name = "refresh_token")
 	private String refreshToken;
@@ -41,5 +38,12 @@ public class RefreshToken {
 	@CreatedDate
 	@Column(name = "created_at", updatable = false)
 	private LocalDateTime createdAt;
+
+	@Builder
+	protected RefreshToken(Long userId, String refreshToken) {
+
+		this.userId = userId;
+		this.refreshToken = refreshToken;
+	}
 
 }

@@ -33,8 +33,8 @@ public class UserServiceV1 {
 			.orElseGet(() -> saveUser(loginRequest))
 			.getId();
 
-		String accessToken = jwtUtil.createJwt("access", userId, 600000L);
-		String refreshToken = jwtUtil.createJwt("refresh", userId, 86400000L);
+		String accessToken = jwtUtil.createAccessToken(userId);
+		String refreshToken = jwtUtil.createRefreshToken(userId);
 
 		boolean isRegistered = profileRepository.existsByUserId(userId);
 

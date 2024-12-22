@@ -1,4 +1,4 @@
-package com.debateseason_backend_v1.domain.auth.dto;
+package com.debateseason_backend_v1.domain.user.controller.request;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;

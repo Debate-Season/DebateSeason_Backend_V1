@@ -1,36 +1,58 @@
 package com.debateseason_backend_v1.domain.user.service;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import com.debateseason_backend_v1.domain.auth.dto.RegisterRequest;
-import com.debateseason_backend_v1.domain.auth.service.response.RegisterResponse;
 import com.debateseason_backend_v1.domain.repository.ProfileRepository;
-import com.debateseason_backend_v1.domain.repository.entity.Profile;
+import com.debateseason_backend_v1.domain.repository.UserRepository;
+import com.debateseason_backend_v1.domain.repository.entity.User;
+import com.debateseason_backend_v1.domain.user.controller.request.SocialLoginRequest;
+import com.debateseason_backend_v1.domain.user.service.response.AuthResponse;
+import com.debateseason_backend_v1.security.JwtUtil;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@RequiredArgsConstructor
 @Service
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class UserServiceV1 {
 
+	private final UserRepository userRepository;
 	private final ProfileRepository profileRepository;
+	private final JwtUtil jwtUtil;
 
-	public RegisterResponse register(Long userId, RegisterRequest request) {
+	@Transactional
+	public AuthResponse processSocialLogin(SocialLoginRequest loginRequest) {
 
-		Profile profile = Profile.builder()
-			.userId(userId)
-			.imageUrl(request.getImageUrl())
-			.nickname(request.getNickname())
-			.community(request.getCommunity())
-			.gender(request.getGender())
-			.ageRange(request.getAgeRange())
-			.build();
-		profileRepository.save(profile);
+		User user = userRepository.findBySocialTypeAndExternalId(
+				loginRequest.socialType(),
+				loginRequest.externalId()
+			)
+			.orElseGet(() -> createUser(loginRequest));
 
-		return RegisterResponse.builder()
-			.nickname(profile.getNickname())
+		String accessToken = jwtUtil.createJwt("access", user.getId(), 600000L);
+		String refreshToken = jwtUtil.createJwt("refresh", user.getId(), 86400000L);
+
+		boolean isRegistered = profileRepository.existsByUserId(user.getId());
+
+		return AuthResponse.builder()
+			.accessToken(accessToken)
+			.refreshToken(refreshToken)
+			.socialType(user.getSocialType())
+			.isRegistered(isRegistered)
 			.build();
 	}
+
+	private User createUser(SocialLoginRequest request) {
+
+		User user = User.builder()
+			.socialType(request.socialType())
+			.externalId(request.externalId())
+			.build();
+
+		return userRepository.save(user);
+	}
+
 }

@@ -1,4 +1,4 @@
-package com.debateseason_backend_v1.domain.auth.service.response;
+package com.debateseason_backend_v1.domain.user.service.response;
 
 import com.debateseason_backend_v1.common.enums.SocialType;
 

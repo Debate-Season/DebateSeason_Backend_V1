@@ -5,10 +5,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.debateseason_backend_v1.domain.auth.dto.SocialLoginRequest;
 import com.debateseason_backend_v1.domain.auth.service.response.AuthResponse;
-import com.debateseason_backend_v1.domain.repository.AuthenticationRepository;
 import com.debateseason_backend_v1.domain.repository.ProfileRepository;
 import com.debateseason_backend_v1.domain.repository.UserRepository;
 import com.debateseason_backend_v1.domain.repository.entity.User;
+import com.debateseason_backend_v1.security.JwtUtil;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,29 +20,36 @@ import lombok.extern.slf4j.Slf4j;
 public class AuthServiceV1 {
 
 	private final UserRepository userRepository;
-	private final AuthenticationRepository authenticationRepository;
 	private final ProfileRepository profileRepository;
+	private final JwtUtil jwtUtil;
 
-	public AuthResponse processSocialLogin(SocialLoginRequest request) {
+	@Transactional
+	public AuthResponse processSocialLogin(SocialLoginRequest loginRequest) {
 
 		User user = userRepository.findBySocialTypeAndExternalId(
-				request.getSocialType(),
-				request.getExternalId()
+				loginRequest.socialType(),
+				loginRequest.externalId()
 			)
-			.orElseGet(() -> create(request));
+			.orElseGet(() -> createUser(loginRequest));
+
+		String accessToken = jwtUtil.createJwt("access", user.getId(), 600000L);
+		String refreshToken = jwtUtil.createJwt("refresh", user.getId(), 86400000L);
 
 		boolean isRegistered = profileRepository.existsByUserId(user.getId());
 
 		return AuthResponse.builder()
+			.accessToken(accessToken)
+			.refreshToken(refreshToken)
+			.socialType(user.getSocialType())
 			.isRegistered(isRegistered)
 			.build();
 	}
 
-	private User create(SocialLoginRequest request) {
+	private User createUser(SocialLoginRequest request) {
 
 		User user = User.builder()
-			.socialType(request.getSocialType())
-			.externalId(request.getExternalId())
+			.socialType(request.socialType())
+			.externalId(request.externalId())
 			.build();
 
 		return userRepository.save(user);

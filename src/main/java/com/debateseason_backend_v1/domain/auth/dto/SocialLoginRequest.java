@@ -1,15 +1,17 @@
 package com.debateseason_backend_v1.domain.auth.dto;
 
 import com.debateseason_backend_v1.common.enums.SocialType;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import jakarta.validation.constraints.NotBlank;
 
-@Getter
-@NoArgsConstructor
-public class SocialLoginRequest {
+public record SocialLoginRequest(
+	@NotBlank
+	@JsonProperty("externalId")
+	String externalId,
 
-	private String externalId;
-	private SocialType socialType;
-
+	@NotBlank  // @NotBlank 대신 @NotNull 사용
+	@JsonProperty("socialType")
+	SocialType socialType
+) {
 }

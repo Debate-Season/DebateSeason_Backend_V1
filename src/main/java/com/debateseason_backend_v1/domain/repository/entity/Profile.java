@@ -30,10 +30,10 @@ public class Profile {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "profile_id")
-	private String id;
+	private Long id;
 
 	@Column(name = "user_id")
-	private String userId;
+	private Long userId;
 
 	@Column(name = "image_url")
 	private String imageUrl;
@@ -43,6 +43,12 @@ public class Profile {
 
 	@Column(name = "community")
 	private String community;
+
+	@Column(name = "gender")
+	private String gender;
+
+	@Column(name = "age_range")
+	private String ageRange;
 
 	@LastModifiedDate
 	@Column(name = "updated_at")

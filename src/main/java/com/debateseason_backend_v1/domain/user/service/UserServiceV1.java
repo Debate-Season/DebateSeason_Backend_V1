@@ -8,7 +8,7 @@ import com.debateseason_backend_v1.domain.repository.UserRepository;
 import com.debateseason_backend_v1.domain.repository.entity.User;
 import com.debateseason_backend_v1.domain.user.service.request.SocialLoginServiceRequest;
 import com.debateseason_backend_v1.domain.user.service.response.AuthResponse;
-import com.debateseason_backend_v1.security.JwtUtil;
+import com.debateseason_backend_v1.security.jwt.JwtUtil;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

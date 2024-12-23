@@ -9,9 +9,9 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class RegisterResponse {
+public class ProfileRegisterResponse {
 
-	private String userId;
+	private Long userId;
 	private String nickname;
 
 }

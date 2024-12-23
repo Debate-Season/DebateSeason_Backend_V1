@@ -35,7 +35,7 @@ public class Profile {
 	@Column(name = "image_url")
 	private String imageUrl;
 
-	@Column(name = "nickname")
+	@Column(name = "nickname", unique = true)
 	private String nickname;
 
 	@Column(name = "community")

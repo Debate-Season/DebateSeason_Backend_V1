@@ -5,9 +5,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.debateseason_backend_v1.domain.repository.ProfileRepository;
 import com.debateseason_backend_v1.domain.repository.UserRepository;
+import com.debateseason_backend_v1.domain.repository.entity.Profile;
 import com.debateseason_backend_v1.domain.repository.entity.User;
+import com.debateseason_backend_v1.domain.user.service.request.ProfileRegisterServiceRequest;
 import com.debateseason_backend_v1.domain.user.service.request.SocialLoginServiceRequest;
 import com.debateseason_backend_v1.domain.user.service.response.AuthResponse;
+import com.debateseason_backend_v1.domain.user.service.response.ProfileRegisterResponse;
 import com.debateseason_backend_v1.security.jwt.JwtUtil;
 
 import lombok.RequiredArgsConstructor;
@@ -43,6 +46,30 @@ public class UserServiceV1 {
 			.refreshToken(refreshToken)
 			.socialType(loginRequest.getSocialType())
 			.isRegistered(isRegistered)
+			.build();
+	}
+
+	@Transactional
+	public ProfileRegisterResponse registerProfile(ProfileRegisterServiceRequest request) {
+
+		if (profileRepository.existsByUserId(request.getUserId())) {
+			throw new RuntimeException("이미 프로필이 등록되어 있습니다.");
+		}
+
+		Profile profile = Profile.builder()
+			.userId(request.getUserId())
+			.nickname(request.getNickname())
+			.imageUrl(request.getImageUrl())
+			.community(request.getCommunity())
+			.gender(request.getGender())
+			.ageRange(request.getAgeRange())
+			.build();
+
+		profileRepository.save(profile);
+
+		return ProfileRegisterResponse.builder()
+			.userId(profile.getUserId())
+			.nickname(profile.getNickname())
 			.build();
 	}
 

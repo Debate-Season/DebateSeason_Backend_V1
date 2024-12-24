@@ -9,6 +9,9 @@ import lombok.Setter;
 public class UserDTO {
 
 	// 이거 쓰려면 validation 의존성을 추가해야만 한다.
+
+	private Long id;
+
 	@NotBlank
 	private String username;
 

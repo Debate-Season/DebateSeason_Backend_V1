@@ -28,7 +28,7 @@ public class ChatRoomControllerV1 {
 		description = "title,content -> JSON, issue_id = 쿼리스트링")
 	// 4. 채팅방(=안건=토론방)생성하기, title,content -> JSON, issue_id = 쿼리스트링
 	@PostMapping("/room")
-	public ResponseEntity<?> createChatRoom(@RequestBody ChatRoomDTO chatRoomDTO,
+	public ResponseEntity<Object> createChatRoom(@RequestBody ChatRoomDTO chatRoomDTO,
 		@RequestParam(name = "issue-id") Long issue_id) {
 		return chatRoomServiceV1.save(chatRoomDTO, issue_id);
 	}
@@ -36,9 +36,9 @@ public class ChatRoomControllerV1 {
 	// 4. 채팅방 단건 불러오기
 	@Operation(
 		summary = "채팅방 단건 불러오기",
-		description = "채팅방 상세 상세보기")
+		description = "채팅방 상세보기")
 	@GetMapping("/room")
-	public ResponseEntity<?> getChatRoom(@RequestParam(name = "chatroom-id") Long chatRoomId) {
+	public ResponseEntity<Object> getChatRoom(@RequestParam(name = "chatroom-id") Long chatRoomId) {
 		return chatRoomServiceV1.fetch(chatRoomId);
 	}
 
@@ -47,10 +47,10 @@ public class ChatRoomControllerV1 {
 		summary = "채팅방 찬성/반대 투표하기",
 		description = "opinion, chatroomid = 쿼리스트링")
 	@PostMapping("/room/vote")
-	public ResponseEntity<?> voteChatRoom(@RequestParam(name = "opinion") String opinion,
+	public ResponseEntity<Object> voteChatRoom(@RequestParam(name = "opinion") String opinion,
 		@RequestParam(name = "chatroom-id") Long chatRoomId,
 		@RequestParam(name = "user-id") Long userId) {
 		return chatRoomServiceV1.vote(opinion, chatRoomId, userId);
 	}
-	
+
 }

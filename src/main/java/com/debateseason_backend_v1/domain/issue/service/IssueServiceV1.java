@@ -1,10 +1,10 @@
 package com.debateseason_backend_v1.domain.issue.service;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -12,15 +12,18 @@ import org.springframework.stereotype.Service;
 import com.debateseason_backend_v1.domain.chatroom.dto.ChatRoomDAO;
 import com.debateseason_backend_v1.domain.issue.dto.IssueDAO;
 import com.debateseason_backend_v1.domain.issue.dto.IssueDTO;
+import com.debateseason_backend_v1.domain.issue.model.CommunityRecords;
+import com.debateseason_backend_v1.domain.issue.model.response.IssueResponse;
 import com.debateseason_backend_v1.domain.repository.ChatRoomRepository;
 import com.debateseason_backend_v1.domain.repository.IssueRepository;
 import com.debateseason_backend_v1.domain.repository.UserChatRoomRepository;
 import com.debateseason_backend_v1.domain.repository.UserIssueRepository;
+import com.debateseason_backend_v1.domain.repository.UserRepository;
 import com.debateseason_backend_v1.domain.repository.entity.ChatRoom;
 import com.debateseason_backend_v1.domain.repository.entity.Issue;
 import com.debateseason_backend_v1.domain.repository.entity.User;
 import com.debateseason_backend_v1.domain.repository.entity.UserChatRoom;
-import com.debateseason_backend_v1.domain.repository.entity.UserIssue;
+import com.debateseason_backend_v1.domain.user.dto.UserDTO;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -37,6 +40,7 @@ public class IssueServiceV1 {
 	private final UserIssueRepository userIssueRepository;
 	private final ChatRoomRepository chatRoomRepository;
 	private final UserChatRoomRepository userChatRoomRepository;
+	private final UserRepository userRepository;
 
 	private final ObjectMapper objectMapper;
 
@@ -54,14 +58,29 @@ public class IssueServiceV1 {
 
 	//2. fetch 단건 이슈방
 	@Transactional
-	public ResponseEntity<?> fetch(Long issueId) {
+	public ResponseEntity<?> fetch(Long issueId, Long userId) {
 
 		// 1. 이슈방 불러오기
 		Issue issue = issueRepository.findById(issueId).orElseThrow(
 			() -> new RuntimeException("There is no " + issueId)
 		);
 
-		// 1-1. User 불러오기. 참여 커뮤니티를 보여주기 위함임(내림차순으로)
+		// 2. User 찾기
+		User user = userRepository.findById(userId).orElseThrow(
+			() -> new RuntimeException("There is no " + userId)
+		);
+
+		UserDTO userDTO = new UserDTO();
+		userDTO.setCommunity(user.getCommunity());
+		userDTO.setId(user.getId());
+
+		CommunityRecords.record(userDTO, issueId);
+		Map<String, Integer> map = CommunityRecords.getSortedCommunity(issueId);
+		Set<String> keySet = map.keySet();
+
+		log.info("Ok1");
+		// 1-1. User 불러오기. 참여 커뮤니티를 보여주기 위함임(내림차순으로) <-  즐겨찾기
+		/*
 		List<UserIssue> userIssueList = userIssueRepository.findByIssue(issue);
 
 		//
@@ -93,6 +112,8 @@ public class IssueServiceV1 {
 		List<String> keySet = new ArrayList<>(map.keySet());
 		keySet.sort((o1, o2) -> map.get(o2).compareTo(map.get(o1)));
 
+		 */
+
 		// LinkedHashMap을 써서 순서를 보장한다.
 		Map<String, Integer> sortedMap = new LinkedHashMap<>();
 
@@ -100,12 +121,14 @@ public class IssueServiceV1 {
 			sortedMap.put(key, map.get(key));
 		}
 
+		log.info("Ok2");
 		// 1-4. 채팅방도 같이 넘기자. null이어도 가능! <- 수정
 		List<ChatRoom> chatRoomList = chatRoomRepository.findByIssue(issue);
 
 		//  나중에 정렬같은거 할 때, 써먹을 듯
 		List<ChatRoomDAO> chatRoomDaoList = new ArrayList<>();
 
+		// 이거 때문에 loop가 ㅈㄴ 발생한다 -> 최적화 필요!
 		for (ChatRoom c : chatRoomList) {
 			// 찬성/반대 조회
 			List<UserChatRoom> chatRooms = userChatRoomRepository.findByChatRoom(c);
@@ -127,12 +150,14 @@ public class IssueServiceV1 {
 				.title(c.getTitle())
 				.content(c.getContent())
 				//.issue(c.getIssue())
+				.createdDate(c.getCreateDate())
 				.agree(countAgree)
 				.disagree(countDisagree)
 				.build();
 
 			chatRoomDaoList.add(chatRoomDAO);
 		}
+		log.info("Ok3");
 
 		Map<Integer, ChatRoomDAO> chatRoomMap = new LinkedHashMap<>();
 
@@ -142,7 +167,7 @@ public class IssueServiceV1 {
 
 		// 1-5 IssueDAO만들기
 		IssueDAO issueDAO = IssueDAO.builder()
-			.issue(issue)
+			//.issue(issue)
 			.map(sortedMap)
 			.chatRoomMap(chatRoomMap)
 			.build();
@@ -165,10 +190,17 @@ public class IssueServiceV1 {
 		List<Issue> issueList = issueRepository.findAll();
 
 		// Gson,JSONArray이 없어서 Map으로 반환을 한다.
-		Map<Integer, Issue> issueMap = new LinkedHashMap<>();
+		Map<Integer, IssueResponse> issueMap = new LinkedHashMap<>();
 
+		// loop를 돌면서, issueId에 해당하는 chatRoom을 count 한다.
 		for (int i = 0; i < issueList.size(); i++) {
-			issueMap.put(i, issueList.get(i));
+
+			IssueResponse response = IssueResponse.builder()
+				.title(issueList.get(i).getTitle())
+				.createDate(issueList.get(i).getCreateDate())
+				.countChatRoom(chatRoomRepository.countByIssue(issueList.get(i)))
+				.build();
+			issueMap.put(i, response);
 		}
 
 		String json;

@@ -12,6 +12,12 @@ spring:
       ddl-auto: update
 
   datasource:
+
+    driver-class-name: org.mariadb.jdbc.Driver
+    url: jdbc:mariadb://127.0.0.1:3307/debate?serverTimezone=Asia/Seoul
+    username: root
+    password: "1234"
+
     hikari:
       maximum-pool-size: 5
       minimum-idle: 2

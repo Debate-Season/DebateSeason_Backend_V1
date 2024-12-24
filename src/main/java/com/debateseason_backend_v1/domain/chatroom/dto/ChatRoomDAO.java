@@ -1,5 +1,7 @@
 package com.debateseason_backend_v1.domain.chatroom.dto;
 
+import java.time.LocalDate;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -24,4 +26,7 @@ public class ChatRoomDAO {
 	private int agree;
 
 	private int disagree;
+
+	// CreateDate 반환
+	private LocalDate createdDate;
 }

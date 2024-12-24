@@ -3,7 +3,6 @@ package com.debateseason_backend_v1.domain.issue.dto;
 import java.util.Map;
 
 import com.debateseason_backend_v1.domain.chatroom.dto.ChatRoomDAO;
-import com.debateseason_backend_v1.domain.repository.entity.Issue;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -20,7 +19,7 @@ public class IssueDAO {
 
 	}
 
-	private Issue issue;
+	//private Issue issue;
 	private Map<String, Integer> map;
 	private Map<Integer, ChatRoomDAO> chatRoomMap;
 }

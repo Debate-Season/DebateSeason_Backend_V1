@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 
 import com.debateseason_backend_v1.common.enums.TokenType;
 
@@ -15,6 +16,7 @@ import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.security.SignatureException;
 
 @SpringBootTest
+@ActiveProfiles("test")
 class JwtUtilTest {
 
 	@Autowired
@@ -87,5 +89,5 @@ class JwtUtilTest {
 				.isInstanceOf(SignatureException.class);
 		}
 	}
-	
+
 }

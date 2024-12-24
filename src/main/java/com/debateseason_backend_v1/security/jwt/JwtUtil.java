@@ -16,6 +16,7 @@ import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.UnsupportedJwtException;
+import io.jsonwebtoken.security.SignatureException;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -78,7 +79,7 @@ public class JwtUtil {
 			return true;
 		} catch (SecurityException | MalformedJwtException |
 				 UnsupportedJwtException | IllegalArgumentException |
-				 ExpiredJwtException e) {
+				 ExpiredJwtException | SignatureException e) {
 			log.error("JWT 토큰 검증 실패: {}", e.getMessage());
 			throw e;
 		}

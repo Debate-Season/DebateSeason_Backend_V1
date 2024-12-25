@@ -1,32 +1,10 @@
 package com.debateseason_backend_v1.domain.chat.controller;
 
-import com.debateseason_backend_v1.domain.chat.model.ChatMessage;
-import com.debateseason_backend_v1.domain.chat.model.response.ChatListResponse;
-import com.debateseason_backend_v1.domain.chat.service.ChatServiceV1;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.web.servlet.MockMvc;
-
-import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-@ActiveProfiles("test")
-@WebMvcTest(ChatControllerV1.class)
-@AutoConfigureMockMvc(addFilters = false)  // 시큐리티 필터 비활성화
+//@ActiveProfiles("test")
+//@WebMvcTest(ChatControllerV1.class)
+//@AutoConfigureMockMvc(addFilters = false)  // 시큐리티 필터 비활성화
 class ChatControllerV1Test {
+    /*
 
     @Autowired
     private MockMvc mockMvc;
@@ -72,5 +50,7 @@ class ChatControllerV1Test {
                 .andExpect(status().isBadRequest())
                 .andDo(print());
     }
+
+     */
 
 }

@@ -1,7 +1,6 @@
 package com.debateseason_backend_v1.domain.chat.service;
 
 import com.debateseason_backend_v1.common.enums.OpinionType;
-import com.debateseason_backend_v1.domain.chat.dto.ChatDTO;
 import com.debateseason_backend_v1.domain.chat.model.ChatMessage;
 import com.debateseason_backend_v1.domain.chat.model.response.ChatListResponse;
 import com.debateseason_backend_v1.domain.repository.entity.Chat;

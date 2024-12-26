@@ -1,11 +1,20 @@
 package com.debateseason_backend_v1.domain.repository.entity;
 
-import jakarta.persistence.Column;
+
+import java.time.LocalDate;
+
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
 import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+
+import jakarta.persistence.Column;
 import jakarta.persistence.JoinColumn;
+
 import jakarta.persistence.ManyToOne;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -19,6 +28,7 @@ import lombok.Setter;
 @Setter
 @Builder
 @Entity
+@EntityListeners(AuditingEntityListener.class)
 public class ChatRoom {
 
 	@Id
@@ -33,7 +43,7 @@ public class ChatRoom {
 	private String title;
 	private String content;
 
-	private int yes;
+	@CreatedDate
+	private LocalDate createDate;
 
-	private int no;
 }

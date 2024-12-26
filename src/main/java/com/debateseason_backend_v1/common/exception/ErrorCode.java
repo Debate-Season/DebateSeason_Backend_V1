@@ -5,6 +5,7 @@ import lombok.Getter;
 
 @AllArgsConstructor
 @Getter
+
 public enum ErrorCode  implements CodeInterface {
 
     //result code 는 임의 설정 논의를 통해 변경 될 수 있음 -ksb

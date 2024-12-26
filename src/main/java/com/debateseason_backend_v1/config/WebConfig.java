@@ -6,6 +6,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
+
     //프론트 와 콜스 문제를 해결하기 위한 클래스(설정)
     @Override
     public void addCorsMappings(CorsRegistry registry) {

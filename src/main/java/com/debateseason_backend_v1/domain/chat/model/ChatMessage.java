@@ -42,4 +42,5 @@ public class ChatMessage {
     @Schema(description = "메시지 받은 날짜 시간")
     @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
     private LocalDateTime timeStamp;
+
 }

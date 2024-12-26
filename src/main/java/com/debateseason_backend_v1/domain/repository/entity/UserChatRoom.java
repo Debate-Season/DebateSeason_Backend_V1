@@ -4,7 +4,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -18,17 +17,17 @@ import lombok.Setter;
 @Setter
 @Builder
 @Entity
-public class UserIssue {
+public class UserChatRoom {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long id;
+	private long id;
 
-	@ManyToOne(optional = false)
-	@JoinColumn(name = "user_id", nullable = false)
+	@ManyToOne
 	private User user;
 
-	@ManyToOne(optional = false)
-	@JoinColumn(name = "issue_id", nullable = false)
-	private Issue issue;
+	@ManyToOne
+	private ChatRoom chatRoom;
+
+	private String opinion;
 }

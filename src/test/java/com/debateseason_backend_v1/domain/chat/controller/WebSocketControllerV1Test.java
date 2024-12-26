@@ -135,7 +135,6 @@ class WebSocketControllerV1Test {
 		}
 	}
 
-
 	@AfterEach
 	void close() {
 		if (stompSession != null && stompSession.isConnected()) {

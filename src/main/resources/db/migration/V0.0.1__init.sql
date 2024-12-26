@@ -30,7 +30,8 @@ CREATE TABLE users (
 
 CREATE TABLE issue (
     issue_id BIGINT NOT NULL AUTO_INCREMENT,
-    title VARCHAR(255) ,
+    title VARCHAR(255),
+    created_at TIMESTAMP,
     PRIMARY KEY (issue_id)
 ) ENGINE=InnoDB;
 

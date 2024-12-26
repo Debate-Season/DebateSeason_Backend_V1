@@ -28,7 +28,6 @@ CREATE TABLE users (
     PRIMARY KEY (user_id)
 ) ENGINE=InnoDB;
 
-
 CREATE TABLE issue (
     issue_id BIGINT NOT NULL AUTO_INCREMENT,
     title VARCHAR(255),
@@ -56,7 +55,7 @@ CREATE TABLE refresh_tokens (
     user_id BIGINT NOT NULL,
     token VARCHAR(255) NOT NULL,
     created_at TIMESTAMP NOT NULL,
-    PRIMARY KEY (refresh_token_id),
+    PRIMARY KEY (refresh_token_id)
 ) ENGINE=InnoDB;
 
 -- 외래키 제약 조건 추가

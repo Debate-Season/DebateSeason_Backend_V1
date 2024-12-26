@@ -15,7 +15,7 @@ CREATE TABLE chat_room (
     content TEXT,
     yes INTEGER,
     no INTEGER,
-    created_at DATE,
+    created_at TIMESTAMP,
     PRIMARY KEY (chat_room_id)
 ) ENGINE=InnoDB;
 

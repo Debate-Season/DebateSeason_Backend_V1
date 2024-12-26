@@ -150,7 +150,7 @@ public class IssueServiceV1 {
 				.title(c.getTitle())
 				.content(c.getContent())
 				//.issue(c.getIssue())
-				.createdDate(c.getCreateDate())
+				.createdAt(c.getCreatedAt())
 				.agree(countAgree)
 				.disagree(countDisagree)
 				.build();

@@ -197,7 +197,7 @@ public class IssueServiceV1 {
 
 			IssueResponse response = IssueResponse.builder()
 				.title(issueList.get(i).getTitle())
-				.createDate(issueList.get(i).getCreateDate())
+				.createdAt(issueList.get(i).getCreatedAt())
 				.countChatRoom(chatRoomRepository.countByIssue(issueList.get(i)))
 				.build();
 			issueMap.put(i, response);

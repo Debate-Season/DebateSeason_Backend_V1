@@ -1,6 +1,6 @@
 package com.debateseason_backend_v1.domain.issue.model.response;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import lombok.Builder;
 import lombok.Getter;
@@ -13,7 +13,7 @@ public class IssueResponse {
 
 	private String title;
 
-	private LocalDate createDate;
+	private LocalDateTime createdAt;
 
 	private Long countChatRoom;
 }

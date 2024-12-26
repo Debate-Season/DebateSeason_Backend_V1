@@ -46,7 +46,7 @@ public class UserServiceV1 {
 		return LoginResponse.builder()
 			.accessToken(newAccessToken)
 			.refreshToken(newRefreshToken)
-			.socialType(request.socialType())
+			.socialType(request.socialType().getDescription())
 			.build();
 	}
 

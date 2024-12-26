@@ -5,16 +5,15 @@ import java.time.LocalDateTime;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import com.debateseason_backend_v1.common.enums.SocialType;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -23,36 +22,32 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
-@Table(name = "users")
+@Table(name = "refresh_tokens")
 @EntityListeners(AuditingEntityListener.class)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class User {
+public class RefreshToken {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "user_id")
+	@Column(name = "refresh_token_id")
 	private Long id;
 
-	@Enumerated(EnumType.STRING)
-	@Column(name = "social_type")
-	private SocialType socialType;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "user_id", nullable = false)
+	private User user;
 
-	@Column(name = "external_id")
-	private String externalId;
-
-	// TODO: IssueServiceV1 에러 때문에 User 엔티티에 위치, Profile 로 옮겨야 함.
-	@Column(name = "community")
-	private String community;
+	@Column(name = "token")
+	private String token;
 
 	@CreatedDate
 	@Column(name = "created_at", updatable = false)
 	private LocalDateTime createdAt;
 
 	@Builder
-	private User(SocialType socialType, String externalId) {
+	protected RefreshToken(User user, String token) {
 
-		this.socialType = socialType;
-		this.externalId = externalId;
+		this.user = user;
+		this.token = token;
 	}
 
 }

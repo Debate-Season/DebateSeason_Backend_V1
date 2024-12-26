@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.debateseason_backend_v1.domain.issue.service.IssueServiceV1;
-import com.debateseason_backend_v1.domain.user.servcie.UserIssueServiceV1;
+import com.debateseason_backend_v1.domain.user.service.UserIssueServiceV1;
 
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;

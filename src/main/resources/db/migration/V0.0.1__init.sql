@@ -42,6 +42,14 @@ CREATE TABLE user_issue (
     PRIMARY KEY (id)
 ) ENGINE=InnoDB;
 
+CREATE TABLE user_chat_room (
+    id BIGINT NOT NULL AUTO_INCREMENT,
+    user_id BIGINT NOT NULL,
+    chat_room_id BIGINT NOT NULL,
+    opinion VARCHAR(255),
+    PRIMARY KEY (id)
+) ENGINE=InnoDB;
+
 -- 외래키 제약 조건 추가
 ALTER TABLE chat
     ADD CONSTRAINT fk_chat_chatroom
@@ -62,3 +70,13 @@ ALTER TABLE user_issue
     ADD CONSTRAINT fk_userissue_users
         FOREIGN KEY (user_id)
             REFERENCES users (user_id);
+
+ALTER TABLE user_chat_room
+    ADD CONSTRAINT fk_userchatroom_users
+        FOREIGN KEY (user_id)
+            REFERENCES users (user_id);
+
+ALTER TABLE user_chat_room
+    ADD CONSTRAINT fk_userchatroom_chatroom
+        FOREIGN KEY (chat_room_id)
+            REFERENCES chat_room (chat_room_id);

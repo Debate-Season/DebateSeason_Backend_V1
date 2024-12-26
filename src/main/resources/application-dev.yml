@@ -24,6 +24,13 @@ spring:
     clean-disabled: true  # DB 보호
     clean-on-validation-error: false  # 검증 실패시 에러로 처리
 
+  jwt:
+    secret: ${JWT_SECRET}
+    access-token:
+      expire-time: ${ACCESS_EXPIRE_TIME}
+    refresh-token:
+      expire-time: ${REFRESH_EXPIRE_TIME}
+
 logging:
   pattern:
     console: "[%d{yyyy-MM-dd HH:mm:ss}] [%thread] %-5level %logger{36} - %msg%n"

@@ -21,12 +21,13 @@ CREATE TABLE chat_room (
 
 CREATE TABLE users (
     user_id BIGINT NOT NULL AUTO_INCREMENT,
-    username VARCHAR(100) NOT NULL,
-    password VARCHAR(255) NOT NULL,
-    role VARCHAR(50) NOT NULL,
+    social_type VARCHAR(20) NOT NULL,
+    external_id VARCHAR(255) NOT NULL,
     community VARCHAR(100),
+    created_at TIMESTAMP,
     PRIMARY KEY (user_id)
 ) ENGINE=InnoDB;
+
 
 CREATE TABLE issue (
     issue_id BIGINT NOT NULL AUTO_INCREMENT,
@@ -48,6 +49,14 @@ CREATE TABLE user_chat_room (
     chat_room_id BIGINT NOT NULL,
     opinion VARCHAR(255),
     PRIMARY KEY (id)
+) ENGINE=InnoDB;
+
+CREATE TABLE refresh_tokens (
+    refresh_token_id BIGINT NOT NULL AUTO_INCREMENT,
+    user_id BIGINT NOT NULL,
+    token VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP NOT NULL,
+    PRIMARY KEY (refresh_token_id),
 ) ENGINE=InnoDB;
 
 -- 외래키 제약 조건 추가
@@ -80,3 +89,8 @@ ALTER TABLE user_chat_room
     ADD CONSTRAINT fk_userchatroom_chatroom
         FOREIGN KEY (chat_room_id)
             REFERENCES chat_room (chat_room_id);
+
+ALTER TABLE refresh_tokens
+    ADD CONSTRAINT fk_refreshtoken_users
+        FOREIGN KEY (user_id)
+            REFERENCES users (user_id);

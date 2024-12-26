@@ -1,5 +1,6 @@
 package com.debateseason_backend_v1.domain.repository.entity;
 
+
 import java.time.LocalDate;
 
 import org.springframework.data.annotation.CreatedDate;
@@ -10,6 +11,10 @@ import jakarta.persistence.EntityListeners;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.JoinColumn;
+
 import jakarta.persistence.ManyToOne;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -28,9 +33,11 @@ public class ChatRoom {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private long id;
+	@Column(name = "chat_room_id")
+	private Long id;
 
-	@ManyToOne
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "issue_id", nullable = false)
 	private Issue issue;
 
 	private String title;

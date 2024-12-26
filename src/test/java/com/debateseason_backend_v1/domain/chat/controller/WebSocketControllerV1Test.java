@@ -117,18 +117,15 @@ class WebSocketControllerV1Test {
 		assertThat(received).withFailMessage("메시지 수신 되지 않음").isNotNull();
 
 		assertThat(received.getContent())
-			.withFailMessage("메시지 Content는 \"%s\" 이여야 하나, 테스트에 사용된 Content는 \"%s\" 입니다.", TEST_CHAT_CONTENT,
-				received.getContent())
+			.withFailMessage("메시지 Content는 \"%s\" 이여야 하나, 테스트에 사용된 Content는 \"%s\" 입니다.", TEST_CHAT_CONTENT, received.getContent())
 			.isEqualTo(TEST_CHAT_CONTENT);
 
 		assertThat(received.getSender())
-			.withFailMessage("Sender는 \"%s\" 이여야 하나, 테스트에 사용된 Sender는 \"%s\" 입니다.", TEST_CHAT_SENDER,
-				received.getSender())
+			.withFailMessage("Sender는 \"%s\" 이여야 하나, 테스트에 사용된 Sender는 \"%s\" 입니다.", TEST_CHAT_SENDER, received.getSender())
 			.isEqualTo(TEST_CHAT_SENDER);
 
 		assertThat(received.getUserCommunity())
-			.withFailMessage("userCommunity 는 \"%s\" 이여야 하나, 테스트에 적용된 userCommunity 는 \"%s\" 입니다",
-				TEST_CHAT_USER_COMMUNITY, received.getUserCommunity())
+			.withFailMessage("userCommunity 는 \"%s\" 이여야 하나, 테스트에 적용된 userCommunity 는 \"%s\" 입니다", TEST_CHAT_USER_COMMUNITY, received.getUserCommunity())
 			.isEqualTo(TEST_CHAT_USER_COMMUNITY);
 
 		// 테스트 후 연결 정리

@@ -24,22 +24,23 @@ import lombok.Setter;
 @Builder
 public class ChatMessage {
 
-	@Schema(description = "룸ID", example = "1L")
-	private Long roomId;
-	@Schema(description = "메시지 타입", example = "CHAT")
-	private MessageType type;
-	@Schema(description = "메시지 내용", example = "안녕하세요.")
-	private String content;
-	@Schema(description = "발신자", example = "홍길동")
-	private String sender;
-	@Schema(description = "토론찬반", example = "AGREE")
-	private OpinionType opinionType;
-	@Schema(description = "사용자 소속 커뮤니티", example = "에펨코리아")
-	private String userCommunity;
+    @Schema(description = "룸ID",example = "1L")
+    private Long roomId;
+    @Schema(description = "메시지 타입", example = "CHAT")
+    private MessageType type;
+    @Schema(description = "메시지 내용" , example = "안녕하세요.")
+    private String content;
+    @Schema(description = "발신자", example = "홍길동")
+    private String sender;
+    @Schema(description = "토론찬반", example = "AGREE")
+    private OpinionType opinionType;
+    @Schema(description = "사용자 소속 커뮤니티", example = "에펨코리아")
+    private String userCommunity;
 
-	@JsonSerialize(using = LocalDateTimeSerializer.class) // 직렬화 시 필요
-	@JsonDeserialize(using = LocalDateTimeDeserializer.class) // 역직렬화 시 필요
-	@Schema(description = "메시지 받은 날짜 시간")
-	@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-	private LocalDateTime timeStamp;
+    @JsonSerialize(using = LocalDateTimeSerializer.class) // 직렬화 시 필요
+    @JsonDeserialize(using = LocalDateTimeDeserializer.class) // 역직렬화 시 필요
+    @Schema(description = "메시지 받은 날짜 시간")
+    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime timeStamp;
+
 }

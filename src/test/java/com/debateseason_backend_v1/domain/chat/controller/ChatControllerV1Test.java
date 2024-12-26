@@ -40,16 +40,18 @@ class ChatControllerV1Test {
 		String from = "user1";
 		String to = "user2";
 
-		List<ChatMessage> messageList = Arrays.asList(ChatMessage.builder()
-			.type(MessageType.CHAT)
-			.content("안녕하세요")
-			.sender(from)
-			//.timeStamp(LocalDateTime.now())
-			.build());
-		ChatListResponse response = ChatListResponse.builder()
-			.result(messageList)
-			.totalNumberOfMessages(1)
-			.build();
+
+        List<ChatMessage> messageList = Arrays.asList(ChatMessage.builder()
+                .type(MessageType.CHAT)
+                .content("안녕하세요")
+                .sender(from)
+                //.timeStamp(LocalDateTime.now())
+                .build());
+        ChatListResponse response = ChatListResponse.builder()
+                .result(messageList)
+                .totalNumberOfMessages(1)
+                .build();
+
 
 		Mockito.when(chatServiceV1.findChatsBetweenUsers(from, to)).thenReturn(response);
 

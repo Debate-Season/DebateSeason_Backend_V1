@@ -1,9 +1,15 @@
 package com.debateseason_backend_v1.domain.repository.entity;
 
+
+import jakarta.persistence.Column;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+
+import jakarta.persistence.JoinColumn;
+
 import jakarta.persistence.ManyToOne;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -17,13 +23,15 @@ import lombok.Setter;
 @Setter
 @Builder
 @Entity
-public class Chat { // <- 향후 수정가능성이 있음 Chat을 어떻게 저장하느냐에 따라 필드가 달라질 듯
+public class Chat {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private long id;
+	@Column(name = "chat_id")
+	private Long id;
 
-	@ManyToOne
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "chat_room_id", nullable = false)
 	private ChatRoom chatRoom;
 
 	// 발신자

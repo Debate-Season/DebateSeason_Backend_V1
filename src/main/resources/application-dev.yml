@@ -1,7 +1,7 @@
 spring:
   config:
     activate:
-      on-profile: prod
+      on-profile: dev
   jpa:
     hibernate:
       ddl-auto: validate
@@ -13,8 +13,8 @@ spring:
     password: ${DB_PASSWORD}
 
     hikari:
-      maximum-pool-size: 10
-      minimum-idle: 5
+      maximum-pool-size: 5
+      minimum-idle: 2
       connection-timeout: 20000
 
   flyway:
@@ -38,19 +38,19 @@ logging:
     com.zaxxer.hikari: warn # 커넥션 풀 관련
 
     # Network & Performance
-    org.apache.tomcat: warn # Tomcat 서버 관련
-    org.apache.coyote: warn # HTTP 커넥터 관련
+    org.apache.tomcat: debug # Tomcat 서버 관련
+    org.apache.coyote: debug # HTTP 커넥터 관련
 
     # Spring Framework
-    org.springframework.web: warn
-    org.springframework.security: warn
-    org.springframework.cache: warn
-    org.springframework.transaction: warn
+    org.springframework.web: debug
+    org.springframework.security: debug
+    org.springframework.cache: debug
+    org.springframework.transaction: debug
 
     # WebSocket & STOMP 관련
-    org.springframework.web.socket: warn  # 프로덕션에서는 WARN
-    org.springframework.messaging: warn   # STOMP 메시징 관련
-    org.springframework.web.socket.messaging: warn  # STOMP 메시지 처리
+    org.springframework.web.socket: debug  # 프로덕션에서는 WARN
+    org.springframework.messaging: debug   # STOMP 메시징 관련
+    org.springframework.web.socket.messaging: debug  # STOMP 메시지 처리
 
     # Application Layers
     com.debateseason_backend_v1.domain.*.controller: info   # API 요청/응답

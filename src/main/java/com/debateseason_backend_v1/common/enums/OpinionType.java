@@ -11,5 +11,4 @@ public enum OpinionType {
 	NEUTRAL("중립");
 
 	private final String description;
-
 }

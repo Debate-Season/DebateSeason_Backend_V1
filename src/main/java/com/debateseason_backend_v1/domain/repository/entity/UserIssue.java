@@ -22,13 +22,13 @@ public class UserIssue {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private long id;
+  private Long id;
 
-	@ManyToOne
-	@JoinColumn(name = "user_id")
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "user_id", nullable = false)
 	private User user;
 
-	@ManyToOne
-	@JoinColumn(name = "issue_id")
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "issue_id", nullable = false)
 	private Issue issue;
 }

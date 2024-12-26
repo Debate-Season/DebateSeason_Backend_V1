@@ -9,6 +9,6 @@ public record LoginResponse(
 	String accessToken,
 	String refreshToken,
 	SocialType socialType,
-	boolean isRegistered
+	Boolean isRegistered
 ) {
 }

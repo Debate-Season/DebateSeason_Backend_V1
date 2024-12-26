@@ -131,7 +131,7 @@ public class ChatRoomServiceV1 {
 			.id(chatRoom.getId())
 			//.issue(chatRoom.getIssue())
 			.title(chatRoom.getTitle())
-			.createdDate(chatRoom.getCreateDate())
+			.createdAt(chatRoom.getCreatedAt())
 			.content(chatRoom.getContent())
 			.agree(countAgree)
 			.disagree(countDisagree)

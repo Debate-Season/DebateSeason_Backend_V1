@@ -1,6 +1,7 @@
 package com.debateseason_backend_v1.domain.repository.entity;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -22,13 +23,13 @@ public class UserIssue {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long id;
+	private Long id;
 
-	@ManyToOne(optional = false)
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "user_id", nullable = false)
 	private User user;
 
-	@ManyToOne(optional = false)
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "issue_id", nullable = false)
 	private Issue issue;
 }

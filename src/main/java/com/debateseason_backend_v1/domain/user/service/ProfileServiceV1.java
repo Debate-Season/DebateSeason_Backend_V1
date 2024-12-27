@@ -11,6 +11,7 @@ import com.debateseason_backend_v1.domain.repository.entity.Profile;
 import com.debateseason_backend_v1.domain.repository.entity.ProfileCommunity;
 import com.debateseason_backend_v1.domain.user.service.request.ProfileRegisterServiceRequest;
 import com.debateseason_backend_v1.domain.user.service.request.ProfileUpdateServiceRequest;
+import com.debateseason_backend_v1.domain.user.service.response.ProfileResponse;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -54,6 +55,20 @@ public class ProfileServiceV1 {
 			.build();
 
 		profileCommunityRepository.save(profileCommunity);
+	}
+
+	public ProfileResponse getMyProfile(Long userId) {
+
+		Profile profile = profileRepository.findByUserId(userId)
+			.orElseThrow(() -> new RuntimeException("프로필이 존재하지 않습니다."));
+
+		ProfileCommunity profileCommunity = profileCommunityRepository.findByProfileId(profile.getId())
+			.orElseThrow(() -> new RuntimeException("프로필의 커뮤니티 정보가 없습니다."));
+
+		Community community = communityRepository.findById(profileCommunity.getCommunityId())
+			.orElseThrow(() -> new RuntimeException("커뮤니티를 찾을 수 없습니다."));
+
+		return ProfileResponse.of(profile, community);
 	}
 
 	@Transactional

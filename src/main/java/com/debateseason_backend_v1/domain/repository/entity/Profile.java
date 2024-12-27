@@ -37,14 +37,8 @@ public class Profile {
 	@Column(name = "user_id")
 	private Long userId;
 
-	@Column(name = "image_url")
-	private String imageUrl;
-
 	@Column(name = "nickname", unique = true)
 	private String nickname;
-
-	@Column(name = "community")
-	private String community;
 
 	@Enumerated(EnumType.STRING)
 	@Column(name = "gender")
@@ -59,13 +53,11 @@ public class Profile {
 	private LocalDateTime updatedAt;
 
 	@Builder
-	private Profile(Long userId, String nickname, String imageUrl,
-		String community, GenderType gender, AgeRangeType ageRange) {
+	private Profile(Long userId, String nickname, GenderType gender, AgeRangeType ageRange
+	) {
 
 		this.userId = userId;
 		this.nickname = nickname;
-		this.imageUrl = imageUrl;
-		this.community = community;
 		this.gender = gender;
 		this.ageRange = ageRange;
 	}

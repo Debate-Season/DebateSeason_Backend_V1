@@ -1,5 +1,10 @@
 package com.debateseason_backend_v1.domain.user.enums;
 
+import java.util.Arrays;
+
+import com.debateseason_backend_v1.domain.user.exception.IllegalEnumValueException;
+import com.fasterxml.jackson.annotation.JsonCreator;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -20,5 +25,13 @@ public enum AgeRangeType {
 	private final String description;
 	private final int minAge;
 	private final int maxAge;
+
+	@JsonCreator
+	public static AgeRangeType from(String description) {
+		return Arrays.stream(values())
+			.filter(type -> type.getDescription().equals(description))
+			.findFirst()
+			.orElseThrow(() -> new IllegalEnumValueException("AgeRangeType", description));
+	}
 
 }

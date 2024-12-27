@@ -24,6 +24,7 @@ public record ProfileRegisterRequest(
 	public ProfileRegisterServiceRequest toServiceRequest(Long userId) {
 
 		return ProfileRegisterServiceRequest.builder()
+			.userId(userId)
 			.nickname(nickname)
 			.communityId(communityId)
 			.gender(gender)

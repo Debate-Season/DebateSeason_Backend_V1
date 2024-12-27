@@ -3,6 +3,7 @@ package com.debateseason_backend_v1.domain.user.service;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.debateseason_backend_v1.domain.repository.ProfileRepository;
 import com.debateseason_backend_v1.domain.repository.RefreshTokenRepository;
 import com.debateseason_backend_v1.domain.repository.UserRepository;
 import com.debateseason_backend_v1.domain.repository.entity.RefreshToken;
@@ -22,6 +23,7 @@ public class UserServiceV1 {
 
 	private final JwtUtil jwtUtil;
 	private final UserRepository userRepository;
+	private final ProfileRepository profileRepository;
 	private final RefreshTokenRepository refreshTokenRepository;
 
 	@Transactional
@@ -43,10 +45,13 @@ public class UserServiceV1 {
 
 		refreshTokenRepository.save(refreshToken);
 
+		boolean profileStatus = profileRepository.existsByUserId(user.getId());
+
 		return LoginResponse.builder()
 			.accessToken(newAccessToken)
 			.refreshToken(newRefreshToken)
 			.socialType(request.socialType().getDescription())
+			.profileStatus(profileStatus)
 			.build();
 	}
 

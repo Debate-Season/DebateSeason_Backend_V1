@@ -1,6 +1,7 @@
 package com.debateseason_backend_v1.domain.repository.entity;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -60,6 +61,19 @@ public class Profile {
 		this.nickname = nickname;
 		this.gender = gender;
 		this.ageRange = ageRange;
+	}
+
+	public void update(String nickname, GenderType gender, AgeRangeType ageRange) {
+		
+		if (!Objects.equals(nickname, this.nickname)) {
+			this.nickname = nickname;
+		}
+		if (!Objects.equals(gender, this.gender)) {
+			this.gender = gender;
+		}
+		if (!Objects.equals(ageRange, this.ageRange)) {
+			this.ageRange = ageRange;
+		}
 	}
 
 }

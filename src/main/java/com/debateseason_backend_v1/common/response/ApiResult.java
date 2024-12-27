@@ -40,7 +40,16 @@ public class ApiResult<T> {
 			.build();
 	}
 
-	// 200 성공 응답
+	// 데이터가 없는 성공 응답
+	public static ApiResult<Void> success(String message) {
+		return ApiResult.<Void>builder()
+			.status(HttpStatus.OK.value())
+			.code(ErrorCode.SUCCESS)
+			.message(message)
+			.build();
+	}
+
+	// 데이터가 있는 성공 응답
 	public static <T> ApiResult<T> success(String message, T data) {
 
 		return ApiResult.<T>builder()

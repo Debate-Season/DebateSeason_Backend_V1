@@ -6,7 +6,7 @@ import com.debateseason_backend_v1.domain.user.enums.GenderType;
 import lombok.Builder;
 
 @Builder
-public record ProfileRegisterServiceRequest(
+public record ProfileUpdateServiceRequest(
 	Long userId,
 	String nickname,
 	Long communityId,

@@ -44,7 +44,7 @@ public class ProfileControllerV1 {
 	) {
 
 		ProfileResponse response = profileService.getMyProfile(userDetails.getUserId());
-		
+
 		return ApiResult.success("프로필 조회가 완료되었습니다.", response);
 	}
 
@@ -60,3 +60,5 @@ public class ProfileControllerV1 {
 	}
 
 }
+
+

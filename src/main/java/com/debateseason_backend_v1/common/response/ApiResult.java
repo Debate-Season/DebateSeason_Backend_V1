@@ -29,6 +29,19 @@ public class ApiResult<T> {
 	@Schema(description = "응답 데이터")
 	private T data;
 
+	private PageMetaResponse meta;
+
+	// 페이징 성공 응답
+	public static <T> ApiResult<T> success(String message, T data, PageMetaResponse meta) {
+		return ApiResult.<T>builder()
+			.status(HttpStatus.OK.value())
+			.code(ErrorCode.SUCCESS)
+			.message(message)
+			.data(data)
+			.meta(meta)
+			.build();
+	}
+
 	// 커스텀 status 성공 응답
 	public static <T> ApiResult<T> of(HttpStatus status, String message, T data) {
 

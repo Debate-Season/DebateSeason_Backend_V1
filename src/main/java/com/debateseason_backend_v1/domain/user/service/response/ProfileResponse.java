@@ -9,7 +9,7 @@ public record ProfileResponse(
 	String nickname,
 	GenderType gender,
 	AgeRangeType ageRange,
-	CommunityResponse community
+	ProfileCommunityResponse community
 ) {
 
 	public static ProfileResponse of(Profile profile, Community community) {
@@ -18,7 +18,7 @@ public record ProfileResponse(
 			profile.getNickname(),
 			profile.getGender(),
 			profile.getAgeRange(),
-			CommunityResponse.from(community)
+			ProfileCommunityResponse.from(community)
 		);
 	}
 

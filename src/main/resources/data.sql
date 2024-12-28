@@ -1,4 +1,4 @@
-INSERT INTO community (name, image_url)
+INSERT INTO community (name, icon_url)
 VALUES ('디시인사이드', 'community/icons/dcinside.png'),
        ('에펨코리아', 'community/icons/fmkorea.png'),
        ('더쿠', 'community/icons/theqoo.png'),

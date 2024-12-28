@@ -18,8 +18,14 @@ public class CommunityServiceV1 {
 	private final CommunityRepository communityRepository;
 
 	public Page<CommunityResponse> getCommunities(Pageable pageable) {
-		
+
 		return communityRepository.findAll(pageable)
+			.map(CommunityResponse::from);
+	}
+
+	public Page<CommunityResponse> searchByName(String name, Pageable pageable) {
+		
+		return communityRepository.findByNameContaining(name, pageable)
 			.map(CommunityResponse::from);
 	}
 

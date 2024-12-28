@@ -8,6 +8,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.debateseason_backend_v1.common.response.ApiResult;
@@ -33,6 +34,19 @@ public class CommunityControllerV1 {
 
 		return ApiResult.success(
 			"커뮤니티 목록 조회가 완료되었습니다.",
+			page.getContent(),
+			PageMetaResponse.of(page)
+		);
+	}
+
+	@GetMapping("/search")
+	public ApiResult<List<CommunityResponse>> searchCommunities(
+		@RequestParam String name,
+		@PageableDefault(size = 20, sort = "name", direction = Sort.Direction.ASC) Pageable pageable
+	) {
+		Page<CommunityResponse> page = communityService.searchByName(name, pageable);
+		return ApiResult.success(
+			"커뮤니티 검색이 완료되었습니다.",
 			page.getContent(),
 			PageMetaResponse.of(page)
 		);

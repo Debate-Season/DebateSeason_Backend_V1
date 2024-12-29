@@ -1,6 +1,5 @@
 package com.debateseason_backend_v1.domain.user.controller;
 
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -38,7 +37,7 @@ public class UserControllerV1 {
 		summary = "이슈방 전체를 불러옵니다(수정가능)",
 		description = " ")
 	@GetMapping("")
-	public ResponseEntity<?> indexPage() {
+	public ApiResult<Object> indexPage() {
 		return issueServiceV1.fetchAll();
 	}
 

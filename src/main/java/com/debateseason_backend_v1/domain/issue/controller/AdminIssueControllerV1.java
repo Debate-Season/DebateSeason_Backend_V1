@@ -1,11 +1,11 @@
 package com.debateseason_backend_v1.domain.issue.controller;
 
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.debateseason_backend_v1.common.response.ApiResult;
 import com.debateseason_backend_v1.domain.issue.dto.IssueDTO;
 import com.debateseason_backend_v1.domain.issue.service.IssueServiceV1;
 
@@ -26,7 +26,7 @@ public class AdminIssueControllerV1 {
 		summary = "이슈방을 만듭니다(ADMIN)",
 		description = " ")
 	@PostMapping("/issue")
-	public ResponseEntity<?> saveIssue(@RequestBody IssueDTO issueDTO) {
+	public ApiResult<Object> saveIssue(@RequestBody IssueDTO issueDTO) {
 		return issueServiceV1.save(issueDTO);
 	}
 

@@ -6,9 +6,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import com.debateseason_backend_v1.common.exception.ErrorCode;
+import com.debateseason_backend_v1.common.response.ApiResult;
 import com.debateseason_backend_v1.domain.chatroom.dto.ChatRoomDAO;
 import com.debateseason_backend_v1.domain.issue.dto.IssueDAO;
 import com.debateseason_backend_v1.domain.issue.dto.IssueDTO;
@@ -24,7 +25,6 @@ import com.debateseason_backend_v1.domain.repository.entity.Issue;
 import com.debateseason_backend_v1.domain.repository.entity.User;
 import com.debateseason_backend_v1.domain.repository.entity.UserChatRoom;
 import com.debateseason_backend_v1.domain.user.dto.UserDTO;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.transaction.Transactional;
@@ -45,20 +45,26 @@ public class IssueServiceV1 {
 	private final ObjectMapper objectMapper;
 
 	// 1. save 이슈방
-	public ResponseEntity<?> save(IssueDTO issueDTO) {
+	public ApiResult<Object> save(IssueDTO issueDTO) {
 
 		Issue issue = Issue.builder()
 			.title(issueDTO.getTitle())
 			.build();
 		issueRepository.save(issue);
 
-		return ResponseEntity.ok(issueDTO.getTitle() + "이 등록되었습니다.");
+		ApiResult<Object> response = ApiResult.builder()
+			.status(200)
+			.code(ErrorCode.SUCCESS)
+			.message("이슈방 " + issueDTO.getTitle() + "가 생성되었습니다.")
+			.build();
+
+		return response;
 
 	}
 
 	//2. fetch 단건 이슈방
 	@Transactional
-	public ResponseEntity<?> fetch(Long issueId, Long userId) {
+	public ApiResult<Object> fetch(Long issueId, Long userId) {
 
 		// 1. 이슈방 불러오기
 		Issue issue = issueRepository.findById(issueId).orElseThrow(
@@ -172,21 +178,20 @@ public class IssueServiceV1 {
 			.chatRoomMap(chatRoomMap)
 			.build();
 
-		// json으로 반환을 한다.
-		String json;
-		try {
-			json = objectMapper.writeValueAsString(issueDAO);
-		} catch (JsonProcessingException e) {
-			log.error("IssueServiceV1.fetch : " + e.getMessage());
-			throw new RuntimeException(e);
-		}
+		//
+		ApiResult<Object> response = ApiResult.builder()
+			.status(200)
+			.code(ErrorCode.SUCCESS)
+			.message("이슈방 " + issueId + "조회")
+			.data(issueDAO)
+			.build();
 
-		return ResponseEntity.ok(json);
+		return response;
 
 	}
 
 	//3. fetch 전체 이슈방(인덱스 페이지용) <- 나중에 수정할듯
-	public ResponseEntity<?> fetchAll() {
+	public ApiResult<Object> fetchAll() {
 		List<Issue> issueList = issueRepository.findAll();
 
 		// Gson,JSONArray이 없어서 Map으로 반환을 한다.
@@ -203,16 +208,14 @@ public class IssueServiceV1 {
 			issueMap.put(i, response);
 		}
 
-		String json;
+		ApiResult<Object> response = ApiResult.builder()
+			.status(200)
+			.code(ErrorCode.SUCCESS)
+			.message("이슈방 전체를 불어왔습니다.")
+			.data(issueMap)
+			.build();
 
-		try {
-			json = objectMapper.writeValueAsString(issueMap);
-		} catch (JsonProcessingException e) {
-			log.error("IssueServiceV1.fetchAll : " + e.getMessage());
-			throw new RuntimeException(e);
-		}
-
-		return ResponseEntity.ok(json);
+		return response;
 
 	}
 

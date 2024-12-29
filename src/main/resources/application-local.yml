@@ -3,11 +3,15 @@ spring:
     activate:
       on-profile: local
   jpa:
+    hibernate:
+      ddl-auto: create
+
     properties:
       hibernate:
         format_sql: true
         show-sql: true
         highlight_sql: true
+
 
 
   datasource:
@@ -43,3 +47,13 @@ logging.level:
 
 server:
   port: 8080
+
+
+
+jwt:
+  secret:
+    key: "yourTestSecretKeyMustBeLongEnoughForHS256Algorithm"
+  access-token:
+    expire-time: 6000000   # 10분
+  refresh-token:
+    expire-time: 86400000 # 24시간

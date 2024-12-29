@@ -3,7 +3,6 @@ package com.debateseason_backend_v1.domain.repository;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -13,8 +12,7 @@ public interface ProfileCommunityRepository extends JpaRepository<ProfileCommuni
 
 	Optional<ProfileCommunity> findByProfileId(Long profileId);
 
-	@Modifying
-	@Query("UPDATE ProfileCommunity pc SET pc.communityId = :communityId WHERE pc.profileId = :profileId")
-	void updateCommunity(@Param("profileId") Long profileId, @Param("communityId") Long communityId);
+	@Query("SELECT pc FROM ProfileCommunity pc WHERE pc.profileId = :profileId")
+	ProfileCommunity getByProfileId(@Param("profileId") Long profileId);
 
 }

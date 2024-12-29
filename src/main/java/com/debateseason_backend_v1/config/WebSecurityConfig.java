@@ -27,7 +27,10 @@ public class WebSecurityConfig {
 		"/v3/api-docs/**",
 		"/actuator/**",
 		"/ws-stomp/**",
-		"/api/v1/**"
+		"/api/v1/users/login",
+		"/api/v1/communities/**",
+		"/api/v1/room",
+		"/api/v1/issue"
 	};
 
 	@Bean

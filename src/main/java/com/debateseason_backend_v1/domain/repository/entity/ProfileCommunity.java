@@ -1,6 +1,7 @@
 package com.debateseason_backend_v1.domain.repository.entity;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -43,6 +44,13 @@ public class ProfileCommunity {
 
 		this.profileId = profileId;
 		this.communityId = communityId;
+	}
+
+	public void updateCommunity(Long communityId) {
+		
+		if (!Objects.equals(this.communityId, communityId)) {
+			this.communityId = communityId;
+		}
 	}
 
 }

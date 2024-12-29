@@ -30,12 +30,12 @@ public class CommunityControllerV1 {
 		@PageableDefault(size = 20, sort = "name", direction = Sort.Direction.DESC) Pageable pageable
 	) {
 
-		Page<CommunityResponse> page = communityService.getCommunities(pageable);
+		Page<CommunityResponse> communities = communityService.getCommunities(pageable);
 
 		return ApiResult.success(
 			"커뮤니티 목록 조회가 완료되었습니다.",
-			page.getContent(),
-			PageMetaResponse.of(page)
+			communities.getContent(),
+			PageMetaResponse.of(communities)
 		);
 	}
 
@@ -44,11 +44,13 @@ public class CommunityControllerV1 {
 		@RequestParam String name,
 		@PageableDefault(size = 20, sort = "name", direction = Sort.Direction.ASC) Pageable pageable
 	) {
-		Page<CommunityResponse> page = communityService.searchByName(name, pageable);
+
+		Page<CommunityResponse> search = communityService.searchByName(name, pageable);
+
 		return ApiResult.success(
 			"커뮤니티 검색이 완료되었습니다.",
-			page.getContent(),
-			PageMetaResponse.of(page)
+			search.getContent(),
+			PageMetaResponse.of(search)
 		);
 	}
 

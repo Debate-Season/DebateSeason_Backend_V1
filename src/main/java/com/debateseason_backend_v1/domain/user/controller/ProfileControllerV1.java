@@ -22,7 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/profile")
+@RequestMapping("/api/v1/profiles")
 public class ProfileControllerV1 {
 
 	private final ProfileServiceV1 profileService;
@@ -58,6 +58,13 @@ public class ProfileControllerV1 {
 
 		return ApiResult.success("프로필 수정이 완료되었습니다.");
 	}
+
+	// public ApiResult<?> checkDuplicateNickname(){
+	//
+	// 	profileService
+	//
+	// 	return ApiResult("")
+	// }
 
 }
 

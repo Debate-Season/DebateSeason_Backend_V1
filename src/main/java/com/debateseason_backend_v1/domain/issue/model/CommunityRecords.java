@@ -19,7 +19,6 @@ public class CommunityRecords { // 자주 들락날락할텐데 DB에 기록하�
 	// Key는 중복되면 안됨. User는 고유하기 때문에 key로 사용
 	private static HashMap<Long, LinkedList<UserDTO>> cashUsers = new HashMap<>();
 	private static HashMap<Long, Map<Long, Integer>> markIndex_cashUsers = new HashMap<>();
-
 	//
 	private CommunityRecords() {
 

@@ -13,7 +13,6 @@ import com.debateseason_backend_v1.common.response.ApiResult;
 import com.debateseason_backend_v1.domain.user.controller.request.ProfileRegisterRequest;
 import com.debateseason_backend_v1.domain.user.controller.request.ProfileUpdateRequest;
 import com.debateseason_backend_v1.domain.user.service.ProfileServiceV1;
-import com.debateseason_backend_v1.domain.user.service.response.NicknameCheckResponse;
 import com.debateseason_backend_v1.domain.user.service.response.ProfileResponse;
 import com.debateseason_backend_v1.security.CustomUserDetails;
 
@@ -46,7 +45,7 @@ public class ProfileControllerV1 {
 		@AuthenticationPrincipal CustomUserDetails userDetails
 	) {
 
-		ProfileResponse response = profileService.getMyProfile(userDetails.getUserId());
+		ProfileResponse response = profileService.getProfileByUserId(userDetails.getUserId());
 
 		return ApiResult.success("프로필 조회가 완료되었습니다.", response);
 	}
@@ -62,21 +61,14 @@ public class ProfileControllerV1 {
 		return ApiResult.success("프로필 수정이 완료되었습니다.");
 	}
 
-	@GetMapping("/check-nickname")
-	public ApiResult<NicknameCheckResponse> checkNicknameDuplicate(
+	@GetMapping("/nickname/check")
+	public ApiResult<Void> checkNicknameDuplicate(
 		@RequestParam @NotBlank(message = "닉네임은 필수입니다.") String nickname
 	) {
 
-		NicknameCheckResponse response = profileService.existsByNickname(nickname);
+		profileService.checkNickname(nickname);
 
-		String message = response.available() ?
-			"사용 가능한 닉네임입니다." :
-			"사용 불가능한 닉네임입니다.";
-
-		return ApiResult.success(
-			message,
-			response
-		);
+		return ApiResult.success("사용 가능한 닉네임입니다.");
 	}
 
 }

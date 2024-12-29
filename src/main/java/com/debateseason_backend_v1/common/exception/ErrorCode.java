@@ -24,7 +24,10 @@ public enum ErrorCode implements CodeInterface {
 	// 2000번대 프로필 관련 에러
 	NOT_SUPPORTED_COMMUNITY(2000, HttpStatus.BAD_REQUEST, "지원하지 않는 커뮤니티입니다."),
 	INVALID_NICKNAME_FORMAT(2001, HttpStatus.BAD_REQUEST, "닉네임은 한글 또는 영문으로 8자 이내로 입력해주세요."),
-	DUPLICATE_NICKNAME(2002, HttpStatus.CONFLICT, "중복된 닉네임입니다.");;
+	DUPLICATE_NICKNAME(2002, HttpStatus.CONFLICT, "중복된 닉네임입니다."),
+	NOT_EXIST_PROFILE(2003, HttpStatus.NOT_FOUND, "프로필이 존재하지 않습니다."),
+	NOT_EXIST_PROFILE_COMMUNITY(2004, HttpStatus.NOT_FOUND, "프로필의 커뮤니티 정보가 없습니다."),
+	ALREADY_EXIST_PROFILE(2005, HttpStatus.CONFLICT, "이미 프로필이 등록된 사용자입니다.");
 
 	private final Integer code;
 	private final HttpStatus httpStatus;

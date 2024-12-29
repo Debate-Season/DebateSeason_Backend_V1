@@ -19,7 +19,7 @@ public class CustomExceptionHandler {
 		HttpStatus httpStatus = errorCode.getHttpStatus();
 
 		return ResponseEntity
-			.status(httpStatus) // 응답의 상태 코드를 설정
+			.status(httpStatus)
 			.body(ApiResult.error(httpStatus, errorCode));
 	}
 

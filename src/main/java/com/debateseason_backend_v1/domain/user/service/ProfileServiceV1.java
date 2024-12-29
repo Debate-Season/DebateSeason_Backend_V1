@@ -11,6 +11,7 @@ import com.debateseason_backend_v1.domain.repository.entity.Profile;
 import com.debateseason_backend_v1.domain.repository.entity.ProfileCommunity;
 import com.debateseason_backend_v1.domain.user.service.request.ProfileRegisterServiceRequest;
 import com.debateseason_backend_v1.domain.user.service.request.ProfileUpdateServiceRequest;
+import com.debateseason_backend_v1.domain.user.service.response.NicknameCheckResponse;
 import com.debateseason_backend_v1.domain.user.service.response.ProfileResponse;
 import com.debateseason_backend_v1.domain.user.validator.CommunityValidator;
 import com.debateseason_backend_v1.domain.user.validator.NicknameValidator;
@@ -80,6 +81,15 @@ public class ProfileServiceV1 {
 
 		ProfileCommunity profileCommunity = profileCommunityRepository.getByProfileId(profile.getId());
 		profileCommunity.updateCommunity(request.communityId());
+	}
+
+	public NicknameCheckResponse existsByNickname(String nickname) {
+
+		nicknameValidator.validate(nickname);
+
+		return NicknameCheckResponse.builder()
+			.available(true)
+			.build();
 	}
 
 }

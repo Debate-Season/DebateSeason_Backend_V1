@@ -4,6 +4,8 @@ import java.util.regex.Pattern;
 
 import org.springframework.stereotype.Component;
 
+import com.debateseason_backend_v1.common.exception.CustomException;
+import com.debateseason_backend_v1.common.exception.ErrorCode;
 import com.debateseason_backend_v1.domain.repository.ProfileRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -16,13 +18,13 @@ public class NicknameValidator {
 	private final ProfileRepository profileRepository;
 
 	public void validate(String nickname) {
-		
+
 		if (!NICKNAME_PATTERN.matcher(nickname).matches()) {
-			throw new RuntimeException("닉네임은 한글 또는 영문으로 8자 이내로 입력해주세요.");
+			throw new CustomException(ErrorCode.INVALID_NICKNAME_FORMAT);
 		}
 
 		if (profileRepository.existsByNickname(nickname)) {
-			throw new RuntimeException("중복된 닉네임입니다.");
+			throw new CustomException(ErrorCode.DUPLICATE_NICKNAME);
 		}
 	}
 

@@ -29,6 +29,7 @@ public class WebSecurityConfig {
 		"/ws-stomp/**",
 		"/api/v1/users/login",
 		"/api/v1/communities/**",
+		"/api/v1/profiles/check-nickname",
 		"/api/v1/room",
 		"/api/v1/issue"
 	};

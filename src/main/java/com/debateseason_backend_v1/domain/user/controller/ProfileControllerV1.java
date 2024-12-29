@@ -6,16 +6,19 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.debateseason_backend_v1.common.response.ApiResult;
 import com.debateseason_backend_v1.domain.user.controller.request.ProfileRegisterRequest;
 import com.debateseason_backend_v1.domain.user.controller.request.ProfileUpdateRequest;
 import com.debateseason_backend_v1.domain.user.service.ProfileServiceV1;
+import com.debateseason_backend_v1.domain.user.service.response.NicknameCheckResponse;
 import com.debateseason_backend_v1.domain.user.service.response.ProfileResponse;
 import com.debateseason_backend_v1.security.CustomUserDetails;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -59,12 +62,22 @@ public class ProfileControllerV1 {
 		return ApiResult.success("프로필 수정이 완료되었습니다.");
 	}
 
-	// public ApiResult<?> checkDuplicateNickname(){
-	//
-	// 	profileService
-	//
-	// 	return ApiResult("")
-	// }
+	@GetMapping("/check-nickname")
+	public ApiResult<NicknameCheckResponse> checkNicknameDuplicate(
+		@RequestParam @NotBlank(message = "닉네임은 필수입니다.") String nickname
+	) {
+
+		NicknameCheckResponse response = profileService.existsByNickname(nickname);
+
+		String message = response.available() ?
+			"사용 가능한 닉네임입니다." :
+			"사용 불가능한 닉네임입니다.";
+
+		return ApiResult.success(
+			message,
+			response
+		);
+	}
 
 }
 

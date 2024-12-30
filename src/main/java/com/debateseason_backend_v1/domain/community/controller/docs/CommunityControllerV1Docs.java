@@ -61,7 +61,8 @@ public interface CommunityControllerV1Docs {
 						            "id": 2,
 						            "name": "에펨코리아",
 						            "iconUrl": "community/icons/fmkorea.png"
-						        }
+						        },
+						        ...
 						    ],
 						    "meta": {
 						        "page": 0,
@@ -126,7 +127,8 @@ public interface CommunityControllerV1Docs {
 						            "id": 5,
 						            "name": "에펨코리아",
 						            "iconUrl": "community/icons/fmkorea.png"
-						        }
+						        },
+						        ...
 						    ],
 						    "meta": {
 						        "page": 0,

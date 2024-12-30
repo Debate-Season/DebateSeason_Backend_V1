@@ -18,7 +18,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.constraints.NotBlank;
 
 @Tag(name = "Profile API", description = "프로필 관련 API")
 public interface ProfileControllerV1Docs {
@@ -266,7 +265,7 @@ public interface ProfileControllerV1Docs {
 		description = "닉네임의 중복 여부를 확인합니다."
 	)
 	@Parameter(
-		name = "nickname",
+		name = "query",
 		description = "중복 확인할 닉네임",
 		required = true,
 		example = "홍길동",
@@ -323,6 +322,6 @@ public interface ProfileControllerV1Docs {
 		)
 	})
 	public ApiResult<Void> checkNicknameDuplicate(
-		@RequestParam @NotBlank(message = "닉네임은 필수입니다.") String nickname
+		@RequestParam String query
 	);
 }

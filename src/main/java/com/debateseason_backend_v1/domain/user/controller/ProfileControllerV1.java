@@ -18,7 +18,6 @@ import com.debateseason_backend_v1.domain.user.service.response.ProfileResponse;
 import com.debateseason_backend_v1.security.CustomUserDetails;
 
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -64,10 +63,10 @@ public class ProfileControllerV1 implements ProfileControllerV1Docs {
 
 	@GetMapping("/nickname/check")
 	public ApiResult<Void> checkNicknameDuplicate(
-		@RequestParam @NotBlank(message = "닉네임은 필수입니다.") String nickname
+		@RequestParam String query
 	) {
 
-		profileService.checkNickname(nickname);
+		profileService.checkNickname(query);
 
 		return ApiResult.success("사용 가능한 닉네임입니다.");
 	}

@@ -42,11 +42,11 @@ public class CommunityControllerV1 implements CommunityControllerV1Docs {
 
 	@GetMapping("/search")
 	public ApiResult<List<CommunityResponse>> searchCommunities(
-		@RequestParam String name,
+		@RequestParam String query,
 		@PageableDefault(size = 20, sort = "name", direction = Sort.Direction.DESC) Pageable pageable
 	) {
 
-		Page<CommunityResponse> search = communityService.searchByName(name, pageable);
+		Page<CommunityResponse> search = communityService.searchByName(query, pageable);
 
 		return ApiResult.success(
 			"커뮤니티 검색이 완료되었습니다.",

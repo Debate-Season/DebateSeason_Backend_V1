@@ -85,7 +85,7 @@ public interface CommunityControllerV1Docs {
 	)
 	@Parameters({
 		@Parameter(
-			name = "name",
+			name = "query",
 			description = "검색할 커뮤니티 이름",
 			required = true,
 			schema = @Schema(type = "string"),
@@ -141,7 +141,7 @@ public interface CommunityControllerV1Docs {
 		)
 	})
 	public ApiResult<List<CommunityResponse>> searchCommunities(
-		@RequestParam String name,
+		@RequestParam String query,
 		@PageableDefault(size = 20, sort = "name", direction = Sort.Direction.DESC) Pageable pageable
 	);
 }

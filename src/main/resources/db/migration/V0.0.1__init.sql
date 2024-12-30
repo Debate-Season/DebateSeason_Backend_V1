@@ -1,3 +1,9 @@
+-- Set character set
+SET NAMES utf8mb4;
+SET character_set_client = utf8mb4;
+SET character_set_connection = utf8mb4;
+SET character_set_results = utf8mb4;
+
 -- Create users table first as it's referenced by other tables
 CREATE TABLE users
 (
@@ -7,7 +13,7 @@ CREATE TABLE users
     community   VARCHAR(100),
     created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (user_id)
-) ENGINE = InnoDB;
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
 -- Create profile table
 CREATE TABLE profile
@@ -20,7 +26,7 @@ CREATE TABLE profile
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (profile_id),
     CONSTRAINT fk_profile_user FOREIGN KEY (user_id) REFERENCES users (user_id)
-) ENGINE = InnoDB;
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
 -- Create community table
 CREATE TABLE community
@@ -30,7 +36,7 @@ CREATE TABLE community
     icon_url     VARCHAR(255),
     created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (community_id)
-) ENGINE = InnoDB;
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
 -- Create profile_community table
 CREATE TABLE profile_community
@@ -42,7 +48,7 @@ CREATE TABLE profile_community
     PRIMARY KEY (id),
     CONSTRAINT fk_profile_community_profile FOREIGN KEY (profile_id) REFERENCES profile (profile_id),
     CONSTRAINT fk_profile_community_community FOREIGN KEY (community_id) REFERENCES community (community_id)
-) ENGINE = InnoDB;
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
 -- Create issue table
 CREATE TABLE issue
@@ -51,7 +57,7 @@ CREATE TABLE issue
     title      VARCHAR(255),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (issue_id)
-) ENGINE = InnoDB;
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
 -- Create chat_room table
 CREATE TABLE chat_room
@@ -65,7 +71,7 @@ CREATE TABLE chat_room
     created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (chat_room_id),
     CONSTRAINT fk_chatroom_issue FOREIGN KEY (issue_id) REFERENCES issue (issue_id)
-) ENGINE = InnoDB;
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
 -- Create chat table
 CREATE TABLE chat
@@ -78,7 +84,7 @@ CREATE TABLE chat
     created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (chat_id),
     CONSTRAINT fk_chat_chatroom FOREIGN KEY (chat_room_id) REFERENCES chat_room (chat_room_id)
-) ENGINE = InnoDB;
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
 -- Create user_issue table
 CREATE TABLE user_issue
@@ -89,7 +95,7 @@ CREATE TABLE user_issue
     PRIMARY KEY (id),
     CONSTRAINT fk_userissue_issue FOREIGN KEY (issue_id) REFERENCES issue (issue_id),
     CONSTRAINT fk_userissue_users FOREIGN KEY (user_id) REFERENCES users (user_id)
-) ENGINE = InnoDB;
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
 -- Create user_chat_room table
 CREATE TABLE user_chat_room
@@ -101,7 +107,7 @@ CREATE TABLE user_chat_room
     PRIMARY KEY (id),
     CONSTRAINT fk_userchatroom_users FOREIGN KEY (user_id) REFERENCES users (user_id),
     CONSTRAINT fk_userchatroom_chatroom FOREIGN KEY (chat_room_id) REFERENCES chat_room (chat_room_id)
-) ENGINE = InnoDB;
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
 -- Create refresh_tokens table
 CREATE TABLE refresh_tokens
@@ -112,7 +118,7 @@ CREATE TABLE refresh_tokens
     created_at       TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (refresh_token_id),
     CONSTRAINT fk_refreshtoken_users FOREIGN KEY (user_id) REFERENCES users (user_id)
-) ENGINE = InnoDB;
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
 -- Insert initial community data
 INSERT INTO community (name, icon_url)

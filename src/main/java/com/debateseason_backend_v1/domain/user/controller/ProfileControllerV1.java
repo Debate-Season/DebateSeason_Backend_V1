@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.debateseason_backend_v1.common.response.ApiResult;
+import com.debateseason_backend_v1.domain.user.controller.docs.ProfileControllerV1Docs;
 import com.debateseason_backend_v1.domain.user.controller.request.ProfileRegisterRequest;
 import com.debateseason_backend_v1.domain.user.controller.request.ProfileUpdateRequest;
 import com.debateseason_backend_v1.domain.user.service.ProfileServiceV1;
@@ -25,7 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/profiles")
-public class ProfileControllerV1 {
+public class ProfileControllerV1 implements ProfileControllerV1Docs {
 
 	private final ProfileServiceV1 profileService;
 

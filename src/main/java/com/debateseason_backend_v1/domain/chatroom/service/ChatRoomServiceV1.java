@@ -2,9 +2,10 @@ package com.debateseason_backend_v1.domain.chatroom.service;
 
 import java.util.List;
 
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import com.debateseason_backend_v1.common.exception.ErrorCode;
+import com.debateseason_backend_v1.common.response.ApiResult;
 import com.debateseason_backend_v1.domain.chatroom.dto.ChatRoomDAO;
 import com.debateseason_backend_v1.domain.chatroom.dto.ChatRoomDTO;
 import com.debateseason_backend_v1.domain.chatroom.dto.ResponseDTO;
@@ -16,7 +17,6 @@ import com.debateseason_backend_v1.domain.repository.entity.ChatRoom;
 import com.debateseason_backend_v1.domain.repository.entity.Issue;
 import com.debateseason_backend_v1.domain.repository.entity.User;
 import com.debateseason_backend_v1.domain.repository.entity.UserChatRoom;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.transaction.Transactional;
@@ -36,7 +36,7 @@ public class ChatRoomServiceV1 {
 	private final ObjectMapper objectMapper;
 
 	// 1. 채팅방 저장하기
-	public ResponseEntity<Object> save(ChatRoomDTO chatRoomDTO, long issueId) {
+	public ApiResult<Object> save(ChatRoomDTO chatRoomDTO, long issueId) {
 
 		// 1. Issue 찾기
 		Issue issue = issueRepository.findById(issueId).orElseThrow(
@@ -53,13 +53,17 @@ public class ChatRoomServiceV1 {
 		// 3. save ChatRoom
 		chatRoomRepository.save(chatRoom);
 
-		return ResponseEntity.ok("Successfully make ChatRoom!");
+		return ApiResult.builder()
+			.status(200)
+			.code(ErrorCode.SUCCESS)
+			.message("채팅방 " + chatRoomDTO.getTitle() + "이 생성되었습니다.")
+			.build();
 	}
 
 	// 2. 채팅방 찬반 투표하기
 	// Dirty Checking을 위해서 Transactional을 통한 변경감지
 	@Transactional
-	public ResponseEntity<Object> vote(String opinion, Long chatRoomId, Long userId) {
+	public ApiResult<Object> vote(String opinion, Long chatRoomId, Long userId) {
 
 		//1. 채팅방 가져오기
 		ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId).orElseThrow(
@@ -99,11 +103,15 @@ public class ChatRoomServiceV1 {
 
          */
 
-		return ResponseEntity.ok("Vote Successfully");
+		return ApiResult.builder()
+			.status(200)
+			.code(ErrorCode.SUCCESS)
+			.message(opinion + "을 투표하셨습니다.")
+			.build();
 	}
 
 	// 3. 채팅방 단건 불러오기
-	public ResponseEntity<Object> fetch(Long chatRoomId) {
+	public ApiResult<Object> fetch(Long chatRoomId) {
 
 		// 1. 채팅방 불러오기
 		ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
@@ -144,15 +152,14 @@ public class ChatRoomServiceV1 {
 			//.chatList(modifiedChatList)
 			.build();
 
-		String json;
+		ApiResult<Object> response = ApiResult.builder()
+			.status(200)
+			.code(ErrorCode.SUCCESS)
+			.message("채팅방을 불러왔습니다.")
+			.data(responseDTO)
+			.build();
 
-		try {
-			json = objectMapper.writeValueAsString(responseDTO);
-		} catch (JsonProcessingException e) {
-			log.error("ChatRoomSeviceV1 : " + e.getMessage());
-			throw new RuntimeException(e);
-		}
-		return ResponseEntity.ok(json);
+		return response;
 
 	}
 }

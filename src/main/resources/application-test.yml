@@ -17,15 +17,19 @@ spring:
   flyway:
     enabled: false
 
-  jwt:
-    secret: "yourTestSecretKeyMustBeLongEnoughForHS256Algorithm"
-    access-token:
-      expire-time: 600000   # 10분
-    refresh-token:
-      expire-time: 86400000 # 24시간
+
 
 
 logging.level:
   root: error
   org.hibernate.SQL: debug
   org.hibernate.orm.jdbc.bind: trace
+
+
+jwt:
+  secret:
+    key: "yourTestSecretKeyMustBeLongEnoughForHS256Algorithm"
+  access-token:
+    expire-time: 6000000   # 10분
+  refresh-token:
+    expire-time: 86400000 # 24시간

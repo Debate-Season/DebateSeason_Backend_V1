@@ -1,13 +1,15 @@
 package com.debateseason_backend_v1.domain.issue.controller;
 
-import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.debateseason_backend_v1.common.response.ApiResult;
 import com.debateseason_backend_v1.domain.issue.service.IssueServiceV1;
 import com.debateseason_backend_v1.domain.user.service.UserIssueServiceV1;
+import com.debateseason_backend_v1.security.CustomUserDetails;
 
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
@@ -25,7 +27,9 @@ public class UserIssueControllerV1 {
 		summary = "이슈방 단건 불러오기",
 		description = "이슈방 상세보기(+ 채팅방도 같이 불러와야 함.)")
 	@GetMapping("/issue")
-	public ResponseEntity<?> getIssue(@RequestParam(name = "issue-id") Long issueId, Long userId) {
+	public ApiResult<Object> getIssue(@RequestParam(name = "issue-id") Long issueId,
+		@AuthenticationPrincipal CustomUserDetails principal) {
+		Long userId = principal.getUserId();
 		return issueServiceV1.fetch(issueId, userId);
 	}
 

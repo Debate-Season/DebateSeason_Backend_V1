@@ -37,8 +37,8 @@ public class User {
 	@Column(name = "social_type")
 	private SocialType socialType;
 
-	@Column(name = "external_id")
-	private String externalId;
+	@Column(name = "identifier")
+	private String identifier;
 
 	// TODO: IssueServiceV1 에러 때문에 User 엔티티에 위치, Profile 로 옮겨야 함.
 	@Column(name = "community")
@@ -52,7 +52,7 @@ public class User {
 	private User(SocialType socialType, String externalId) {
 
 		this.socialType = socialType;
-		this.externalId = externalId;
+		this.identifier = externalId;
 	}
 
 }

@@ -29,7 +29,7 @@ public class UserServiceV1 {
 	@Transactional
 	public LoginResponse socialLogin(SocialLoginServiceRequest request) {
 
-		User user = userRepository.findBySocialTypeAndExternalId(
+		User user = userRepository.findBySocialTypeAndIdentifier(
 				request.socialType(),
 				request.identifier()
 			)

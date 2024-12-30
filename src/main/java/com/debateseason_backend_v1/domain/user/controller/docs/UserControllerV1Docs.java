@@ -21,8 +21,8 @@ public interface UserControllerV1Docs {
 		summary = "소셜 로그인",
 		description = """
 			소셜 타입과 식별자를 이용하여 로그인을 수행합니다.
-			첫 로그인(프로필 미등록)인 경우 profile_status가 false,
-			프로필 등록 후 로그인의 경우 profile_status가 true로 응답됩니다.
+			첫 로그인(프로필 미등록)인 경우 profileStatus가 false,
+			프로필 등록 후 로그인의 경우 profileStatus가 true로 응답됩니다.
 			"""
 	)
 	@io.swagger.v3.oas.annotations.parameters.RequestBody(
@@ -48,10 +48,10 @@ public interface UserControllerV1Docs {
 							    "code": "SUCCESS",
 							    "message": "소셜 로그인 성공",
 							    "data": {
-							        "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-							        "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-							        "social_type": "kakao",
-							        "profile_status": false
+							        "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+							        "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+							        "socialType": "kakao",
+							        "profileStatus": false
 							    }
 							}
 							"""
@@ -65,10 +65,10 @@ public interface UserControllerV1Docs {
 							    "code": "SUCCESS",
 							    "message": "소셜 로그인 성공",
 							    "data": {
-							        "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-							        "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-							        "social_type": "kakao",
-							        "profile_status": true
+							        "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+							        "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+							        "socialType": "kakao",
+							        "profileStatus": true
 							    }
 							}
 							"""

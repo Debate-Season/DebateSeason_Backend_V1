@@ -39,7 +39,7 @@ public interface ProfileControllerV1Docs {
 					    "nickname": "홍길동",
 					    "community_id": 1,
 					    "gender": "남성",
-					    "age_range": "20대"
+					    "ageRange": "20대"
 					}
 					"""
 			)
@@ -147,7 +147,7 @@ public interface ProfileControllerV1Docs {
 						    "data": {
 						        "nickname": "홍길동",
 						        "gender": "남성",
-						        "age_range": "20대",
+						        "ageRange": "20대",
 						        "community": {
 						            "id": 1,
 						            "name": "취미",
@@ -194,9 +194,9 @@ public interface ProfileControllerV1Docs {
 				value = """
 					{
 					    "nickname": "홍길동",
-					    "community_id": 2,
+					    "communityId": 2,
 					    "gender": "남성",
-					    "age_range": "30대"
+					    "ageRange": "30대"
 					}
 					"""
 			)

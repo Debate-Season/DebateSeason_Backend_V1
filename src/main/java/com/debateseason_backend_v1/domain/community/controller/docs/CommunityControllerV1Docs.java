@@ -55,19 +55,19 @@ public interface CommunityControllerV1Docs {
 						        {
 						            "id": 1,
 						            "name": "디시인사이드",
-						            "icon_url": "community/icons/dcinside.png"
+						            "iconUrl": "community/icons/dcinside.png"
 						        },
 						        {
 						            "id": 2,
 						            "name": "에펨코리아",
-						            "icon_url": "community/icons/fmkorea.png"
+						            "iconUrl": "community/icons/fmkorea.png"
 						        }
 						    ],
 						    "meta": {
 						        "page": 0,
 						        "size": 20,
-						        "total_elements": 50,
-						        "total_pages": 3
+						        "totalElements": 50,
+						        "totalPages": 3
 						    }
 						}
 						"""
@@ -120,19 +120,19 @@ public interface CommunityControllerV1Docs {
 						        {
 						            "id": 1,
 						            "name": "디시인사이드",
-						            "icon_url": "community/icons/dcinside.png"
+						            "iconUrl": "community/icons/dcinside.png"
 						        },
 						        {
 						            "id": 5,
 						            "name": "에펨코리아",
-						            "icon_url": "community/icons/fmkorea.png"
+						            "iconUrl": "community/icons/fmkorea.png"
 						        }
 						    ],
 						    "meta": {
 						        "page": 0,
 						        "size": 20,
-						        "total_elements": 2,
-						        "total_pages": 1
+						        "totalElements": 2,
+						        "totalPages": 1
 						    }
 						}
 						"""

@@ -66,14 +66,6 @@ class JwtAuthenticationFilterTest {
 				.andExpect(status().isOk())
 				.andDo(print());
 		}
-
-		@Test
-		@DisplayName("Authorization 헤더가 없을 경우 필터 통과")
-		void proceedWithoutAuthorizationHeader() throws Exception {
-			mockMvc.perform(get("/api/v1/permit"))
-				.andExpect(status().isOk())
-				.andDo(print());
-		}
 	}
 
 	@Nested

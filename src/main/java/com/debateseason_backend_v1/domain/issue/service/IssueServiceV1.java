@@ -152,7 +152,7 @@ public class IssueServiceV1 {
 			}
 
 			ChatRoomDAO chatRoomDAO = ChatRoomDAO.builder()
-				.id(c.getId())
+				.chatRoomId(c.getId())
 				.title(c.getTitle())
 				.content(c.getContent())
 				//.issue(c.getIssue())
@@ -165,10 +165,10 @@ public class IssueServiceV1 {
 		}
 		log.info("Ok3");
 
-		Map<Integer, ChatRoomDAO> chatRoomMap = new LinkedHashMap<>();
+		List<ChatRoomDAO> chatRoomMap = new ArrayList<>();
 
 		for (int i = 1; i < chatRoomDaoList.size() + 1; i++) {
-			chatRoomMap.put(i, chatRoomDaoList.get(i - 1));
+			chatRoomMap.add(chatRoomDaoList.get(i - 1));
 		}
 
 		// 1-5 IssueDAO만들기
@@ -195,24 +195,26 @@ public class IssueServiceV1 {
 		List<Issue> issueList = issueRepository.findAll();
 
 		// Gson,JSONArray이 없어서 Map으로 반환을 한다.
-		Map<Integer, IssueResponse> issueMap = new LinkedHashMap<>();
+		List<IssueResponse> responseList = new ArrayList<>();
 
 		// loop를 돌면서, issueId에 해당하는 chatRoom을 count 한다.
 		for (int i = 0; i < issueList.size(); i++) {
 
+			Long id = issueList.get(i).getId();
 			IssueResponse response = IssueResponse.builder()
-				.title(issueList.get(i).getTitle())
-				.createdAt(issueList.get(i).getCreatedAt())
-				.countChatRoom(chatRoomRepository.countByIssue(issueList.get(i)))
-				.build();
-			issueMap.put(i, response);
+					.issueId(id)
+					.title(issueList.get(i).getTitle())
+					.createdAt(issueList.get(i).getCreatedAt())
+					.countChatRoom(chatRoomRepository.countByIssue(issueList.get(i)))
+					.build();
+			responseList.add(response);
 		}
 
 		ApiResult<Object> response = ApiResult.builder()
 			.status(200)
 			.code(ErrorCode.SUCCESS)
 			.message("이슈방 전체를 불어왔습니다.")
-			.data(issueMap)
+			.data(responseList)
 			.build();
 
 		return response;

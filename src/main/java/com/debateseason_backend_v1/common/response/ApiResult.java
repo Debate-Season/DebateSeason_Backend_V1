@@ -17,10 +17,10 @@ import lombok.Getter;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ApiResult<T> {
 
-	@Schema(description = "HTTP 상태 코드", example = "200")
+	@Schema(description = "HTTP 상태 코드", example = "200", implementation = Integer.class)
 	private int status;
 
-	@Schema(description = "응답 코드", example = "SUCCESS")
+	@Schema(description = "응답 코드", example = "SUCCESS", implementation = ErrorCode.class)
 	private ErrorCode code;
 
 	@Schema(description = "응답 메시지", example = "정상적으로 처리되었습니다")
@@ -28,6 +28,20 @@ public class ApiResult<T> {
 
 	@Schema(description = "응답 데이터")
 	private T data;
+
+	@Schema(description = "페이징 메타 정보")
+	private PageMetaResponse meta;
+
+	// 페이징 성공 응답
+	public static <T> ApiResult<T> success(String message, T data, PageMetaResponse meta) {
+		return ApiResult.<T>builder()
+			.status(HttpStatus.OK.value())
+			.code(ErrorCode.SUCCESS)
+			.message(message)
+			.data(data)
+			.meta(meta)
+			.build();
+	}
 
 	// 커스텀 status 성공 응답
 	public static <T> ApiResult<T> of(HttpStatus status, String message, T data) {
@@ -40,7 +54,16 @@ public class ApiResult<T> {
 			.build();
 	}
 
-	// 200 성공 응답
+	// 데이터가 없는 성공 응답
+	public static ApiResult<Void> success(String message) {
+		return ApiResult.<Void>builder()
+			.status(HttpStatus.OK.value())
+			.code(ErrorCode.SUCCESS)
+			.message(message)
+			.build();
+	}
+
+	// 데이터가 있는 성공 응답
 	public static <T> ApiResult<T> success(String message, T data) {
 
 		return ApiResult.<T>builder()

@@ -20,6 +20,7 @@ public enum ErrorCode implements CodeInterface {
 	// 1000번대 JWT 에러
 	TOKEN_EXPIRED(1000, HttpStatus.UNAUTHORIZED, "인증이 만료되었습니다. 다시 로그인해주세요."),
 	INVALID_TOKEN(1001, HttpStatus.UNAUTHORIZED, "유효하지 않은 인증입니다."),
+	NOT_SUPPORTED_SOCIAL_TYPE(1002, HttpStatus.BAD_REQUEST, "지원하지 않는 소셜 타입입니다"),
 
 	// 2000번대 프로필 관련 에러
 	NOT_SUPPORTED_COMMUNITY(2000, HttpStatus.BAD_REQUEST, "지원하지 않는 커뮤니티입니다."),
@@ -27,7 +28,9 @@ public enum ErrorCode implements CodeInterface {
 	DUPLICATE_NICKNAME(2002, HttpStatus.CONFLICT, "중복된 닉네임입니다."),
 	NOT_EXIST_PROFILE(2003, HttpStatus.NOT_FOUND, "프로필이 존재하지 않습니다."),
 	NOT_EXIST_PROFILE_COMMUNITY(2004, HttpStatus.NOT_FOUND, "프로필의 커뮤니티 정보가 없습니다."),
-	ALREADY_EXIST_PROFILE(2005, HttpStatus.CONFLICT, "이미 프로필이 등록된 사용자입니다.");
+	ALREADY_EXIST_PROFILE(2005, HttpStatus.CONFLICT, "이미 프로필이 등록된 사용자입니다."),
+	NOT_SUPPORTED_GENDER_TYPE(2006, HttpStatus.BAD_REQUEST, "지원하지 않는 성별 타입입니다"),
+	NOT_SUPPORTED_AGE_RANGE(2007, HttpStatus.BAD_REQUEST, "지원하지 않는 연령대입니다");
 
 	private final Integer code;
 	private final HttpStatus httpStatus;

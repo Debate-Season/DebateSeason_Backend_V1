@@ -31,7 +31,7 @@ public class UserServiceV1 {
 
 		User user = userRepository.findBySocialTypeAndExternalId(
 				request.socialType(),
-				request.externalId()
+				request.identifier()
 			)
 			.orElseGet(() -> createNewUser(request));
 
@@ -59,7 +59,7 @@ public class UserServiceV1 {
 
 		User user = User.builder()
 			.socialType(request.socialType())
-			.externalId(request.externalId())
+			.externalId(request.identifier())
 			.build();
 
 		return userRepository.save(user);

@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.debateseason_backend_v1.common.response.ApiResult;
 import com.debateseason_backend_v1.domain.issue.service.IssueServiceV1;
+import com.debateseason_backend_v1.domain.user.controller.docs.UserControllerV1Docs;
 import com.debateseason_backend_v1.domain.user.controller.request.SocialLoginRequest;
 import com.debateseason_backend_v1.domain.user.service.UserServiceV1;
 import com.debateseason_backend_v1.domain.user.service.response.LoginResponse;
@@ -18,7 +19,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/v1/users")
-public class UserControllerV1 {
+public class UserControllerV1 implements UserControllerV1Docs {
 
 	private final UserServiceV1 userServiceV1;
 	private final IssueServiceV1 issueServiceV1;

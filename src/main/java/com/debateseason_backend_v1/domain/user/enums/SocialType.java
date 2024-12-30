@@ -2,7 +2,8 @@ package com.debateseason_backend_v1.domain.user.enums;
 
 import java.util.Arrays;
 
-import com.debateseason_backend_v1.domain.user.exception.IllegalEnumValueException;
+import com.debateseason_backend_v1.common.exception.CustomException;
+import com.debateseason_backend_v1.common.exception.ErrorCode;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
@@ -26,9 +27,9 @@ public enum SocialType {
 	@JsonCreator
 	public static SocialType from(String description) {
 		return Arrays.stream(values())
-			.filter(type -> type.getDescription().equals(description))  // 대소문자 구분 없이 비교
+			.filter(type -> type.getDescription().equals(description))
 			.findFirst()
-			.orElseThrow(() -> new IllegalEnumValueException("SocialType", description));
+			.orElseThrow(() -> new CustomException(ErrorCode.NOT_SUPPORTED_SOCIAL_TYPE));
 	}
 
 }

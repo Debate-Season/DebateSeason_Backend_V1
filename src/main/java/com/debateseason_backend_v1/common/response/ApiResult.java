@@ -17,10 +17,10 @@ import lombok.Getter;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ApiResult<T> {
 
-	@Schema(description = "HTTP 상태 코드", example = "200")
+	@Schema(description = "HTTP 상태 코드", example = "200", implementation = Integer.class)
 	private int status;
 
-	@Schema(description = "응답 코드", example = "SUCCESS")
+	@Schema(description = "응답 코드", example = "SUCCESS", implementation = ErrorCode.class)
 	private ErrorCode code;
 
 	@Schema(description = "응답 메시지", example = "정상적으로 처리되었습니다")
@@ -29,6 +29,7 @@ public class ApiResult<T> {
 	@Schema(description = "응답 데이터")
 	private T data;
 
+	@Schema(description = "페이징 메타 정보")
 	private PageMetaResponse meta;
 
 	// 페이징 성공 응답

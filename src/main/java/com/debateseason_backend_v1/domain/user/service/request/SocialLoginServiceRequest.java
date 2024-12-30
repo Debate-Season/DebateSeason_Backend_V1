@@ -6,7 +6,7 @@ import lombok.Builder;
 
 @Builder
 public record SocialLoginServiceRequest(
-	String externalId,
+	String identifier,
 	SocialType socialType
 ) {
 }

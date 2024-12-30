@@ -33,6 +33,7 @@ spring:
     ansi:
       enabled: always
 
+
 logging.level:
   root: info
 

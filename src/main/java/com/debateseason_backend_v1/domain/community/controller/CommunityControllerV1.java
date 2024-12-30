@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.debateseason_backend_v1.common.response.ApiResult;
 import com.debateseason_backend_v1.common.response.PageMetaResponse;
+import com.debateseason_backend_v1.domain.community.controller.docs.CommunityControllerV1Docs;
 import com.debateseason_backend_v1.domain.community.service.CommunityServiceV1;
 import com.debateseason_backend_v1.domain.community.service.response.CommunityResponse;
 
@@ -21,7 +22,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/communities")
-public class CommunityControllerV1 {
+public class CommunityControllerV1 implements CommunityControllerV1Docs {
 
 	private final CommunityServiceV1 communityService;
 
@@ -42,7 +43,7 @@ public class CommunityControllerV1 {
 	@GetMapping("/search")
 	public ApiResult<List<CommunityResponse>> searchCommunities(
 		@RequestParam String name,
-		@PageableDefault(size = 20, sort = "name", direction = Sort.Direction.ASC) Pageable pageable
+		@PageableDefault(size = 20, sort = "name", direction = Sort.Direction.DESC) Pageable pageable
 	) {
 
 		Page<CommunityResponse> search = communityService.searchByName(name, pageable);

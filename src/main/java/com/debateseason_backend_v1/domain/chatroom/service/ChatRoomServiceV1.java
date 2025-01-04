@@ -136,7 +136,7 @@ public class ChatRoomServiceV1 {
 
 		// 2-2. ChatRoomDAO로 옮기기
 		ChatRoomDAO chatRoomDAO = ChatRoomDAO.builder()
-			.id(chatRoom.getId())
+			.chatRoomId(chatRoom.getId())
 			//.issue(chatRoom.getIssue())
 			.title(chatRoom.getTitle())
 			.createdAt(chatRoom.getCreatedAt())

@@ -39,9 +39,21 @@ public class ChatRoomServiceV1 {
 	public ApiResult<Object> save(ChatRoomDTO chatRoomDTO, long issueId) {
 
 		// 1. Issue 찾기
-		Issue issue = issueRepository.findById(issueId).orElseThrow(
-			() -> new RuntimeException("There is no " + issueId)
-		);
+		Issue issue = null ;
+		try {
+			issue = issueRepository.findById(issueId).orElseThrow(
+				() -> new NullPointerException("There is no " + issueId)
+			);
+
+		}
+		catch (NullPointerException e){
+			return ApiResult.builder()
+				.status(400)
+				.code(ErrorCode.BAD_REQUEST)
+				.message("선택하신 이슈방은 존재하지 않으므로, 채팅방을 생성할 수 없습니다.")
+				.build();
+		}
+
 
 		// 2 ChatRoom 엔티티 생성
 		ChatRoom chatRoom = ChatRoom.builder()
@@ -111,7 +123,24 @@ public class ChatRoomServiceV1 {
 	}
 
 	// 3. 채팅방 단건 불러오기
-	public ApiResult<Object> fetch(Long chatRoomId) {
+	// Opinion값 같이 넘겨주면 될 듯하다. 없으면 null
+	public ApiResult<Object> fetch(Long userId,Long chatRoomId) {
+
+		// 우선 해당 채팅방이 유효한지 먼저 파악부터 해야한다.
+		if(chatRoomRepository.findById(chatRoomId).isEmpty()){
+			return ApiResult.builder()
+				.status(400)
+				.code(ErrorCode.BAD_REQUEST)
+				.message("선택하신 채팅방은 존재하지 않습니다.")
+				.build();
+		}
+
+
+		String opinion = "none";
+		UserChatRoom tmpuserChatRoom = userChatRoomRepository.findByUserIdAndChatRoomId(userId,chatRoomId);
+		if(tmpuserChatRoom!=null){
+			opinion = tmpuserChatRoom.getOpinion();
+		}
 
 		// 1. 채팅방 불러오기
 		ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
@@ -121,6 +150,8 @@ public class ChatRoomServiceV1 {
 
 		// 2. UserChatRoom 가져오기 (특정 이슈방에 대한 찬성/반대를 추출하기 위함)
 		List<UserChatRoom> userChatRoom = userChatRoomRepository.findByChatRoom(chatRoom);
+
+
 
 		// 2-1. 찬성 반대 count하기
 		int countAgree = 0;
@@ -143,6 +174,7 @@ public class ChatRoomServiceV1 {
 			.content(chatRoom.getContent())
 			.agree(countAgree)
 			.disagree(countDisagree)
+			.opinion(opinion)
 			.build();
 
 		// 3. 관련 채팅들 불러오기가 추가될지도?

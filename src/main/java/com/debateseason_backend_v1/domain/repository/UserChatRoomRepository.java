@@ -12,6 +12,6 @@ import com.debateseason_backend_v1.domain.repository.entity.UserChatRoom;
 @Repository
 public interface UserChatRoomRepository extends JpaRepository<UserChatRoom, Long> {
 	List<UserChatRoom> findByChatRoom(ChatRoom chatRoom);
-
 	UserChatRoom findByUserAndChatRoom(User user, ChatRoom chatRoom);
+	UserChatRoom findByUserIdAndChatRoomId(Long userId,Long chatroomId);
 }

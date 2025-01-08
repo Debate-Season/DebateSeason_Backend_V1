@@ -30,7 +30,10 @@ public enum ErrorCode implements CodeInterface {
 	NOT_EXIST_PROFILE_COMMUNITY(2004, HttpStatus.NOT_FOUND, "프로필의 커뮤니티 정보가 없습니다."),
 	ALREADY_EXIST_PROFILE(2005, HttpStatus.CONFLICT, "이미 프로필이 등록된 사용자입니다."),
 	NOT_SUPPORTED_GENDER_TYPE(2006, HttpStatus.BAD_REQUEST, "지원하지 않는 성별 타입입니다"),
-	NOT_SUPPORTED_AGE_RANGE(2007, HttpStatus.BAD_REQUEST, "지원하지 않는 연령대입니다");
+	NOT_SUPPORTED_AGE_RANGE(2007, HttpStatus.BAD_REQUEST, "지원하지 않는 연령대입니다"),
+
+	// API 요청 에러
+	BAD_REQUEST(400,HttpStatus.BAD_REQUEST,"잘못된 요청입니다.");
 
 	private final Integer code;
 	private final HttpStatus httpStatus;

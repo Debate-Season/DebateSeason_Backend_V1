@@ -46,7 +46,7 @@ public class ChatRoomServiceV1 {
 			);
 
 		}
-		catch (NullPointerException e){
+		catch (NullPointerException | IllegalArgumentException e){
 			return ApiResult.builder()
 				.status(400)
 				.code(ErrorCode.BAD_REQUEST)

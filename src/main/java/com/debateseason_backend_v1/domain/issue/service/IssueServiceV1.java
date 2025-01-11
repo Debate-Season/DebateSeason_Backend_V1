@@ -77,9 +77,21 @@ public class IssueServiceV1 {
 	public ApiResult<Object> fetch(Long issueId, Long userId) {
 
 		// 1. 이슈방 불러오기
-		Issue issue = issueRepository.findById(issueId).orElseThrow(
-			() -> new RuntimeException("There is no " + issueId)
-		);
+		Issue issue = null;
+		try{
+			issue = issueRepository.findById(issueId).orElseThrow(
+				() -> new NullPointerException("There is no " + issueId)
+			);
+
+		}
+		catch (NullPointerException | IllegalArgumentException e){
+			return ApiResult.builder()
+				.status(400)
+				.code(ErrorCode.BAD_REQUEST)
+				.message("선택하신 이슈방은 존재하지 않습니다.")
+				.build();
+
+		}
 
 		// 2. User 찾기
 		/*

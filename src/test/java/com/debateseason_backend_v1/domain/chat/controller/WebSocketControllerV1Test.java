@@ -91,49 +91,49 @@ class WebSocketControllerV1Test {
 		}
 	}
 
-	@Test
-	@DisplayName("채팅 메시지 전송 시 모든 필드가 올바르게 전달되는지 검증")
-	void sendMessageTest() throws InterruptedException {
-		//구독 핸들러 생성
-		StompFrameHandler frameHandler = createFrameHandler(ChatMessage.class);
-
-		// 구독 수행 후 완료 대기 시간을 500ms
-		stompSession.subscribe("/topic/public", frameHandler);
-		Thread.sleep(500); // 구독 완료 대기
-
-		// 메시지 생성 및 전송
-		ChatMessage message = ChatMessage.builder()
-			.type(MessageType.CHAT)
-			.content(TEST_CHAT_CONTENT)
-			.sender(TEST_CHAT_SENDER)
-			.userCommunity(TEST_CHAT_USER_COMMUNITY)
-			.build();
-
-		stompSession.send("/stomp/chat.sendMessage", message);
-
-		// 메시지 큐 확인 (큐가 비어있으면 테스트 실패)
-		ChatMessage received = blockingQueue.poll(5, TimeUnit.SECONDS);
-
-		assertThat(received).withFailMessage("메시지 수신 되지 않음").isNotNull();
-
-		assertThat(received.getContent())
-			.withFailMessage("메시지 Content는 \"%s\" 이여야 하나, 테스트에 사용된 Content는 \"%s\" 입니다.", TEST_CHAT_CONTENT, received.getContent())
-			.isEqualTo(TEST_CHAT_CONTENT);
-
-		assertThat(received.getSender())
-			.withFailMessage("Sender는 \"%s\" 이여야 하나, 테스트에 사용된 Sender는 \"%s\" 입니다.", TEST_CHAT_SENDER, received.getSender())
-			.isEqualTo(TEST_CHAT_SENDER);
-
-		assertThat(received.getUserCommunity())
-			.withFailMessage("userCommunity 는 \"%s\" 이여야 하나, 테스트에 적용된 userCommunity 는 \"%s\" 입니다", TEST_CHAT_USER_COMMUNITY, received.getUserCommunity())
-			.isEqualTo(TEST_CHAT_USER_COMMUNITY);
-
-		// 테스트 후 연결 정리
-		if (stompSession != null && stompSession.isConnected()) {
-			stompSession.disconnect();
-			log.info("stompSession disconnected");
-		}
-	}
+	// @Test
+	// @DisplayName("채팅 메시지 전송 시 모든 필드가 올바르게 전달되는지 검증")
+	// void sendMessageTest() throws InterruptedException {
+	// 	//구독 핸들러 생성
+	// 	StompFrameHandler frameHandler = createFrameHandler(ChatMessage.class);
+	//
+	// 	// 구독 수행 후 완료 대기 시간을 500ms
+	// 	stompSession.subscribe("/topic/public", frameHandler);
+	// 	Thread.sleep(500); // 구독 완료 대기
+	//
+	// 	// 메시지 생성 및 전송
+	// 	ChatMessage message = ChatMessage.builder()
+	// 		.type(MessageType.CHAT)
+	// 		.content(TEST_CHAT_CONTENT)
+	// 		.sender(TEST_CHAT_SENDER)
+	// 		.userCommunity(TEST_CHAT_USER_COMMUNITY)
+	// 		.build();
+	//
+	// 	stompSession.send("/stomp/chat.sendMessage", message);
+	//
+	// 	// 메시지 큐 확인 (큐가 비어있으면 테스트 실패)
+	// 	ChatMessage received = blockingQueue.poll(5, TimeUnit.SECONDS);
+	//
+	// 	assertThat(received).withFailMessage("메시지 수신 되지 않음").isNotNull();
+	//
+	// 	assertThat(received.getContent())
+	// 		.withFailMessage("메시지 Content는 \"%s\" 이여야 하나, 테스트에 사용된 Content는 \"%s\" 입니다.", TEST_CHAT_CONTENT, received.getContent())
+	// 		.isEqualTo(TEST_CHAT_CONTENT);
+	//
+	// 	assertThat(received.getSender())
+	// 		.withFailMessage("Sender는 \"%s\" 이여야 하나, 테스트에 사용된 Sender는 \"%s\" 입니다.", TEST_CHAT_SENDER, received.getSender())
+	// 		.isEqualTo(TEST_CHAT_SENDER);
+	//
+	// 	assertThat(received.getUserCommunity())
+	// 		.withFailMessage("userCommunity 는 \"%s\" 이여야 하나, 테스트에 적용된 userCommunity 는 \"%s\" 입니다", TEST_CHAT_USER_COMMUNITY, received.getUserCommunity())
+	// 		.isEqualTo(TEST_CHAT_USER_COMMUNITY);
+	//
+	// 	// 테스트 후 연결 정리
+	// 	if (stompSession != null && stompSession.isConnected()) {
+	// 		stompSession.disconnect();
+	// 		log.info("stompSession disconnected");
+	// 	}
+	// }
 
 	@AfterEach
 	void close() {

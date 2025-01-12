@@ -30,6 +30,7 @@ public class WebSecurityConfig {
 		"/api/v1/users/login",
 		"/api/v1/users/home",
 		"/api/v1/communities/**",
+		"api/v1/auth/reissue",
 		"/api/v1/profiles/nickname/check",
 		"/api/v1/room",
 		"/api/v1/issue",

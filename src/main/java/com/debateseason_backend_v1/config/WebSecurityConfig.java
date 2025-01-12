@@ -28,7 +28,7 @@ public class WebSecurityConfig {
 		"/actuator/**",
 		"/ws-stomp/**",
 		"/api/v1/users/login",
-		"/api/v1/users/**",
+		"/api/v1/users/home",
 		"/api/v1/communities/**",
 		"/api/v1/profiles/nickname/check",
 		"/api/v1/room",

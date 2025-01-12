@@ -258,7 +258,7 @@ public class IssueServiceV1 {
 		ApiResult<Object> response = ApiResult.builder()
 			.status(200)
 			.code(ErrorCode.SUCCESS)
-			.message("이슈방 전체를 불어왔습니다.")
+			.message("이슈방 전체를 불러왔습니다.")
 			.data(responseList)
 			.build();
 

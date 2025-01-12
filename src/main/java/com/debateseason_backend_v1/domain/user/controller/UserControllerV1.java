@@ -37,7 +37,7 @@ public class UserControllerV1 implements UserControllerV1Docs {
 	@Operation(
 		summary = "이슈방 전체를 불러옵니다(수정가능)",
 		description = " ")
-	@GetMapping("")
+	@GetMapping("/home")
 	public ApiResult<Object> indexPage() {
 		return issueServiceV1.fetchAll();
 	}

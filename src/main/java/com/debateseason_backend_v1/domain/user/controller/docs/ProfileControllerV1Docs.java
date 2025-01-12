@@ -36,7 +36,7 @@ public interface ProfileControllerV1Docs {
 				value = """
 					{
 					    "nickname": "홍길동",
-					    "community_id": 1,
+					    "communityId": 1,
 					    "gender": "남성",
 					    "ageRange": "20대"
 					}
@@ -150,7 +150,7 @@ public interface ProfileControllerV1Docs {
 						        "community": {
 						            "id": 1,
 						            "name": "취미",
-						            "icon_url": "https://example.com/hobby.png"
+						            "iconUrl": "https://example.com/hobby.png"
 						        }
 						    }
 						}

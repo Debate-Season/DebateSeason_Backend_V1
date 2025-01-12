@@ -62,7 +62,7 @@ public class ProfileServiceV1 {
 
 		ProfileCommunity profileCommunity = profileCommunityRepository.findByProfileId(profile.getId())
 			.orElseThrow(
-				() -> new CustomException(ErrorCode.NOT_EXIST_PROFILE_COMMUNITY)
+				() -> new CustomException(ErrorCode.NOT_FOUND_COMMUNITY_MEMBERSHIP)
 			);
 
 		Community community = communityRepository.findById(profileCommunity.getCommunityId())

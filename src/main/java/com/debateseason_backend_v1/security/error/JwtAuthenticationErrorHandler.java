@@ -8,7 +8,7 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 
 import com.debateseason_backend_v1.common.exception.ErrorCode;
-import com.debateseason_backend_v1.common.response.ApiResult;
+import com.debateseason_backend_v1.common.response.ErrorResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.servlet.http.HttpServletResponse;
@@ -26,7 +26,7 @@ public class JwtAuthenticationErrorHandler {
 
 		log.error("만료된 토큰입니다, uri: {}", requestURI);
 
-		ApiResult<?> errorResponse = ApiResult.error(
+		ErrorResponse errorResponse = ErrorResponse.of(
 			HttpStatus.UNAUTHORIZED,
 			ErrorCode.TOKEN_EXPIRED
 		);
@@ -38,7 +38,7 @@ public class JwtAuthenticationErrorHandler {
 
 		log.error("유효하지 않은 토큰입니다, uri: {}", requestURI);
 
-		ApiResult<?> errorResponse = ApiResult.error(
+		ErrorResponse errorResponse = ErrorResponse.of(
 			HttpStatus.UNAUTHORIZED,
 			ErrorCode.INVALID_TOKEN
 		);
@@ -48,7 +48,7 @@ public class JwtAuthenticationErrorHandler {
 	private void writeErrorResponse(
 		HttpServletResponse response,
 		HttpStatus status,
-		ApiResult<?> errorResponse
+		ErrorResponse errorResponse
 	) throws IOException {
 
 		response.setStatus(status.value());

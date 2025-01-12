@@ -24,7 +24,7 @@ public class ProfileValidator {
 
 	public void validateForUpdate(Long userId, String nickname) {
 		validateProfileExists(userId);
-		validateNickname(nickname);
+		validateNicknameFormat(nickname);
 	}
 
 	public void validateNickname(String nickname) {
@@ -44,13 +44,13 @@ public class ProfileValidator {
 		}
 	}
 
-	private void validateNicknameFormat(String nickname) {
+	public void validateNicknameFormat(String nickname) {
 		if (!NICKNAME_PATTERN.matcher(nickname).matches()) {
 			throw new CustomException(ErrorCode.INVALID_NICKNAME_FORMAT);
 		}
 	}
 
-	private void validateNicknameDuplicate(String nickname) {
+	public void validateNicknameDuplicate(String nickname) {
 		if (profileRepository.existsByNickname(nickname)) {
 			throw new CustomException(ErrorCode.DUPLICATE_NICKNAME);
 		}

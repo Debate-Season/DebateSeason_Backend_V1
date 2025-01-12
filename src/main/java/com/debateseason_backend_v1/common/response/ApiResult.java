@@ -74,14 +74,4 @@ public class ApiResult<T> {
 			.build();
 	}
 
-	// 에러 응답
-	public static <T> ApiResult<T> error(HttpStatus status, ErrorCode errorCode) {
-
-		return ApiResult.<T>builder()
-			.status(status.value())
-			.code(errorCode)
-			.message(errorCode.getMessage())
-			.build();
-	}
-
 }

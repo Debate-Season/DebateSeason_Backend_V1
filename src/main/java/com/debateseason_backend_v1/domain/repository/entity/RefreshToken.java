@@ -39,15 +39,19 @@ public class RefreshToken {
 	@Column(name = "token")
 	private String token;
 
+	@Column(name = "expiration_at")
+	private LocalDateTime expirationAt;
+
 	@CreatedDate
 	@Column(name = "created_at", updatable = false)
 	private LocalDateTime createdAt;
 
 	@Builder
-	protected RefreshToken(User user, String token) {
+	protected RefreshToken(User user, String token, LocalDateTime expirationAt) {
 
 		this.user = user;
 		this.token = token;
+		this.expirationAt = expirationAt;
 	}
 
 }

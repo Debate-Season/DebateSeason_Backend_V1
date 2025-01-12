@@ -110,4 +110,8 @@ public class JwtUtil {
 			.getPayload();
 	}
 
+	public long getRefreshTokenExpireTime() {
+		return refreshTokenExpireTime;
+	}
+
 }

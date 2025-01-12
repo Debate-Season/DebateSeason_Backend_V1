@@ -62,7 +62,7 @@ public class ProfileServiceV1 {
 
 		ProfileCommunity profileCommunity = profileCommunityRepository.findByProfileId(profile.getId())
 			.orElseThrow(
-				() -> new CustomException(ErrorCode.NOT_EXIST_PROFILE_COMMUNITY)
+				() -> new CustomException(ErrorCode.NOT_FOUND_COMMUNITY_MEMBERSHIP)
 			);
 
 		Community community = communityRepository.findById(profileCommunity.getCommunityId())
@@ -75,9 +75,12 @@ public class ProfileServiceV1 {
 	public void update(ProfileUpdateServiceRequest request) {
 
 		Profile profile = profileRepository.findByUserId(request.userId())
-			.orElseThrow(() -> new CustomException(ErrorCode.NOT_EXIST_USER));
+			.orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_PROFILE));
 
-		profileValidator.validateForUpdate(request.userId(), request.nickname());
+		if (!profile.getNickname().equals(request.nickname())) {
+			profileValidator.validateNicknameFormat(request.nickname());
+			profileValidator.validateNicknameDuplicate(request.nickname());
+		}
 		communityValidator.validate(request.communityId());
 
 		profile.update(request.nickname(), request.gender(), request.ageRange());

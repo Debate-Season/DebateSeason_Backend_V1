@@ -27,12 +27,14 @@ public class WebSecurityConfig {
 		"/v3/api-docs/**",
 		"/actuator/**",
 		"/ws-stomp/**",
-		"/api/v1/users/login",
-		"/api/v1/users/home",
+		"/stomp/**",
+		"/topic/**",
+		"/api/v1/users/**",
 		"/api/v1/communities/**",
-		"/api/v1/profiles/nickname/check",
-		"/api/v1/room",
-		"/api/v1/issue",
+		"/api/v1/profiles/**",
+		"api/v1/auth/**",
+		"/api/v1/room/**",
+		"/api/v1/issue/**",
 	};
 
 	@Bean
@@ -43,8 +45,9 @@ public class WebSecurityConfig {
 			.formLogin(AbstractHttpConfigurer::disable)
 			.httpBasic(AbstractHttpConfigurer::disable)
 			.authorizeHttpRequests(auth -> auth
-				.requestMatchers(PUBLIC_URLS).permitAll()
-				.anyRequest().authenticated()
+					.anyRequest().permitAll()
+				// .requestMatchers(PUBLIC_URLS).permitAll()
+				// .anyRequest().authenticated()
 			)
 			.addFilterBefore(
 				new JwtAuthenticationFilter(jwtUtil, errorHandler),

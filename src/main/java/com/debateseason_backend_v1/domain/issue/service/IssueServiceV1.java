@@ -16,12 +16,18 @@ import com.debateseason_backend_v1.domain.issue.dto.IssueDTO;
 import com.debateseason_backend_v1.domain.issue.model.CommunityRecords;
 import com.debateseason_backend_v1.domain.issue.model.response.IssueResponse;
 import com.debateseason_backend_v1.domain.repository.ChatRoomRepository;
+import com.debateseason_backend_v1.domain.repository.CommunityRepository;
 import com.debateseason_backend_v1.domain.repository.IssueRepository;
+import com.debateseason_backend_v1.domain.repository.ProfileCommunityRepository;
+import com.debateseason_backend_v1.domain.repository.ProfileRepository;
 import com.debateseason_backend_v1.domain.repository.UserChatRoomRepository;
 import com.debateseason_backend_v1.domain.repository.UserIssueRepository;
 import com.debateseason_backend_v1.domain.repository.UserRepository;
 import com.debateseason_backend_v1.domain.repository.entity.ChatRoom;
+import com.debateseason_backend_v1.domain.repository.entity.Community;
 import com.debateseason_backend_v1.domain.repository.entity.Issue;
+import com.debateseason_backend_v1.domain.repository.entity.Profile;
+import com.debateseason_backend_v1.domain.repository.entity.ProfileCommunity;
 import com.debateseason_backend_v1.domain.repository.entity.User;
 import com.debateseason_backend_v1.domain.repository.entity.UserChatRoom;
 import com.debateseason_backend_v1.domain.user.dto.UserDTO;
@@ -41,6 +47,10 @@ public class IssueServiceV1 {
 	private final ChatRoomRepository chatRoomRepository;
 	private final UserChatRoomRepository userChatRoomRepository;
 	private final UserRepository userRepository;
+
+	private final ProfileRepository profileRepository;
+	private final ProfileCommunityRepository profileCommunityRepository;
+	private final CommunityRepository communityRepository;
 
 	private final ObjectMapper objectMapper;
 
@@ -67,18 +77,53 @@ public class IssueServiceV1 {
 	public ApiResult<Object> fetch(Long issueId, Long userId) {
 
 		// 1. 이슈방 불러오기
-		Issue issue = issueRepository.findById(issueId).orElseThrow(
-			() -> new RuntimeException("There is no " + issueId)
-		);
+		Issue issue = null;
+		try{
+			issue = issueRepository.findById(issueId).orElseThrow(
+				() -> new NullPointerException("There is no " + issueId)
+			);
+
+		}
+		catch (NullPointerException | IllegalArgumentException e){
+			return ApiResult.builder()
+				.status(400)
+				.code(ErrorCode.BAD_REQUEST)
+				.message("선택하신 이슈방은 존재하지 않습니다.")
+				.build();
+
+		}
 
 		// 2. User 찾기
+		/*
 		User user = userRepository.findById(userId).orElseThrow(
 			() -> new RuntimeException("There is no " + userId)
 		);
+		 */
+
+		// 2. Community 찾는 과정
+		/*
+			userId로 Profile 찾기
+			Profile.id로 ProfileCommunity.communityId 찾기
+			위에서 찾은 communityId로 Community 테이블에서 community,name 가져오기
+			select 쿼리만해도 3번이 나가는데 -> 비효율적임.
+		 */
+
+		Profile profile = profileRepository.findByUserId(userId).orElseThrow(
+			() -> new RuntimeException("There is no "+ userId)
+		);
+
+		ProfileCommunity profileCommunity = profileCommunityRepository.findByProfileId(profile.getId()).orElseThrow(
+			() -> new RuntimeException("There is no "+ profile.getId())
+		);
+
+		Community community = communityRepository.findById(profileCommunity.getCommunityId()).orElseThrow(
+			() -> new RuntimeException("There is no "+ profileCommunity.getCommunityId())
+		);
+
 
 		UserDTO userDTO = new UserDTO();
-		userDTO.setCommunity(user.getCommunity());
-		userDTO.setId(user.getId());
+		userDTO.setCommunity(community.getName());
+		userDTO.setId(userId);
 
 		CommunityRecords.record(userDTO, issueId);
 		Map<String, Integer> map = CommunityRecords.getSortedCommunity(issueId);

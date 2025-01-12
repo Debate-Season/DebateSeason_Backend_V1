@@ -40,8 +40,11 @@ public class ChatRoomControllerV1 {
 		summary = "채팅방 단건 불러오기",
 		description = "채팅방 상세보기")
 	@GetMapping("/room")
-	public ApiResult<Object> getChatRoom(@RequestParam(name = "chatroom-id") Long chatRoomId) {
-		return chatRoomServiceV1.fetch(chatRoomId);
+	public ApiResult<Object> getChatRoom(@RequestParam(name = "chatroom-id") Long chatRoomId,
+		@AuthenticationPrincipal CustomUserDetails principal) {
+
+		Long userId = principal.getUserId();
+		return chatRoomServiceV1.fetch(userId,chatRoomId);
 	}
 
 	// 5. 채팅방 찬성/반대 투표하기, opinion, chatroomid = 쿼리스트링

@@ -24,7 +24,7 @@ public class AuthServiceV1 {
 	@Transactional
 	public TokenReissueResponse reissueToken(TokenReissueServiceRequest request) {
 
-		RefreshToken refreshToken = refreshTokenRepository.findByToken(request.getRefreshToken())
+		RefreshToken refreshToken = refreshTokenRepository.findByToken(request.refreshToken())
 			.orElseThrow(() -> new CustomException(ErrorCode.INVALID_REFRESH_TOKEN));
 
 		String newAccessToken = jwtUtil.createAccessToken(refreshToken.getUser().getId());

@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.debateseason_backend_v1.common.response.ApiResult;
+import com.debateseason_backend_v1.domain.auth.controller.docs.AuthControllerV1Docs;
 import com.debateseason_backend_v1.domain.auth.controller.request.TokenReissueRequest;
 import com.debateseason_backend_v1.domain.auth.service.AuthServiceV1;
 import com.debateseason_backend_v1.domain.auth.service.response.TokenReissueResponse;
@@ -15,12 +16,12 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/auth")
-public class AuthControllerV1 {
+public class AuthControllerV1 implements AuthControllerV1Docs {
 
 	private final AuthServiceV1 authService;
 
 	@PostMapping("/reissue")
-	public ApiResult<?> reissueAccessToken(@RequestBody TokenReissueRequest request) {
+	public ApiResult<TokenReissueResponse> reissueToken(@RequestBody TokenReissueRequest request) {
 
 		TokenReissueResponse tokenReissueResponse = authService.reissueToken(request.toServiceRequest());
 

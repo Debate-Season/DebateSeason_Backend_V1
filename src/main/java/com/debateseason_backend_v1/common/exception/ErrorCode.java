@@ -25,7 +25,7 @@ public enum ErrorCode implements CodeInterface {
 	TOKEN_EXPIRED(1000, HttpStatus.UNAUTHORIZED, "인증이 만료되었습니다. 다시 로그인해주세요."),
 	INVALID_TOKEN(1001, HttpStatus.UNAUTHORIZED, "유효하지 않은 인증입니다."),
 	NOT_SUPPORTED_SOCIAL_TYPE(1002, HttpStatus.BAD_REQUEST, "지원하지 않는 소셜 타입입니다"),
-	INVALID_REFRESH_TOKEN(1003, HttpStatus.UNAUTHORIZED, "Refresh Token이 유효하지 않습니다."),
+	INVALID_REFRESH_TOKEN(1003, HttpStatus.UNAUTHORIZED, "유효하지 않은 Refresh Token 입니다."),
 
 	// 2000번대 프로필 관련 에러
 	INVALID_NICKNAME_FORMAT(2001, HttpStatus.BAD_REQUEST, "닉네임은 한글 또는 영문으로 8자 이내로 입력해주세요."),

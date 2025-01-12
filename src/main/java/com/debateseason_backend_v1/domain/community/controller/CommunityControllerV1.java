@@ -35,8 +35,8 @@ public class CommunityControllerV1 implements CommunityControllerV1Docs {
 
 		return ApiResult.success(
 			"커뮤니티 목록 조회가 완료되었습니다.",
-			communities.getContent(),
-			PageMetaResponse.of(communities)
+			communities.getContent()
+			//,PageMetaResponse.of(communities)
 		);
 	}
 
@@ -50,8 +50,8 @@ public class CommunityControllerV1 implements CommunityControllerV1Docs {
 
 		return ApiResult.success(
 			"커뮤니티 검색이 완료되었습니다.",
-			search.getContent(),
-			PageMetaResponse.of(search)
+			search.getContent()
+			//,PageMetaResponse.of(search)
 		);
 	}
 

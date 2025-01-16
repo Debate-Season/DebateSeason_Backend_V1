@@ -30,7 +30,13 @@ public interface CommunityControllerV1Docs {
 			description = "커뮤니티 목록 조회 성공",
 			content = @Content(
 				mediaType = "application/json",
-				schema = @Schema(implementation = ApiResult.class),
+				schema = @Schema(
+					oneOf = {
+						ApiResult.class,
+						CommunityResponse.class
+					},
+					description = "커뮤니티 목록 조회 응답 데이터"
+				),
 				examples = @ExampleObject(
 					value = """
 						{
@@ -80,7 +86,13 @@ public interface CommunityControllerV1Docs {
 			description = "커뮤니티 검색 성공",
 			content = @Content(
 				mediaType = "application/json",
-				schema = @Schema(implementation = ApiResult.class),
+				schema = @Schema(
+					oneOf = {
+						ApiResult.class,
+						CommunityResponse.class
+					},
+					description = "커뮤니티 검색 응답 데이터"
+				),
 				examples = {
 					@ExampleObject(
 						name = "검색 결과가 있는 경우",

@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import com.debateseason_backend_v1.common.response.ApiResult;
 import com.debateseason_backend_v1.domain.user.controller.request.ProfileRegisterRequest;
 import com.debateseason_backend_v1.domain.user.controller.request.ProfileUpdateRequest;
+import com.debateseason_backend_v1.domain.user.service.response.LoginResponse;
 import com.debateseason_backend_v1.domain.user.service.response.ProfileResponse;
 import com.debateseason_backend_v1.security.CustomUserDetails;
 
@@ -136,7 +137,13 @@ public interface ProfileControllerV1Docs {
 			description = "프로필 조회 성공",
 			content = @Content(
 				mediaType = "application/json",
-				schema = @Schema(implementation = ApiResult.class),
+				schema = @Schema(
+					oneOf = {
+						ApiResult.class,
+						ProfileResponse.class
+					},
+					description = "로그인 응답 데이터"
+				),
 				examples = @ExampleObject(
 					value = """
 						{
@@ -149,8 +156,8 @@ public interface ProfileControllerV1Docs {
 						        "ageRange": "20대",
 						        "community": {
 						            "id": 1,
-						            "name": "취미",
-						            "iconUrl": "https://example.com/hobby.png"
+						            "name": "디시",
+						            "iconUrl": "https://d1aqrs2xenvfsd.cloudfront.net/community/icons/dcinside.png"
 						        }
 						    }
 						}

@@ -34,7 +34,6 @@ CREATE TABLE community
     community_id BIGINT       NOT NULL AUTO_INCREMENT,
     name         VARCHAR(255) NOT NULL,
     icon_url     VARCHAR(255),
-    created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (community_id)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
@@ -66,8 +65,6 @@ CREATE TABLE chat_room
     issue_id     BIGINT NOT NULL,
     title        VARCHAR(255),
     content      TEXT,
-    yes          INTEGER   DEFAULT 0,
-    no           INTEGER   DEFAULT 0,
     created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (chat_room_id),
     CONSTRAINT fk_chatroom_issue FOREIGN KEY (issue_id) REFERENCES issue (issue_id)
@@ -115,33 +112,8 @@ CREATE TABLE refresh_tokens
     refresh_token_id BIGINT       NOT NULL AUTO_INCREMENT,
     user_id          BIGINT       NOT NULL,
     token            VARCHAR(255) NOT NULL,
+    expiration_at    TIMESTAMP    NOT NULL,
     created_at       TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (refresh_token_id),
     CONSTRAINT fk_refreshtoken_users FOREIGN KEY (user_id) REFERENCES users (user_id)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
-
--- Insert initial community data
-INSERT INTO community (name, icon_url)
-VALUES ('디시인사이드', 'community/icons/dcinside.png'),
-       ('에펨코리아', 'community/icons/fmkorea.png'),
-       ('더쿠', 'community/icons/theqoo.png'),
-       ('뽐뿌', 'community/icons/ppomppu.png'),
-       ('루리웹', 'community/icons/ruliweb.png'),
-       ('엠팍', 'community/icons/mlbpark.png'),
-       ('인벤', 'community/icons/inven.png'),
-       ('네이트 판', 'community/icons/natepann.png'),
-       ('아카라이브', 'community/icons/arca.png'),
-       ('클리앙', 'community/icons/clien.png'),
-       ('일간베스트', 'community/icons/ilbe.png'),
-       ('인스티즈', 'community/icons/instiz.png'),
-       ('보배드림', 'community/icons/bobaedream.png'),
-       ('웃긴대학', 'community/icons/humoruniv.png'),
-       ('오르비', 'community/icons/orbi.png'),
-       ('오늘의유머', 'community/icons/todayhumor.png'),
-       ('여성시대', 'community/icons/womad.png'),
-       ('에브리타임', 'community/icons/everytime.png'),
-       ('블라인드', 'community/icons/blind.png'),
-       ('Reddit', 'community/icons/reddit.png'),
-       ('X', 'community/icons/twitter.png'),
-       ('Threads', 'community/icons/threads.png'),
-       ('무소속', 'community/icons/independent.png');

@@ -7,7 +7,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import com.debateseason_backend_v1.common.response.ApiResult;
 import com.debateseason_backend_v1.domain.user.controller.request.ProfileRegisterRequest;
 import com.debateseason_backend_v1.domain.user.controller.request.ProfileUpdateRequest;
-import com.debateseason_backend_v1.domain.user.service.response.LoginResponse;
 import com.debateseason_backend_v1.domain.user.service.response.ProfileResponse;
 import com.debateseason_backend_v1.security.CustomUserDetails;
 
@@ -18,6 +17,7 @@ import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @Tag(name = "Profile API", description = "프로필 관련 API")
@@ -25,7 +25,8 @@ public interface ProfileControllerV1Docs {
 
 	@Operation(
 		summary = "프로필 등록",
-		description = "사용자의 프로필 정보를 등록합니다."
+		description = "JWT 토큰에서 사용자 ID를 추출하여 프로필을 등록합니다. Access Token이 필요합니다.",
+		security = @SecurityRequirement(name = "JWT")
 	)
 	@io.swagger.v3.oas.annotations.parameters.RequestBody(
 		description = "프로필 등록 정보",
@@ -129,7 +130,7 @@ public interface ProfileControllerV1Docs {
 
 	@Operation(
 		summary = "내 프로필 조회",
-		description = "현재 로그인한 사용자의 프로필 정보를 조회합니다."
+		description = "JWT 토큰에서 사용자 ID를 추출하여 자신의 프로필을 조회합니다. Access Token이 필요합니다."
 	)
 	@ApiResponses(value = {
 		@ApiResponse(
@@ -188,7 +189,7 @@ public interface ProfileControllerV1Docs {
 
 	@Operation(
 		summary = "프로필 수정",
-		description = "사용자의 프로필 정보를 수정합니다."
+		description = "JWT 토큰에서 사용자 ID를 추출하여 프로필을 수정합니다. Access Token이 필요합니다."
 	)
 	@io.swagger.v3.oas.annotations.parameters.RequestBody(
 		description = "프로필 수정 정보",

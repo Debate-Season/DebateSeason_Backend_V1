@@ -29,7 +29,7 @@ public class SwaggerConfig {
 			.description("채팅 API 문서");
 
 		return new OpenAPI()
-			.components(new Components())
+			.components(components)
 			.addSecurityItem(securityRequirement)
 			.info(customInfo);
 	}

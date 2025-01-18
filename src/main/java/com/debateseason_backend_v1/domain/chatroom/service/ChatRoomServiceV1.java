@@ -177,12 +177,7 @@ public class ChatRoomServiceV1 {
 			.opinion(opinion)
 			.build();
 
-		// 3. 관련 채팅들 불러오기가 추가될지도?
-
-		//ResponseDTO responseDTO = ResponseDTO.builder()
-		//	.chatRoomDAO(chatRoomDAO)
-			//.chatList(modifiedChatList)
-		//	.build();
+		// 3. 관련 채팅들 불러오기가 추가될지도? -> 향후 고려
 
 		ApiResult<Object> response = ApiResult.builder()
 			.status(200)

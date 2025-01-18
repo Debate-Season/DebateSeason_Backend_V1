@@ -6,6 +6,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
 
 @Schema(description = "프로필에 등록된 커뮤니티 응답")
 public record ProfileCommunityResponse(
+	@Schema(description = "커뮤니티 ID", example = "1")
+	Long id,
+
 	@Schema(description = "커뮤니티 이름", example = "디시인사이드")
 	String name,
 
@@ -16,6 +19,7 @@ public record ProfileCommunityResponse(
 	public static ProfileCommunityResponse from(Community community) {
 
 		return new ProfileCommunityResponse(
+			community.getId(),
 			community.getName(),
 			community.getIconUrl()
 		);

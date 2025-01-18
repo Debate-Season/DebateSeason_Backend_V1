@@ -26,7 +26,7 @@ public class ApiResult<T> {
 	@Schema(description = "응답 메시지", example = "정상적으로 처리되었습니다")
 	private String message;
 
-	@Schema(description = "응답 데이터")
+	@Schema(description = "응답 데이터", implementation = Object.class)
 	private T data;
 	
 	// 커스텀 status 성공 응답

@@ -37,7 +37,13 @@ public interface UserControllerV1Docs {
 			description = "로그인 성공",
 			content = @Content(
 				mediaType = "application/json",
-				schema = @Schema(implementation = ApiResult.class),
+				schema = @Schema(
+					oneOf = {
+						ApiResult.class,
+						LoginResponse.class
+					},
+					description = "로그인 응답 데이터"
+				),
 				examples = {
 					@ExampleObject(
 						name = "FirstLogin",
@@ -93,6 +99,6 @@ public interface UserControllerV1Docs {
 			)
 		)
 	})
-	public ApiResult<LoginResponse> socialLogin(@RequestBody SocialLoginRequest request);
+	public ApiResult<?> socialLogin(@RequestBody SocialLoginRequest request);
 
 }

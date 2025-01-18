@@ -179,16 +179,16 @@ public class ChatRoomServiceV1 {
 
 		// 3. 관련 채팅들 불러오기가 추가될지도?
 
-		ResponseDTO responseDTO = ResponseDTO.builder()
-			.chatRoomDAO(chatRoomDAO)
+		//ResponseDTO responseDTO = ResponseDTO.builder()
+		//	.chatRoomDAO(chatRoomDAO)
 			//.chatList(modifiedChatList)
-			.build();
+		//	.build();
 
 		ApiResult<Object> response = ApiResult.builder()
 			.status(200)
 			.code(ErrorCode.SUCCESS)
 			.message("채팅방을 불러왔습니다.")
-			.data(responseDTO)
+			.data(chatRoomDAO)
 			.build();
 
 		return response;

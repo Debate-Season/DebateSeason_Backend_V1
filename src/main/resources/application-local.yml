@@ -6,15 +6,16 @@ spring:
     hibernate:
       ddl-auto: create
     defer-datasource-initialization: true
-  sql:
-    init:
-      mode: always
 
     properties:
       hibernate:
         format_sql: true
         show-sql: true
         highlight_sql: true
+
+  sql:
+    init:
+      mode: always
 
   datasource:
 

@@ -1,7 +1,7 @@
 package com.debateseason_backend_v1.domain.community.service;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,16 +17,24 @@ public class CommunityServiceV1 {
 
 	private final CommunityRepository communityRepository;
 
-	public Page<CommunityResponse> getCommunities(Pageable pageable) {
+	public List<CommunityResponse> searchByName(String name) {
 
-		return communityRepository.findAll(pageable)
-			.map(CommunityResponse::from);
+		if (name.isBlank()) {
+			return getCommunities();
+		}
+
+		return communityRepository.findByNameContaining(name)
+			.stream()
+			.map(CommunityResponse::from)
+			.toList();
 	}
 
-	public Page<CommunityResponse> searchByName(String name, Pageable pageable) {
-		
-		return communityRepository.findByNameContaining(name, pageable)
-			.map(CommunityResponse::from);
+	public List<CommunityResponse> getCommunities() {
+
+		return communityRepository.findAllOrderedWithKoreanFirst()
+			.stream()
+			.map(CommunityResponse::from)
+			.toList();
 	}
 
 }

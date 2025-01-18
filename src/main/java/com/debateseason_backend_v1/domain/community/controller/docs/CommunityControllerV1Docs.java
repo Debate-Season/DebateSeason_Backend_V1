@@ -2,9 +2,6 @@ package com.debateseason_backend_v1.domain.community.controller.docs;
 
 import java.util.List;
 
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.debateseason_backend_v1.common.response.ApiResult;
@@ -25,18 +22,7 @@ public interface CommunityControllerV1Docs {
 
 	@Operation(
 		summary = "커뮤니티 목록 조회",
-		description = "페이징 처리된 전체 커뮤니티 목록을 조회합니다."
-	)
-	@Parameter(
-		name = "pageable",
-		description = """
-			페이지 정보:
-			- page: 페이지 번호 (0부터 시작)
-			- size: 페이지 크기 (기본값: 20)
-			- sort: 정렬 기준 (기본값: name,desc)
-			""",
-		schema = @Schema(type = "string"),
-		example = "page=0&size=20"
+		description = "전체 커뮤니티 목록을 조회합니다"
 	)
 	@ApiResponses(value = {
 		@ApiResponse(
@@ -44,7 +30,13 @@ public interface CommunityControllerV1Docs {
 			description = "커뮤니티 목록 조회 성공",
 			content = @Content(
 				mediaType = "application/json",
-				schema = @Schema(implementation = ApiResult.class),
+				schema = @Schema(
+					oneOf = {
+						ApiResult.class,
+						CommunityResponse.class
+					},
+					description = "커뮤니티 목록 조회 응답 데이터"
+				),
 				examples = @ExampleObject(
 					value = """
 						{
@@ -55,20 +47,14 @@ public interface CommunityControllerV1Docs {
 						        {
 						            "id": 1,
 						            "name": "디시인사이드",
-						            "iconUrl": "community/icons/dcinside.png"
+						            "iconUrl": "https://d1aqrs2xenvfsd.cloudfront.net/community/icons/dcinside.png"
 						        },
 						        {
 						            "id": 2,
 						            "name": "에펨코리아",
-						            "iconUrl": "community/icons/fmkorea.png"
+						            "iconUrl": "https://d1aqrs2xenvfsd.cloudfront.net/community/icons/fmkorea.png"
 						        }
-						    ],
-						    "meta": {
-						        "page": 0,
-						        "size": 20,
-						        "totalElements": 50,
-						        "totalPages": 3
-						    }
+						    ]
 						}
 						"""
 				)
@@ -76,12 +62,14 @@ public interface CommunityControllerV1Docs {
 		)
 	})
 	public ApiResult<List<CommunityResponse>> getCommunities(
-		@PageableDefault(size = 20, sort = "name", direction = Sort.Direction.DESC) Pageable pageable
 	);
 
 	@Operation(
 		summary = "커뮤니티 검색",
-		description = "커뮤니티 이름으로 검색합니다."
+		description = """
+			커뮤니티를 검색해 조회합니다. 검색어가 없을 경우 전체 커뮤니티 목록을 반환합니다.
+			검색어를 포함하는 커뮤니티가 없을 경우 빈 목록을 반환합니다.
+			"""
 	)
 	@Parameters({
 		@Parameter(
@@ -89,19 +77,8 @@ public interface CommunityControllerV1Docs {
 			description = "검색할 커뮤니티 이름",
 			required = true,
 			schema = @Schema(type = "string"),
-			example = "운동"
+			example = "디시"
 		),
-		@Parameter(
-			name = "pageable",
-			description = """
-				페이지 정보:
-				- page: 페이지 번호 (0부터 시작)
-				- size: 페이지 크기 (기본값: 20)
-				- sort: 정렬 기준 (기본값: name,desc)
-				""",
-			schema = @Schema(type = "string"),
-			example = "page=0&size=20"
-		)
 	})
 	@ApiResponses(value = {
 		@ApiResponse(
@@ -109,39 +86,48 @@ public interface CommunityControllerV1Docs {
 			description = "커뮤니티 검색 성공",
 			content = @Content(
 				mediaType = "application/json",
-				schema = @Schema(implementation = ApiResult.class),
-				examples = @ExampleObject(
-					value = """
-						{
-						    "status": 200,
-						    "code": "SUCCESS",
-						    "message": "커뮤니티 검색이 완료되었습니다.",
-						    "data": [
-						        {
-						            "id": 1,
-						            "name": "디시인사이드",
-						            "iconUrl": "community/icons/dcinside.png"
-						        },
-						        {
-						            "id": 5,
-						            "name": "에펨코리아",
-						            "iconUrl": "community/icons/fmkorea.png"
-						        }
-						    ],
-						    "meta": {
-						        "page": 0,
-						        "size": 20,
-						        "totalElements": 2,
-						        "totalPages": 1
-						    }
-						}
-						"""
-				)
+				schema = @Schema(
+					oneOf = {
+						ApiResult.class,
+						CommunityResponse.class
+					},
+					description = "커뮤니티 검색 응답 데이터"
+				),
+				examples = {
+					@ExampleObject(
+						name = "검색 결과가 있는 경우",
+						value = """
+							{
+							    "status": 200,
+							    "code": "SUCCESS",
+							    "message": "커뮤니티 검색이 완료되었습니다.",
+							    "data": [
+							        {
+							            "id": 1,
+							            "name": "디시인사이드",
+							            "iconUrl": "https://d1aqrs2xenvfsd.cloudfront.net/community/icons/dcinside.png"
+							        }
+							    ]
+							}
+							"""
+					),
+					@ExampleObject(
+						name = "검색 결과가 없는 경우",
+						value = """
+							{
+							    "status": 200,
+							    "code": "SUCCESS",
+							    "message": "커뮤니티 검색이 완료되었습니다.",
+							    "data": []
+							}
+							"""
+					)
+				}
 			)
 		)
 	})
 	public ApiResult<List<CommunityResponse>> searchCommunities(
-		@RequestParam String query,
-		@PageableDefault(size = 20, sort = "name", direction = Sort.Direction.DESC) Pageable pageable
+		@RequestParam String query
 	);
+
 }

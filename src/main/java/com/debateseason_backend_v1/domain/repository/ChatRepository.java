@@ -10,6 +10,4 @@ import java.util.List;
 @Repository
 public interface ChatRepository extends JpaRepository<Chat,Long> {
 
-    // 1. 채팅방 관련 채팅들 불러오기
-    List<Chat> findByChatRoom(ChatRoom chatRoom);
 }

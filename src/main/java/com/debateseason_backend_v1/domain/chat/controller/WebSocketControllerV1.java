@@ -2,6 +2,7 @@ package com.debateseason_backend_v1.domain.chat.controller;
 
 import java.time.LocalDateTime;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
@@ -24,18 +25,25 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class WebSocketControllerV1 {
 
-    @MessageMapping("chat.room.{roomId}")
+    private final ApplicationEventPublisher applicationEventPublisher;
+
+    @MessageMapping("/chat.room.{roomId}")
     @SendTo("/topic/room{roomId}")
-    public ChatMessage chat(@DestinationVariable("roomId") Long roomId, ChatMessage chatMessage) {
-        return ChatMessage.builder()
-            .roomId(roomId)
-            .type(MessageType.CHAT)
-            .sender(chatMessage.getSender())
-            .content(chatMessage.getContent())
-            .opinionType(chatMessage.getOpinionType())
-            .userCommunity(chatMessage.getUserCommunity())
-            .timeStamp(LocalDateTime.now())
-            .build();
+    public ChatMessage message(@DestinationVariable Long roomId, @Payload ChatMessage chatMessage) {
+        log.debug("채팅 메시지 수신: roomId={}, sender={}", roomId, chatMessage.getSender());
+        ChatMessage chatMessage1 = ChatMessage.builder()
+                .roomId(roomId)
+                .messageType(MessageType.CHAT)
+                .sender(chatMessage.getSender())
+                .content(chatMessage.getContent())
+                .opinionType(chatMessage.getOpinionType())
+                .userCommunity(chatMessage.getUserCommunity())
+                .timeStamp(LocalDateTime.now())
+                .build();
+
+        applicationEventPublisher.publishEvent(chatMessage1);
+
+        return chatMessage1;
     }
 
     @Operation(summary = "채팅 메시지 전송")
@@ -46,7 +54,7 @@ public class WebSocketControllerV1 {
             @Payload ChatMessage chatMessage) {
 
         return ChatMessage.builder()
-                .type(MessageType.CHAT)
+                .messageType(MessageType.CHAT)
                 .sender(chatMessage.getSender())
                 .content(chatMessage.getContent())
                 .opinionType(chatMessage.getOpinionType())
@@ -63,7 +71,7 @@ public class WebSocketControllerV1 {
             @Payload ChatMessage chatMessage
     ) {
         return ChatMessage.builder()
-            .type(MessageType.JOIN)
+            .messageType(MessageType.JOIN)
             .sender(chatMessage.getSender())
             .content(chatMessage.getContent() + " joined!")
             .opinionType(chatMessage.getOpinionType())

@@ -1,9 +1,14 @@
 package com.debateseason_backend_v1.domain.chat.controller;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import com.debateseason_backend_v1.common.enums.MessageType;
+import com.debateseason_backend_v1.domain.chat.model.ChatMessage;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.messaging.handler.annotation.DestinationVariable;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.Payload;
+import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.web.bind.annotation.*;
 
 import com.debateseason_backend_v1.domain.chat.model.response.ChatListResponse;
 import com.debateseason_backend_v1.domain.chat.service.ChatServiceV1;
@@ -16,6 +21,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+import java.time.LocalDateTime;
+
+@Slf4j
 @Tag(name = "Chat API", description = "V1 Chat API")
 @RestController
 @RequestMapping("/api/v1/chat")

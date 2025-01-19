@@ -1,8 +1,7 @@
 package com.debateseason_backend_v1.domain.chat.event;
 
-import com.debateseason_backend_v1.domain.chat.model.ChatMessage;
+import com.debateseason_backend_v1.domain.chat.model.request.ChatMessageRequest;
 import com.debateseason_backend_v1.domain.chat.service.ChatServiceV1;
-import jakarta.persistence.Column;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
@@ -18,7 +17,7 @@ public class ChatMessageEventListener {
 
     @Async
     @EventListener
-    public void handleChatMessageEvent(ChatMessage chatMessage) {
+    public void handleChatMessageEvent(ChatMessageRequest chatMessage) {
         try {
             chatService.saveMessage(chatMessage);
         }catch (Exception e) {

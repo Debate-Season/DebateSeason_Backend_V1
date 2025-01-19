@@ -11,8 +11,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
@@ -29,8 +27,7 @@ import org.springframework.web.socket.sockjs.client.SockJsClient;
 import org.springframework.web.socket.sockjs.client.Transport;
 import org.springframework.web.socket.sockjs.client.WebSocketTransport;
 
-import com.debateseason_backend_v1.common.enums.MessageType;
-import com.debateseason_backend_v1.domain.chat.model.ChatMessage;
+import com.debateseason_backend_v1.domain.chat.model.request.ChatMessageRequest;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -45,7 +42,7 @@ class WebSocketControllerV1Test {
 
 	private WebSocketStompClient stompClient;
 	private StompSession stompSession;
-	private BlockingQueue<ChatMessage> blockingQueue;
+	private BlockingQueue<ChatMessageRequest> blockingQueue;
 
 	private static final String TEST_CHAT_CONTENT = "테스트 메시지";
 	private static final String TEST_CHAT_SENDER = "testUser";
@@ -61,7 +58,7 @@ class WebSocketControllerV1Test {
 
 			@Override
 			public void handleFrame(StompHeaders headers, Object payload) {
-				blockingQueue.add((ChatMessage)payload);
+				blockingQueue.add((ChatMessageRequest)payload);
 			}
 		};
 	}

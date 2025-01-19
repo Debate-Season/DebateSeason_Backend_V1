@@ -1,5 +1,8 @@
 package com.debateseason_backend_v1.common.exception;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
@@ -47,7 +50,12 @@ public class GlobalExceptionHandler {
 		FieldError fieldError = e.getBindingResult().getFieldError();
 		ErrorCode errorCode = determineErrorCode(fieldError);
 
-		return createErrorResponseEntity(errorCode);
+		// message detail 생성
+		String detailMessage = createDetailMessage(e.getBindingResult().getFieldErrors());
+
+		ErrorResponse errorResponse = ErrorResponse.of(errorCode.getHttpStatus(), errorCode, detailMessage);
+
+		return new ResponseEntity<>(errorResponse, errorCode.getHttpStatus());
 	}
 
 	private ResponseEntity<ErrorResponse> createErrorResponseEntity(ErrorCode errorCode) {
@@ -80,6 +88,12 @@ public class GlobalExceptionHandler {
 			default:
 				return ErrorCode.INVALID_INPUT_VALUE;
 		}
+	}
+
+	private String createDetailMessage(List<FieldError> fieldErrors) {
+		return fieldErrors.stream()
+			.map(error -> String.format("%s: %s", error.getField(), error.getDefaultMessage()))
+			.collect(Collectors.joining(", "));
 	}
 
 }

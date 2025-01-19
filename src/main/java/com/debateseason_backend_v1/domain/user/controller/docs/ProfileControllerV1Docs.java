@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.debateseason_backend_v1.common.response.ApiResult;
+import com.debateseason_backend_v1.common.response.VoidApiResult;
 import com.debateseason_backend_v1.domain.user.controller.request.ProfileRegisterRequest;
 import com.debateseason_backend_v1.domain.user.controller.request.ProfileUpdateRequest;
 import com.debateseason_backend_v1.domain.user.service.response.ProfileResponse;
@@ -123,7 +124,7 @@ public interface ProfileControllerV1Docs {
 			)
 		)
 	})
-	public ApiResult<Void> registerProfile(
+	public VoidApiResult registerProfile(
 		@RequestBody ProfileRegisterRequest request,
 		@AuthenticationPrincipal CustomUserDetails userDetails
 	);
@@ -263,7 +264,7 @@ public interface ProfileControllerV1Docs {
 			)
 		)
 	})
-	public ApiResult<Void> updateProfile(
+	public VoidApiResult updateProfile(
 		@RequestBody ProfileUpdateRequest request,
 		@AuthenticationPrincipal CustomUserDetails userDetails
 	);
@@ -329,7 +330,7 @@ public interface ProfileControllerV1Docs {
 			)
 		)
 	})
-	public ApiResult<Void> checkNicknameDuplicate(
+	public VoidApiResult checkNicknameDuplicate(
 		@RequestParam String query
 	);
 }

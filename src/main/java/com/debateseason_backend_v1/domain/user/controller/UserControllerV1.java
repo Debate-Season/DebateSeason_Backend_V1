@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.debateseason_backend_v1.common.response.ApiResult;
+import com.debateseason_backend_v1.common.response.VoidApiResult;
 import com.debateseason_backend_v1.domain.issue.service.IssueServiceV1;
 import com.debateseason_backend_v1.domain.user.controller.docs.UserControllerV1Docs;
 import com.debateseason_backend_v1.domain.user.controller.request.LogoutRequest;
@@ -37,14 +38,14 @@ public class UserControllerV1 implements UserControllerV1Docs {
 	}
 
 	@PostMapping("/logout")
-	public ApiResult<Void> logout(
+	public VoidApiResult logout(
 		@Valid @RequestBody LogoutRequest request,
 		@AuthenticationPrincipal CustomUserDetails userDetails
 	) {
 
 		userServiceV1.logout(request.toServiceRequest(userDetails.getUserId()));
 
-		return ApiResult.success("로그아웃 성공");
+		return VoidApiResult.success("로그아웃 성공");
 	}
 
 	// 2. 인덱스 페이지(홈)

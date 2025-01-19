@@ -31,7 +31,7 @@ public class ProfileControllerV1 implements ProfileControllerV1Docs {
 
 	@PostMapping
 	public ApiResult<Void> registerProfile(
-		@RequestBody @Valid ProfileRegisterRequest request,
+		@Valid @RequestBody ProfileRegisterRequest request,
 		@AuthenticationPrincipal CustomUserDetails userDetails
 	) {
 
@@ -52,7 +52,7 @@ public class ProfileControllerV1 implements ProfileControllerV1Docs {
 
 	@PatchMapping
 	public ApiResult<Void> updateProfile(
-		@RequestBody @Valid ProfileUpdateRequest request,
+		@Valid @RequestBody ProfileUpdateRequest request,
 		@AuthenticationPrincipal CustomUserDetails userDetails
 	) {
 

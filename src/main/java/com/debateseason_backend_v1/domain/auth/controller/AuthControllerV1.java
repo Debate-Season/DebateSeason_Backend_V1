@@ -11,6 +11,7 @@ import com.debateseason_backend_v1.domain.auth.controller.request.TokenReissueRe
 import com.debateseason_backend_v1.domain.auth.service.AuthServiceV1;
 import com.debateseason_backend_v1.domain.auth.service.response.TokenReissueResponse;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -21,7 +22,7 @@ public class AuthControllerV1 implements AuthControllerV1Docs {
 	private final AuthServiceV1 authService;
 
 	@PostMapping("/reissue")
-	public ApiResult<TokenReissueResponse> reissueToken(@RequestBody TokenReissueRequest request) {
+	public ApiResult<TokenReissueResponse> reissueToken(@Valid @RequestBody TokenReissueRequest request) {
 
 		TokenReissueResponse tokenReissueResponse = authService.reissueToken(request.toServiceRequest());
 

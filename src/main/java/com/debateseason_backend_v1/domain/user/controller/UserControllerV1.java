@@ -29,7 +29,7 @@ public class UserControllerV1 implements UserControllerV1Docs {
 	private final IssueServiceV1 issueServiceV1;
 
 	@PostMapping("/login")
-	public ApiResult<LoginResponse> socialLogin(@RequestBody SocialLoginRequest request) {
+	public ApiResult<LoginResponse> socialLogin(@Valid @RequestBody SocialLoginRequest request) {
 
 		LoginResponse response = userServiceV1.socialLogin(request.toServiceRequest());
 

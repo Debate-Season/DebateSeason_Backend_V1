@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.debateseason_backend_v1.common.response.ApiResult;
+import com.debateseason_backend_v1.common.response.VoidApiResult;
 import com.debateseason_backend_v1.domain.user.controller.docs.ProfileControllerV1Docs;
 import com.debateseason_backend_v1.domain.user.controller.request.ProfileRegisterRequest;
 import com.debateseason_backend_v1.domain.user.controller.request.ProfileUpdateRequest;
@@ -30,14 +31,14 @@ public class ProfileControllerV1 implements ProfileControllerV1Docs {
 	private final ProfileServiceV1 profileService;
 
 	@PostMapping
-	public ApiResult<Void> registerProfile(
-		@RequestBody @Valid ProfileRegisterRequest request,
+	public VoidApiResult registerProfile(
+		@Valid @RequestBody ProfileRegisterRequest request,
 		@AuthenticationPrincipal CustomUserDetails userDetails
 	) {
 
 		profileService.register(request.toServiceRequest(userDetails.getUserId()));
 
-		return ApiResult.success("프로필 등록이 완료되었습니다.");
+		return VoidApiResult.success("프로필 등록이 완료되었습니다.");
 	}
 
 	@GetMapping("/me")
@@ -51,24 +52,24 @@ public class ProfileControllerV1 implements ProfileControllerV1Docs {
 	}
 
 	@PatchMapping
-	public ApiResult<Void> updateProfile(
-		@RequestBody @Valid ProfileUpdateRequest request,
+	public VoidApiResult updateProfile(
+		@Valid @RequestBody ProfileUpdateRequest request,
 		@AuthenticationPrincipal CustomUserDetails userDetails
 	) {
 
 		profileService.update(request.toServiceRequest(userDetails.getUserId()));
 
-		return ApiResult.success("프로필 수정이 완료되었습니다.");
+		return VoidApiResult.success("프로필 수정이 완료되었습니다.");
 	}
 
 	@GetMapping("/nickname/check")
-	public ApiResult<Void> checkNicknameDuplicate(
+	public VoidApiResult checkNicknameDuplicate(
 		@RequestParam String query
 	) {
 
 		profileService.checkNickname(query);
 
-		return ApiResult.success("사용 가능한 닉네임입니다.");
+		return VoidApiResult.success("사용 가능한 닉네임입니다.");
 	}
 
 }

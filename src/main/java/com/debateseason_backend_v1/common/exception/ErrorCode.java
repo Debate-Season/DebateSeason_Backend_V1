@@ -21,6 +21,12 @@ public enum ErrorCode implements CodeInterface {
 	METHOD_NOT_ALLOWED(-8, HttpStatus.METHOD_NOT_ALLOWED, "METHOD_NOT_ALLOWED"),
 	INTERNAL_SERVER_ERROR(-9, HttpStatus.INTERNAL_SERVER_ERROR, "INTERNAL_SERVER_ERROR"),
 
+	// 100번대 Validation 에러
+	INVALID_INPUT_VALUE(100, HttpStatus.BAD_REQUEST, "입력값이 올바르지 않습니다"),
+	MISSING_REQUIRED_VALUE(101, HttpStatus.BAD_REQUEST, "필수 입력값이 누락되었습니다"),
+	INVALID_FORMAT(102, HttpStatus.BAD_REQUEST, "입력값 형식이 올바르지 않습니다"),
+	VALUE_OUT_OF_RANGE(103, HttpStatus.BAD_REQUEST, "입력값이 허용 범위를 벗어났습니다"),
+
 	// 1000번대 JWT 에러
 	TOKEN_EXPIRED(1000, HttpStatus.UNAUTHORIZED, "인증이 만료되었습니다. 다시 로그인해주세요."),
 	INVALID_TOKEN(1001, HttpStatus.UNAUTHORIZED, "유효하지 않은 인증입니다."),

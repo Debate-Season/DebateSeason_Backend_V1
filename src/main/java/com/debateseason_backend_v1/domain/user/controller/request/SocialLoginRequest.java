@@ -11,11 +11,11 @@ import jakarta.validation.constraints.NotNull;
 public record SocialLoginRequest(
 
 	@Schema(description = "사용자 고유 식별자", example = "1323412")
-	@NotBlank(message = "외부 ID는 필수입니다")
+	@NotBlank(message = "외부 ID는 필수입니다.")
 	String identifier,
 
 	@Schema(description = "로그인 요청 소셜 타입", example = "kakao")
-	@NotNull(message = "소셜 타입 필수입니다")
+	@NotNull(message = "소셜 타입 필수입니다.")
 	SocialType socialType
 ) {
 

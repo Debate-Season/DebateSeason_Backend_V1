@@ -2,10 +2,15 @@ package com.debateseason_backend_v1.domain.user.controller.request;
 
 import com.debateseason_backend_v1.domain.user.service.request.LogoutServiceRequest;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 
+@Schema(description = "로그아웃 요청 DTO")
 public record LogoutRequest(
-	@NotBlank(message = "리프레시 토큰은 필수입니다")
+	@Schema(description = "리프레시 토큰",
+		example = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+		format = "jwt")
+	@NotBlank(message = "리프레시 토큰은 필수입니다.")
 	String refreshToken
 ) {
 

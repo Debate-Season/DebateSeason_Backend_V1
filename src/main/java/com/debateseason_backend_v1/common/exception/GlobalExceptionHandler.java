@@ -92,7 +92,7 @@ public class GlobalExceptionHandler {
 
 	private String createDetailMessage(List<FieldError> fieldErrors) {
 		return fieldErrors.stream()
-			.map(error -> String.format("%s: %s", error.getField(), error.getDefaultMessage()))
+			.map(error -> String.format("%s", error.getDefaultMessage()))
 			.collect(Collectors.joining(", "));
 	}
 

@@ -10,7 +10,7 @@ public record LogoutRequest(
 	@Schema(description = "리프레시 토큰",
 		example = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
 		format = "jwt")
-	@NotBlank(message = "리프레시 토큰은 필수입니다.")
+	@NotBlank(message = "Refresh Token은 필수입니다.")
 	String refreshToken
 ) {
 

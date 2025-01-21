@@ -94,15 +94,30 @@ public interface UserControllerV1Docs {
 			description = "지원하지 않는 소셜 요청",
 			content = @Content(
 				mediaType = "application/json",
-				examples = @ExampleObject(
-					value = """
-						{
-						    "status": 400,
-						    "code": "NOT_SUPPORTED_SOCIAL_TYPE",
-						    "message": "지원하지 않는 소셜 타입입니다"
-						}
-						"""
-				)
+				examples = {
+					@ExampleObject(
+						name = "MissingSingleRequiredValue",
+						summary = "필수 입력값에 빈 문자열 입력",
+						value = """
+							{
+							    "status": 400,
+							    "code": "MISSING_REQUIRED_VALUE",
+							    "message": "소셜 고유 ID는 필수입니다."
+							}
+							"""
+					),
+					@ExampleObject(
+						name = "NotSupportedSocialType",
+						summary = "지원하지 않는 소셜 타입",
+						value = """
+							{
+							    "status": 400,
+							    "code": "NOT_SUPPORTED_SOCIAL_TYPE",
+							    "message": "지원하지 않는 소셜 타입입니다"
+							}
+							"""
+					)
+				}
 			)
 		)
 	})
@@ -139,6 +154,26 @@ public interface UserControllerV1Docs {
 						}
 						"""
 				)
+			)
+		),
+		@ApiResponse(
+			responseCode = "400",
+			description = "잘못된 요청",
+			content = @Content(
+				mediaType = "application/json",
+				examples = {
+					@ExampleObject(
+						name = "MissingSingleRequiredValue",
+						summary = "필수 입력값에 빈 문자열 입력",
+						value = """
+							{
+							    "status": 400,
+							    "code": "MISSING_REQUIRED_VALUE",
+							    "message": "Refresh Token은 필수입니다."
+							}
+							"""
+					)
+				}
 			)
 		),
 		@ApiResponse(

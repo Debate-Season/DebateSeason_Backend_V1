@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.debateseason_backend_v1.common.response.ApiResult;
+import com.debateseason_backend_v1.common.response.ErrorResponse;
 import com.debateseason_backend_v1.common.response.VoidApiResult;
 import com.debateseason_backend_v1.domain.user.controller.request.ProfileRegisterRequest;
 import com.debateseason_backend_v1.domain.user.controller.request.ProfileUpdateRequest;
@@ -75,6 +76,28 @@ public interface ProfileControllerV1Docs {
 				mediaType = "application/json",
 				examples = {
 					@ExampleObject(
+						name = "MissingSingleRequiredValue",
+						summary = "필수 입력값에 빈 문자열 입력",
+						value = """
+							{
+							    "status": 400,
+							    "code": "MISSING_REQUIRED_VALUE",
+							    "message": "닉네임은 필수입니다."
+							}
+							"""
+					),
+					@ExampleObject(
+						name = "MissingMultipleRequiredValue",
+						summary = "필수 입력값에 빈 문자열 입력(여러 개)",
+						value = """
+							{
+							    "status": 400,
+							    "code": "MISSING_REQUIRED_VALUE",
+							    "message": "닉네임은 필수입니다., 커뮤니티 선택은 필수입니다."
+							}
+							"""
+					),
+					@ExampleObject(
 						name = "InvalidNickname",
 						summary = "잘못된 닉네임 형식",
 						value = """
@@ -104,6 +127,42 @@ public interface ProfileControllerV1Docs {
 							    "status": 400,
 							    "code": "NOT_SUPPORTED_AGE_RANGE",
 							    "message": "지원하지 않는 연령대입니다"
+							}
+							"""
+					)
+				}
+			)
+		),
+		@ApiResponse(
+			responseCode = "401",
+			description = "인증 실패",
+			content = @Content(
+				mediaType = "application/json",
+				schema = @Schema(
+					oneOf = {
+						ErrorResponse.class
+					}
+				),
+				examples = {
+					@ExampleObject(
+						name = "ExpiredAccessToken",
+						summary = "만료된 Access Token",
+						value = """
+							{
+							    "status": 401,
+							    "code": "EXPIRED_ACCESS_TOKEN",
+							    "message": "Access Token이 만료되었습니다. 다시 로그인해주세요."
+							}
+							"""
+					),
+					@ExampleObject(
+						name = "InvalidAccessToken",
+						summary = "유효하지 않은 Access Token",
+						value = """
+							{
+							    "status": 401,
+							    "code": "INVALID_ACCESS_TOKEN",
+							    "message": "유효하지 않은 Access Token 입니다."
 							}
 							"""
 					)
@@ -171,6 +230,42 @@ public interface ProfileControllerV1Docs {
 						}
 						"""
 				)
+			)
+		),
+		@ApiResponse(
+			responseCode = "401",
+			description = "인증 실패",
+			content = @Content(
+				mediaType = "application/json",
+				schema = @Schema(
+					oneOf = {
+						ErrorResponse.class
+					}
+				),
+				examples = {
+					@ExampleObject(
+						name = "ExpiredAccessToken",
+						summary = "만료된 Access Token",
+						value = """
+							{
+							    "status": 401,
+							    "code": "EXPIRED_ACCESS_TOKEN",
+							    "message": "Access Token이 만료되었습니다. 다시 로그인해주세요."
+							}
+							"""
+					),
+					@ExampleObject(
+						name = "InvalidAccessToken",
+						summary = "유효하지 않은 Access Token",
+						value = """
+							{
+							    "status": 401,
+							    "code": "INVALID_ACCESS_TOKEN",
+							    "message": "유효하지 않은 Access Token 입니다."
+							}
+							"""
+					)
+				}
 			)
 		),
 		@ApiResponse(
@@ -243,6 +338,28 @@ public interface ProfileControllerV1Docs {
 				mediaType = "application/json",
 				examples = {
 					@ExampleObject(
+						name = "MissingSingleRequiredValue",
+						summary = "필수 입력값에 빈 문자열 입력",
+						value = """
+							{
+							    "status": 400,
+							    "code": "MISSING_REQUIRED_VALUE",
+							    "message": "닉네임은 필수입니다."
+							}
+							"""
+					),
+					@ExampleObject(
+						name = "MissingMultipleRequiredValue",
+						summary = "필수 입력값에 빈 문자열 입력(여러 개)",
+						value = """
+							{
+							    "status": 400,
+							    "code": "MISSING_REQUIRED_VALUE",
+							    "message": "닉네임은 필수입니다., 커뮤니티 선택은 필수입니다."
+							}
+							"""
+					),
+					@ExampleObject(
 						name = "InvalidNickname",
 						summary = "잘못된 닉네임 형식",
 						value = """
@@ -250,6 +367,53 @@ public interface ProfileControllerV1Docs {
 							    "status": 400,
 							    "code": "INVALID_NICKNAME_FORMAT",
 							    "message": "닉네임은 한글 또는 영문으로 8자 이내로 입력해주세요."
+							}
+							"""
+					),
+					@ExampleObject(
+						name = "InvalidAgeRange",
+						summary = "잘못된 연령대",
+						value = """
+							{
+							    "status": 400,
+							    "code": "NOT_SUPPORTED_AGE_RANGE",
+							    "message": "지원하지 않는 연령대입니다"
+							}
+							"""
+					)
+				}
+			)
+		),
+		@ApiResponse(
+			responseCode = "401",
+			description = "인증 실패",
+			content = @Content(
+				mediaType = "application/json",
+				schema = @Schema(
+					oneOf = {
+						ErrorResponse.class
+					}
+				),
+				examples = {
+					@ExampleObject(
+						name = "ExpiredAccessToken",
+						summary = "만료된 Access Token",
+						value = """
+							{
+							    "status": 401,
+							    "code": "EXPIRED_ACCESS_TOKEN",
+							    "message": "Access Token이 만료되었습니다. 다시 로그인해주세요."
+							}
+							"""
+					),
+					@ExampleObject(
+						name = "InvalidAccessToken",
+						summary = "유효하지 않은 Access Token",
+						value = """
+							{
+							    "status": 401,
+							    "code": "INVALID_ACCESS_TOKEN",
+							    "message": "유효하지 않은 Access Token 입니다."
 							}
 							"""
 					)

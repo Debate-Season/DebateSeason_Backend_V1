@@ -131,7 +131,6 @@ public interface UserControllerV1Docs {
 			프론트엔드 단에서는 Access Token과 Refresh Token을 모두 삭제해야 합니다.
 			"""
 	)
-	@SecurityRequirement(name = "Bearer Authentication")
 	@io.swagger.v3.oas.annotations.parameters.RequestBody(
 		content = @Content(
 			mediaType = "application/json",
@@ -248,7 +247,6 @@ public interface UserControllerV1Docs {
 			프론트엔드 단에서는 Access Token과 Refresh Token을 모두 삭제해야 합니다.
 			"""
 	)
-	@SecurityRequirement(name = "Bearer Authentication")
 	@ApiResponses(value = {
 		@ApiResponse(
 			responseCode = "200",

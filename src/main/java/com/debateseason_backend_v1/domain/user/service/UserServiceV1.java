@@ -41,6 +41,10 @@ public class UserServiceV1 {
 			)
 			.orElseGet(() -> createNewUser(request));
 
+		if (user.isDeleted()) {
+			user.restore();
+		}
+
 		String newAccessToken = jwtUtil.createAccessToken(user.getId());
 		String newRefreshToken = jwtUtil.createRefreshToken(user.getId());
 
@@ -59,19 +63,30 @@ public class UserServiceV1 {
 	@Transactional
 	public void logout(LogoutServiceRequest request) {
 
+		if (!refreshTokenRepository.existsByToken(request.refreshToken())) {
+			throw new CustomException(ErrorCode.INVALID_REFRESH_TOKEN);
+		}
+
 		if (jwtUtil.isExpired(request.refreshToken())) {
-			throw new CustomException(ErrorCode.TOKEN_EXPIRED);
+			throw new CustomException(ErrorCode.EXPIRED_REFRESH_TOKEN);
 		}
 
 		if (jwtUtil.getTokenType(request.refreshToken()) != TokenType.REFRESH) {
-			throw new CustomException(ErrorCode.INVALID_TOKEN);
-		}
-
-		if (!refreshTokenRepository.existsByToken(request.refreshToken())) {
-			throw new CustomException(ErrorCode.INVALID_TOKEN);
+			throw new CustomException(ErrorCode.INVALID_REFRESH_TOKEN);
 		}
 
 		refreshTokenRepository.deleteByToken(request.refreshToken());
+	}
+
+	@Transactional
+	public void withdraw(Long userId) {
+
+		User user = userRepository.findById(userId)
+			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+		user.withdraw();
+
+		refreshTokenRepository.deleteAllByUserId(user.getId());
 	}
 
 	private User createNewUser(SocialLoginServiceRequest request) {

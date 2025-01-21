@@ -3,6 +3,7 @@ package com.debateseason_backend_v1.domain.repository.entity;
 import java.time.LocalDateTime;
 
 import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import com.debateseason_backend_v1.domain.user.enums.SocialType;
@@ -40,19 +41,37 @@ public class User {
 	@Column(name = "identifier")
 	private String identifier;
 
-	// TODO: IssueServiceV1 에러 때문에 User 엔티티에 위치, Profile 로 옮겨야 함.
-	@Column(name = "community")
-	private String community;
+	@Column(name = "is_deleted")
+	private boolean isDeleted = false;
 
 	@CreatedDate
 	@Column(name = "created_at", updatable = false)
 	private LocalDateTime createdAt;
+
+	@LastModifiedDate
+	@Column(name = "update_at")
+	private LocalDateTime updatedAt;
 
 	@Builder
 	private User(SocialType socialType, String externalId) {
 
 		this.socialType = socialType;
 		this.identifier = externalId;
+	}
+
+	public void withdraw() {
+
+		this.isDeleted = true;
+	}
+
+	public void restore() {
+
+		this.isDeleted = false;
+	}
+
+	public void anonymize(String uuid) {
+
+		this.identifier = uuid;
 	}
 
 }

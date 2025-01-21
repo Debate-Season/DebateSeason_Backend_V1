@@ -28,7 +28,7 @@ public class JwtAuthenticationErrorHandler {
 
 		ErrorResponse errorResponse = ErrorResponse.of(
 			HttpStatus.UNAUTHORIZED,
-			ErrorCode.TOKEN_EXPIRED
+			ErrorCode.EXPIRED_ACCESS_TOKEN
 		);
 
 		writeErrorResponse(response, HttpStatus.UNAUTHORIZED, errorResponse);
@@ -40,7 +40,7 @@ public class JwtAuthenticationErrorHandler {
 
 		ErrorResponse errorResponse = ErrorResponse.of(
 			HttpStatus.UNAUTHORIZED,
-			ErrorCode.INVALID_TOKEN
+			ErrorCode.INVALID_ACCESS_TOKEN
 		);
 		writeErrorResponse(response, HttpStatus.UNAUTHORIZED, errorResponse);
 	}

@@ -26,7 +26,10 @@ public interface ProfileControllerV1Docs {
 
 	@Operation(
 		summary = "프로필 등록",
-		description = "JWT 토큰에서 사용자 ID를 추출하여 프로필을 등록합니다. Access Token이 필요합니다.",
+		description = """
+			✅ API를 사용하려면 Access Token이 필요합니다. \n
+			JWT 토큰에서 사용자 ID를 추출하여 프로필을 등록합니다.
+			""",
 		security = @SecurityRequirement(name = "JWT")
 	)
 	@io.swagger.v3.oas.annotations.parameters.RequestBody(
@@ -131,7 +134,10 @@ public interface ProfileControllerV1Docs {
 
 	@Operation(
 		summary = "내 프로필 조회",
-		description = "JWT 토큰에서 사용자 ID를 추출하여 자신의 프로필을 조회합니다. Access Token이 필요합니다."
+		description = """
+			✅ API를 사용하려면 Access Token이 필요합니다. \n
+			JWT 토큰에서 사용자 ID를 추출하여 자신의 프로필을 조회합니다.
+			"""
 	)
 	@ApiResponses(value = {
 		@ApiResponse(
@@ -159,7 +165,7 @@ public interface ProfileControllerV1Docs {
 						        "community": {
 						            "id": 1,
 						            "name": "디시",
-						            "iconUrl": "https://d1aqrs2xenvfsd.cloudfront.net/community/icons/dcinside.png"
+						            "iconUrl": "community/icons/dcinside.png"
 						        }
 						    }
 						}
@@ -190,7 +196,10 @@ public interface ProfileControllerV1Docs {
 
 	@Operation(
 		summary = "프로필 수정",
-		description = "JWT 토큰에서 사용자 ID를 추출하여 프로필을 수정합니다. Access Token이 필요합니다."
+		description = """
+			✅ API를 사용하려면 Access Token이 필요합니다. \n
+			JWT 토큰에서 사용자 ID를 추출하여 프로필을 수정합니다.
+			"""
 	)
 	@io.swagger.v3.oas.annotations.parameters.RequestBody(
 		description = "프로필 수정 정보",

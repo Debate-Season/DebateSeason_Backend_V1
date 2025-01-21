@@ -85,7 +85,7 @@ class JwtAuthenticationFilterTest {
 				.andExpect(status().isUnauthorized())
 				.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
 				.andExpect(jsonPath("$.status").value(HttpStatus.UNAUTHORIZED.value()))
-				.andExpect(jsonPath("$.code").value(ErrorCode.TOKEN_EXPIRED.name()))
+				.andExpect(jsonPath("$.code").value(ErrorCode.EXPIRED_ACCESS_TOKEN.name()))
 				.andDo(print());
 		}
 
@@ -103,7 +103,7 @@ class JwtAuthenticationFilterTest {
 				.andExpect(status().isUnauthorized())
 				.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
 				.andExpect(jsonPath("$.status").value(HttpStatus.UNAUTHORIZED.value()))
-				.andExpect(jsonPath("$.code").value(ErrorCode.INVALID_TOKEN.name()))
+				.andExpect(jsonPath("$.code").value(ErrorCode.INVALID_ACCESS_TOKEN.name()))
 				.andDo(print());
 		}
 
@@ -119,7 +119,7 @@ class JwtAuthenticationFilterTest {
 				.andExpect(status().isUnauthorized())
 				.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
 				.andExpect(jsonPath("$.status").value(HttpStatus.UNAUTHORIZED.value()))
-				.andExpect(jsonPath("$.code").value(ErrorCode.INVALID_TOKEN.name()))
+				.andExpect(jsonPath("$.code").value(ErrorCode.INVALID_ACCESS_TOKEN.name()))
 				.andDo(print());
 
 			// JWT 검증이 실행되지 않았음을 확인

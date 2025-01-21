@@ -30,11 +30,11 @@ public class UserControllerV1 implements UserControllerV1Docs {
 	private final IssueServiceV1 issueServiceV1;
 
 	@PostMapping("/login")
-	public ApiResult<LoginResponse> socialLogin(@Valid @RequestBody SocialLoginRequest request) {
+	public ApiResult<LoginResponse> login(@Valid @RequestBody SocialLoginRequest request) {
 
 		LoginResponse response = userServiceV1.socialLogin(request.toServiceRequest());
 
-		return ApiResult.success("소셜 로그인 성공", response);
+		return ApiResult.success("로그인을 성공했습니다.", response);
 	}
 
 	@PostMapping("/logout")
@@ -45,7 +45,7 @@ public class UserControllerV1 implements UserControllerV1Docs {
 
 		userServiceV1.logout(request.toServiceRequest(userDetails.getUserId()));
 
-		return VoidApiResult.success("로그아웃 성공");
+		return VoidApiResult.success("로그아웃을 성공했습니다.");
 	}
 
 	@PostMapping("/withdraw")

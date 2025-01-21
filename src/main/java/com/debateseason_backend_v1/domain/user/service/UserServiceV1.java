@@ -41,6 +41,10 @@ public class UserServiceV1 {
 			)
 			.orElseGet(() -> createNewUser(request));
 
+		if (user.isDeleted()) {
+			user.restore();
+		}
+
 		String newAccessToken = jwtUtil.createAccessToken(user.getId());
 		String newRefreshToken = jwtUtil.createRefreshToken(user.getId());
 

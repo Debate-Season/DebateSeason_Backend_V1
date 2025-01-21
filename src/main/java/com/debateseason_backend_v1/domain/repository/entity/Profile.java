@@ -64,7 +64,7 @@ public class Profile {
 	}
 
 	public void update(String nickname, GenderType gender, AgeRangeType ageRange) {
-		
+
 		if (!Objects.equals(nickname, this.nickname)) {
 			this.nickname = nickname;
 		}
@@ -74,6 +74,12 @@ public class Profile {
 		if (!Objects.equals(ageRange, this.ageRange)) {
 			this.ageRange = ageRange;
 		}
+	}
+
+	public void anonymize(String anonymousNickname) {
+
+		this.nickname = anonymousNickname;
+		this.gender = GenderType.UNDEFINED;
 	}
 
 }

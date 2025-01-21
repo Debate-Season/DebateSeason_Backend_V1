@@ -51,7 +51,7 @@ public class UserControllerV1 implements UserControllerV1Docs {
 	@PostMapping("/withdraw")
 	public VoidApiResult withdraw(
 		@AuthenticationPrincipal CustomUserDetails userDetails
-	){
+	) {
 
 		userServiceV1.withdraw(userDetails.getUserId());
 

@@ -74,6 +74,17 @@ public class UserServiceV1 {
 		refreshTokenRepository.deleteByToken(request.refreshToken());
 	}
 
+	@Transactional
+	public void withdraw(Long userId) {
+
+		User user = userRepository.findById(userId)
+			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+		user.withdraw();
+
+		refreshTokenRepository.deleteAllByUserId(user.getId());
+	}
+
 	private User createNewUser(SocialLoginServiceRequest request) {
 
 		User user = User.builder()

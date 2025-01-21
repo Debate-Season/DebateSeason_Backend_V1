@@ -44,6 +44,9 @@ public enum ErrorCode implements CodeInterface {
 	NOT_SUPPORTED_AGE_RANGE(2008, HttpStatus.BAD_REQUEST, "지원하지 않는 연령대입니다"),
 	NOT_SUPPORTED_COMMUNITY(2009, HttpStatus.BAD_REQUEST, "지원하지 않는 커뮤니티입니다."),
 
+	// 3000번대 유저 관련 에러
+	USER_NOT_FOUND(3000, HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다."),
+
 	// API 요청 에러
 	BAD_REQUEST(400, HttpStatus.BAD_REQUEST, "잘못된 요청입니다.");
 

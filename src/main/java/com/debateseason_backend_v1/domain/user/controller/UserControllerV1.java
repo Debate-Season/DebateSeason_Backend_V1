@@ -48,6 +48,16 @@ public class UserControllerV1 implements UserControllerV1Docs {
 		return VoidApiResult.success("로그아웃 성공");
 	}
 
+	@PostMapping("/withdraw")
+	public VoidApiResult withdraw(
+		@AuthenticationPrincipal CustomUserDetails userDetails
+	){
+
+		userServiceV1.withdraw(userDetails.getUserId());
+
+		return VoidApiResult.success("회원 탈퇴가 완료되었습니다.");
+	}
+
 	// 2. 인덱스 페이지(홈)
 	// 이슈방 전체 나열
 	@Operation(

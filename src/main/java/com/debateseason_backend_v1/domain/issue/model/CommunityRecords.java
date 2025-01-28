@@ -19,9 +19,37 @@ public class CommunityRecords { // 자주 들락날락할텐데 DB에 기록하�
 	// Key는 중복되면 안됨. User는 고유하기 때문에 key로 사용
 	private static HashMap<Long, LinkedList<UserDTO>> cashUsers = new HashMap<>();
 	private static HashMap<Long, Map<Long, Integer>> markIndex_cashUsers = new HashMap<>();
-	//
-	private CommunityRecords() {
+	private static Map<String,String> communityUrlList = new HashMap<>();
 
+	//
+	private CommunityRecords() {}
+
+	// JVM에 로드될 경우 딱 한번만 실행이 된다.
+	// 초기화 블록
+	static {
+		communityUrlList.put("디시인사이드","community/icons/dcinside.png");
+		communityUrlList.put("에펨코리아","community/icons/fmkorea.png");
+		communityUrlList.put("더쿠","community/icons/theqoo.png");
+		communityUrlList.put("뽐뿌","community/icons/ppomppu.png");
+		communityUrlList.put("루리웹","community/icons/ruliweb.png");
+		communityUrlList.put("엠팍","community/icons/mlbpark.png");
+		communityUrlList.put("인벤","community/icons/inven.png");
+		communityUrlList.put("네이트판","community/icons/natepann.png");
+		communityUrlList.put("아카라이브","community/icons/arcalive.png");
+		communityUrlList.put("클리앙","community/icons/clien.png");
+		communityUrlList.put("일간베스트","community/icons/ilbe.png");
+		communityUrlList.put("인스티즈","community/icons/instiz.png");
+		communityUrlList.put("보배드림","community/icons/bobaedream.png");
+		communityUrlList.put("웃긴대학","community/icons/humoruniv.png");
+		communityUrlList.put("오르비","community/icons/orbi.png");
+		communityUrlList.put("오늘의유머","community/icons/todayhumor.png");
+		communityUrlList.put("여성시대","community/icons/womensgeneration.png");
+		communityUrlList.put("에브리타임","community/icons/everytime.png");
+		communityUrlList.put("블라인드","community/icons/blind.png");
+		communityUrlList.put("Reddit","community/icons/reddit.png");
+		communityUrlList.put("X","community/icons/x.png");
+		communityUrlList.put("Threads","community/icons/threads.png");
+		communityUrlList.put("무소속","community/icons/independent.png");
 	}
 
 	// synchronized를 통해서 Race condition 문제 해결
@@ -88,7 +116,9 @@ public class CommunityRecords { // 자주 들락날락할텐데 DB에 기록하�
 
 		for (UserDTO u : linkedList) {
 			String community = u.getCommunity();
-			map.put(community, map.getOrDefault(community, 0) + 1);
+			String url = communityUrlList.get(community);
+			System.out.println("community:"+community+"url:"+url);
+			map.put(url, map.getOrDefault(community, 0) + 1);
 		}
 
 		// 내림차순으로 정렬

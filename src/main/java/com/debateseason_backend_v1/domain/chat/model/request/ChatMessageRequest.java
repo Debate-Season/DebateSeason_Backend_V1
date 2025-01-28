@@ -40,7 +40,7 @@ public class ChatMessageRequest {
     @JsonSerialize(using = LocalDateTimeSerializer.class) // 직렬화 시 필요
     @JsonDeserialize(using = LocalDateTimeDeserializer.class) // 역직렬화 시 필요
     @Schema(description = "메시지 받은 날짜 시간")
-    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss.SSSSSS")
     private LocalDateTime timeStamp;
 
 }

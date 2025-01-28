@@ -5,6 +5,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.debateseason_backend_v1.common.response.ApiResult;
+import com.debateseason_backend_v1.common.response.ErrorResponse;
+import com.debateseason_backend_v1.common.response.VoidApiResult;
 import com.debateseason_backend_v1.domain.user.controller.request.ProfileRegisterRequest;
 import com.debateseason_backend_v1.domain.user.controller.request.ProfileUpdateRequest;
 import com.debateseason_backend_v1.domain.user.service.response.ProfileResponse;
@@ -25,7 +27,10 @@ public interface ProfileControllerV1Docs {
 
 	@Operation(
 		summary = "프로필 등록",
-		description = "JWT 토큰에서 사용자 ID를 추출하여 프로필을 등록합니다. Access Token이 필요합니다.",
+		description = """
+			✅ API를 사용하려면 Access Token이 필요합니다. \n
+			JWT 토큰에서 사용자 ID를 추출하여 프로필을 등록합니다.
+			""",
 		security = @SecurityRequirement(name = "JWT")
 	)
 	@io.swagger.v3.oas.annotations.parameters.RequestBody(
@@ -71,6 +76,28 @@ public interface ProfileControllerV1Docs {
 				mediaType = "application/json",
 				examples = {
 					@ExampleObject(
+						name = "MissingSingleRequiredValue",
+						summary = "필수 입력값에 빈 문자열 입력",
+						value = """
+							{
+							    "status": 400,
+							    "code": "MISSING_REQUIRED_VALUE",
+							    "message": "닉네임은 필수입니다."
+							}
+							"""
+					),
+					@ExampleObject(
+						name = "MissingMultipleRequiredValue",
+						summary = "필수 입력값에 빈 문자열 입력(여러 개)",
+						value = """
+							{
+							    "status": 400,
+							    "code": "MISSING_REQUIRED_VALUE",
+							    "message": "닉네임은 필수입니다., 커뮤니티 선택은 필수입니다."
+							}
+							"""
+					),
+					@ExampleObject(
 						name = "InvalidNickname",
 						summary = "잘못된 닉네임 형식",
 						value = """
@@ -107,6 +134,42 @@ public interface ProfileControllerV1Docs {
 			)
 		),
 		@ApiResponse(
+			responseCode = "401",
+			description = "인증 실패",
+			content = @Content(
+				mediaType = "application/json",
+				schema = @Schema(
+					oneOf = {
+						ErrorResponse.class
+					}
+				),
+				examples = {
+					@ExampleObject(
+						name = "ExpiredAccessToken",
+						summary = "만료된 Access Token",
+						value = """
+							{
+							    "status": 401,
+							    "code": "EXPIRED_ACCESS_TOKEN",
+							    "message": "Access Token이 만료되었습니다. 다시 로그인해주세요."
+							}
+							"""
+					),
+					@ExampleObject(
+						name = "InvalidAccessToken",
+						summary = "유효하지 않은 Access Token",
+						value = """
+							{
+							    "status": 401,
+							    "code": "INVALID_ACCESS_TOKEN",
+							    "message": "유효하지 않은 Access Token 입니다."
+							}
+							"""
+					)
+				}
+			)
+		),
+		@ApiResponse(
 			responseCode = "409",
 			description = "중복된 닉네임",
 			content = @Content(
@@ -123,14 +186,17 @@ public interface ProfileControllerV1Docs {
 			)
 		)
 	})
-	public ApiResult<Void> registerProfile(
+	public VoidApiResult registerProfile(
 		@RequestBody ProfileRegisterRequest request,
 		@AuthenticationPrincipal CustomUserDetails userDetails
 	);
 
 	@Operation(
 		summary = "내 프로필 조회",
-		description = "JWT 토큰에서 사용자 ID를 추출하여 자신의 프로필을 조회합니다. Access Token이 필요합니다."
+		description = """
+			✅ API를 사용하려면 Access Token이 필요합니다. \n
+			JWT 토큰에서 사용자 ID를 추출하여 자신의 프로필을 조회합니다.
+			"""
 	)
 	@ApiResponses(value = {
 		@ApiResponse(
@@ -158,12 +224,48 @@ public interface ProfileControllerV1Docs {
 						        "community": {
 						            "id": 1,
 						            "name": "디시",
-						            "iconUrl": "https://d1aqrs2xenvfsd.cloudfront.net/community/icons/dcinside.png"
+						            "iconUrl": "community/icons/dcinside.png"
 						        }
 						    }
 						}
 						"""
 				)
+			)
+		),
+		@ApiResponse(
+			responseCode = "401",
+			description = "인증 실패",
+			content = @Content(
+				mediaType = "application/json",
+				schema = @Schema(
+					oneOf = {
+						ErrorResponse.class
+					}
+				),
+				examples = {
+					@ExampleObject(
+						name = "ExpiredAccessToken",
+						summary = "만료된 Access Token",
+						value = """
+							{
+							    "status": 401,
+							    "code": "EXPIRED_ACCESS_TOKEN",
+							    "message": "Access Token이 만료되었습니다. 다시 로그인해주세요."
+							}
+							"""
+					),
+					@ExampleObject(
+						name = "InvalidAccessToken",
+						summary = "유효하지 않은 Access Token",
+						value = """
+							{
+							    "status": 401,
+							    "code": "INVALID_ACCESS_TOKEN",
+							    "message": "유효하지 않은 Access Token 입니다."
+							}
+							"""
+					)
+				}
 			)
 		),
 		@ApiResponse(
@@ -189,7 +291,10 @@ public interface ProfileControllerV1Docs {
 
 	@Operation(
 		summary = "프로필 수정",
-		description = "JWT 토큰에서 사용자 ID를 추출하여 프로필을 수정합니다. Access Token이 필요합니다."
+		description = """
+			✅ API를 사용하려면 Access Token이 필요합니다. \n
+			JWT 토큰에서 사용자 ID를 추출하여 프로필을 수정합니다.
+			"""
 	)
 	@io.swagger.v3.oas.annotations.parameters.RequestBody(
 		description = "프로필 수정 정보",
@@ -233,6 +338,28 @@ public interface ProfileControllerV1Docs {
 				mediaType = "application/json",
 				examples = {
 					@ExampleObject(
+						name = "MissingSingleRequiredValue",
+						summary = "필수 입력값에 빈 문자열 입력",
+						value = """
+							{
+							    "status": 400,
+							    "code": "MISSING_REQUIRED_VALUE",
+							    "message": "닉네임은 필수입니다."
+							}
+							"""
+					),
+					@ExampleObject(
+						name = "MissingMultipleRequiredValue",
+						summary = "필수 입력값에 빈 문자열 입력(여러 개)",
+						value = """
+							{
+							    "status": 400,
+							    "code": "MISSING_REQUIRED_VALUE",
+							    "message": "닉네임은 필수입니다., 커뮤니티 선택은 필수입니다."
+							}
+							"""
+					),
+					@ExampleObject(
 						name = "InvalidNickname",
 						summary = "잘못된 닉네임 형식",
 						value = """
@@ -240,6 +367,53 @@ public interface ProfileControllerV1Docs {
 							    "status": 400,
 							    "code": "INVALID_NICKNAME_FORMAT",
 							    "message": "닉네임은 한글 또는 영문으로 8자 이내로 입력해주세요."
+							}
+							"""
+					),
+					@ExampleObject(
+						name = "InvalidAgeRange",
+						summary = "잘못된 연령대",
+						value = """
+							{
+							    "status": 400,
+							    "code": "NOT_SUPPORTED_AGE_RANGE",
+							    "message": "지원하지 않는 연령대입니다"
+							}
+							"""
+					)
+				}
+			)
+		),
+		@ApiResponse(
+			responseCode = "401",
+			description = "인증 실패",
+			content = @Content(
+				mediaType = "application/json",
+				schema = @Schema(
+					oneOf = {
+						ErrorResponse.class
+					}
+				),
+				examples = {
+					@ExampleObject(
+						name = "ExpiredAccessToken",
+						summary = "만료된 Access Token",
+						value = """
+							{
+							    "status": 401,
+							    "code": "EXPIRED_ACCESS_TOKEN",
+							    "message": "Access Token이 만료되었습니다. 다시 로그인해주세요."
+							}
+							"""
+					),
+					@ExampleObject(
+						name = "InvalidAccessToken",
+						summary = "유효하지 않은 Access Token",
+						value = """
+							{
+							    "status": 401,
+							    "code": "INVALID_ACCESS_TOKEN",
+							    "message": "유효하지 않은 Access Token 입니다."
 							}
 							"""
 					)
@@ -263,7 +437,7 @@ public interface ProfileControllerV1Docs {
 			)
 		)
 	})
-	public ApiResult<Void> updateProfile(
+	public VoidApiResult updateProfile(
 		@RequestBody ProfileUpdateRequest request,
 		@AuthenticationPrincipal CustomUserDetails userDetails
 	);
@@ -329,7 +503,7 @@ public interface ProfileControllerV1Docs {
 			)
 		)
 	})
-	public ApiResult<Void> checkNicknameDuplicate(
+	public VoidApiResult checkNicknameDuplicate(
 		@RequestParam String query
 	);
 }

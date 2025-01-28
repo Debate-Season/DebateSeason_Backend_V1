@@ -47,12 +47,12 @@ public interface CommunityControllerV1Docs {
 						        {
 						            "id": 1,
 						            "name": "디시인사이드",
-						            "iconUrl": "https://d1aqrs2xenvfsd.cloudfront.net/community/icons/dcinside.png"
+						            "iconUrl": "community/icons/dcinside.png"
 						        },
 						        {
 						            "id": 2,
 						            "name": "에펨코리아",
-						            "iconUrl": "https://d1aqrs2xenvfsd.cloudfront.net/community/icons/fmkorea.png"
+						            "iconUrl": "community/icons/fmkorea.png"
 						        }
 						    ]
 						}
@@ -105,7 +105,7 @@ public interface CommunityControllerV1Docs {
 							        {
 							            "id": 1,
 							            "name": "디시인사이드",
-							            "iconUrl": "https://d1aqrs2xenvfsd.cloudfront.net/community/icons/dcinside.png"
+							            "iconUrl": "community/icons/dcinside.png"
 							        }
 							    ]
 							}

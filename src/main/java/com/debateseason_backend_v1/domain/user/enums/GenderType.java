@@ -16,7 +16,7 @@ public enum GenderType {
 
 	MALE("남성"),
 	FEMALE("여성"),
-	NO_RESPONSE("무응답");
+	UNDEFINED("무응답");
 
 	private final String description;
 

@@ -21,10 +21,16 @@ public enum ErrorCode implements CodeInterface {
 	METHOD_NOT_ALLOWED(-8, HttpStatus.METHOD_NOT_ALLOWED, "METHOD_NOT_ALLOWED"),
 	INTERNAL_SERVER_ERROR(-9, HttpStatus.INTERNAL_SERVER_ERROR, "INTERNAL_SERVER_ERROR"),
 
+	// 100번대 Validation 에러
+	INVALID_INPUT_VALUE(100, HttpStatus.BAD_REQUEST, "입력값이 올바르지 않습니다"),
+	MISSING_REQUIRED_VALUE(101, HttpStatus.BAD_REQUEST, "필수 입력값이 누락되었습니다"),
+	INVALID_FORMAT(102, HttpStatus.BAD_REQUEST, "입력값 형식이 올바르지 않습니다"),
+	VALUE_OUT_OF_RANGE(103, HttpStatus.BAD_REQUEST, "입력값이 허용 범위를 벗어났습니다"),
+
 	// 1000번대 JWT 에러
-	TOKEN_EXPIRED(1000, HttpStatus.UNAUTHORIZED, "인증이 만료되었습니다. 다시 로그인해주세요."),
-	INVALID_TOKEN(1001, HttpStatus.UNAUTHORIZED, "유효하지 않은 인증입니다."),
-	NOT_SUPPORTED_SOCIAL_TYPE(1002, HttpStatus.BAD_REQUEST, "지원하지 않는 소셜 타입입니다"),
+	EXPIRED_ACCESS_TOKEN(1000, HttpStatus.UNAUTHORIZED, "Access Token이 만료되었습니다. 다시 로그인해주세요."),
+	EXPIRED_REFRESH_TOKEN(1004, HttpStatus.UNAUTHORIZED, "Refresh Token이 만료되었습니다. 다시 로그인해주세요."),
+	INVALID_ACCESS_TOKEN(1001, HttpStatus.UNAUTHORIZED, "유효하지 않은 Access Token 입니다."),
 	INVALID_REFRESH_TOKEN(1003, HttpStatus.UNAUTHORIZED, "유효하지 않은 Refresh Token 입니다."),
 
 	// 2000번대 프로필 관련 에러
@@ -37,6 +43,10 @@ public enum ErrorCode implements CodeInterface {
 	NOT_SUPPORTED_GENDER_TYPE(2007, HttpStatus.BAD_REQUEST, "지원하지 않는 성별 타입입니다"),
 	NOT_SUPPORTED_AGE_RANGE(2008, HttpStatus.BAD_REQUEST, "지원하지 않는 연령대입니다"),
 	NOT_SUPPORTED_COMMUNITY(2009, HttpStatus.BAD_REQUEST, "지원하지 않는 커뮤니티입니다."),
+	NOT_SUPPORTED_SOCIAL_TYPE(2010, HttpStatus.BAD_REQUEST, "지원하지 않는 소셜 타입입니다"),
+
+	// 3000번대 유저 관련 에러
+	USER_NOT_FOUND(3000, HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다."),
 
 	// API 요청 에러
 	BAD_REQUEST(400, HttpStatus.BAD_REQUEST, "잘못된 요청입니다.");

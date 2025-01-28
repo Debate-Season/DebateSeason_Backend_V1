@@ -189,4 +189,11 @@ public class ChatRoomServiceV1 {
 		return response;
 
 	}
+
+
+	public ChatRoom findChatRoomById(Long chatRoomId) {
+
+		return chatRoomRepository.findById(chatRoomId)
+				.orElseThrow(() -> new IllegalArgumentException("채팅방을 찾을 수 없습니다 chatRoomID: " + chatRoomId));
+	}
 }

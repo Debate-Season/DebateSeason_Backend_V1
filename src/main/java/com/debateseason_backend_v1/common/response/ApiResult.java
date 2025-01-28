@@ -26,9 +26,9 @@ public class ApiResult<T> {
 	@Schema(description = "응답 메시지", example = "정상적으로 처리되었습니다")
 	private String message;
 
-	@Schema(description = "응답 데이터", implementation = Object.class)
+	@Schema(description = "응답 데이터")
 	private T data;
-	
+
 	// 커스텀 status 성공 응답
 	public static <T> ApiResult<T> of(HttpStatus status, String message, T data) {
 
@@ -37,15 +37,6 @@ public class ApiResult<T> {
 			.code(ErrorCode.SUCCESS)
 			.message(message)
 			.data(data)
-			.build();
-	}
-
-	// 데이터가 없는 성공 응답
-	public static ApiResult<Void> success(String message) {
-		return ApiResult.<Void>builder()
-			.status(HttpStatus.OK.value())
-			.code(ErrorCode.SUCCESS)
-			.message(message)
 			.build();
 	}
 

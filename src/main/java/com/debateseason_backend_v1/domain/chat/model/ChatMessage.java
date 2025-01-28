@@ -27,7 +27,7 @@ public class ChatMessage {
     @Schema(description = "룸ID",example = "1L")
     private Long roomId;
     @Schema(description = "메시지 타입", example = "CHAT")
-    private MessageType type;
+    private MessageType messageType;
     @Schema(description = "메시지 내용" , example = "안녕하세요.")
     private String content;
     @Schema(description = "발신자", example = "홍길동")

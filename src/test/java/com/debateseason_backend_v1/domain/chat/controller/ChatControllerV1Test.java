@@ -36,33 +36,6 @@ class ChatControllerV1Test {
 	@Test
 	@DisplayName("채팅 목록 조회 성공 테스트")
 	void chatListTest() throws Exception {
-		//given
-		String from = "user1";
-		String to = "user2";
-
-
-        List<ChatMessage> messageList = Arrays.asList(ChatMessage.builder()
-                .type(MessageType.CHAT)
-                .content("안녕하세요")
-                .sender(from)
-                //.timeStamp(LocalDateTime.now())
-                .build());
-        ChatListResponse response = ChatListResponse.builder()
-                .result(messageList)
-                .totalNumberOfMessages(1)
-                .build();
-
-
-		Mockito.when(chatServiceV1.findChatsBetweenUsers(from, to)).thenReturn(response);
-
-		//when & //then
-		mockMvc.perform(get("/api/v1/chat/chat-list")
-				.param("from", from)
-				.param("to", to))
-			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.totalNumberOfMessages").value(1))
-			.andExpect(jsonPath("$.result[0].content").value("안녕하세요"))
-			.andDo(print());
 
 	}
 

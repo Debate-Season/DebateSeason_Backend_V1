@@ -53,6 +53,26 @@ public interface AuthControllerV1Docs {
 			)
 		),
 		@ApiResponse(
+			responseCode = "400",
+			description = "잘못된 요청",
+			content = @Content(
+				mediaType = "application/json",
+				examples = {
+					@ExampleObject(
+						name = "MissingRequiredValue",
+						summary = "필수 입력값에 빈 문자열 입력",
+						value = """
+							{
+							    "status": 400,
+							    "code": "MISSING_REQUIRED_VALUE",
+							    "message": "Refresh Token은 필수 값입니다."
+							}
+							"""
+					)
+				}
+			)
+		),
+		@ApiResponse(
 			responseCode = "401",
 			description = "유효하지 않은 Refresh Token",
 			content = @Content(

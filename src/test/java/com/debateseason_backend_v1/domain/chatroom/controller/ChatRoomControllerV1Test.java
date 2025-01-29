@@ -4,6 +4,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
+import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
@@ -61,34 +62,35 @@ public class ChatRoomControllerV1Test {
 	private ObjectMapper objectMapper;
 
 	@Test
-	@DisplayName("채팅방 생성 200")
+	@DisplayName("채팅방 생성하기")
 	public void createChatRoom() throws JsonProcessingException, UnsupportedEncodingException {
 
 		// Given
 
-		// 1. REQUEST
+		// 1. admin으로부터 받은 데이터
 		Long issueId = 1L;
 
 		ChatRoomDTO chatRoomDTO = new ChatRoomDTO();
-		chatRoomDTO.setTitle("윤석열 비상계엄 발동");
+		chatRoomDTO.setTitle("윤석열 비상 계엄");
 		chatRoomDTO.setContent("12345");
 
 		String content = new ObjectMapper().writeValueAsString(chatRoomDTO);
 
-		// 2. RESPONSE
+		// 2. 응답데이터
 		ApiResult<Object> response = ApiResult.builder()
 			.status(200)
 			.code(ErrorCode.SUCCESS)
 			.message("채팅방 " + chatRoomDTO.getTitle() + "이 생성되었습니다.")
 			.build();
 
+
+		// When & Then
+
+		// Response
 		Mockito.when(chatRoomServiceV1.save(Mockito.any(ChatRoomDTO.class), Mockito.anyLong()))
 			.thenReturn(response);
 
-		// When & Then
-		// Exception으로 하면 세부적인 오류를 파악할 수 없음. 그래서 try-catch
-
-		// 2. API 요청 받기
+		// Request
 		try {
 			mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/room")
 					.contentType(MediaType.APPLICATION_JSON)
@@ -105,87 +107,44 @@ public class ChatRoomControllerV1Test {
 		}
 
 	}
-
-
-	/*
+	
+	
 	@Test
-	@DisplayName("존재하지 않는 이슈방에 채팅방 생성 -> Throw")
-	public void createChatRoomWithNot_Exist_IssueRoom() throws JsonProcessingException {
-
-		// Given
-
-		// REQUEST
-		Long issueId = -999999999L; // 존재하지 않는 이슈방 번호
-
-		ChatRoomDTO chatRoomDTO = new ChatRoomDTO();
-		chatRoomDTO.setTitle("환율 1450원");
-		chatRoomDTO.setContent("12345");
-
-		String content = new ObjectMapper().writeValueAsString(chatRoomDTO);
-
-		// RESPONSE
-		ApiResult<Object> response = ApiResult.builder()
-			.status(400)
-			.code(ErrorCode.SUCCESS)
-			.message("There is no " + issueId)
-			.build();
-
-
-		Mockito.when(chatRoomServiceV1.save(Mockito.any(ChatRoomDTO.class), Mockito.anyLong()))
-			.thenReturn(response);
-
-
-		// 1. API 요청 받기
-		try {
-			mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/room")
-					.contentType(MediaType.APPLICATION_JSON)
-					.characterEncoding(Charset.forName("UTF-8"))
-					.content(content) // ChatRoomDTO
-					.param("issue-id", String.valueOf(issueId)) // Issue_Id
-				)
-				.andExpect(MockMvcResultMatchers.status().isBadRequest())
-				.andDo(print())
-
-			;
-
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
-
-	}
-
-	 */
-
-
-
-	/*
-	@Test
+	@WithMockCustomUser(role = "ROLE_USER")
 	@DisplayName("채팅방 상세보기")
 	public void fetchChatRoom() throws JsonProcessingException {
 
 		// Given
+		
+		// 1-1. 요청 데이터
 		Long chatRoomId = 1L;
 		Long userId = 1L;
 
-		//
+		// 1-2. 응답 데이터
 		ChatRoomDAO chatRoomDAO = ChatRoomDAO.builder()
 			.chatRoomId(chatRoomId)
 			.title("트럼프 방위비 인상")
+			.createdAt(LocalDateTime.now())
 			.content("123456789")
 			.agree(100)
 			.disagree(50)
+			.opinion("AGREE")
 			.build();
 
-		// 2. RESPONSE
 		ApiResult<Object> response = ApiResult.builder()
 			.status(200)
 			.code(ErrorCode.SUCCESS)
-			.message("채팅방 " + chatRoomDAO.getTitle() + "이 생성되었습니다.")
+			.message("채팅방을 불러왔습니다.")
+			.data(chatRoomDAO)
 			.build();
 
-		Mockito.when(chatRoomServiceV1.fetch(userId,chatRoomId)).thenReturn(response);
 
 		// When & Then
+
+		// RESPONSE
+		Mockito.when(chatRoomServiceV1.fetch(userId,chatRoomId)).thenReturn(response);
+
+		// REQUEST
 		try {
 
 			mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/room")
@@ -199,73 +158,33 @@ public class ChatRoomControllerV1Test {
 			throw new RuntimeException(e);
 		}
 	}
-
-	 */
-
-	/*
+	
 	@Test
-	@DisplayName("존재하지 않는 채팅방을 조회한 경우 -> Throw")
-	public void fetchChatRoomWithNot_Exist_ChatRoom() throws JsonProcessingException {
-
-		// Given
-		Long chatRoomId = -999999999L;
-
-		//
-		ChatRoomDAO chatRoomDAO = ChatRoomDAO.builder()
-			.chatRoomId(chatRoomId)
-			.title("트럼프 방위비 인상")
-			.content("123456789")
-			.agree(100)
-			.disagree(50)
-			.build();
-
-		ResponseDTO responseDTO = ResponseDTO.builder()
-			.chatRoomDAO(chatRoomDAO)
-			.build();
-
-		String response = objectMapper.writeValueAsString(responseDTO);
-
-		Mockito.when(chatRoomServiceV1.fetch(chatRoomId))
-			.thenThrow(new RuntimeException("There is no ChatRoom: " + chatRoomId));
-
-		// When & Then
-		try {
-
-			mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/room")
-					.characterEncoding(Charset.forName("UTF-8"))
-					.param("chatroom-id", String.valueOf(chatRoomId))
-				)
-				.andDo(print())
-				.andExpect(MockMvcResultMatchers.status().isOk())
-				.andExpect(MockMvcResultMatchers.content().string(response));
-
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
-	}
-
-	 */
-
-
-	/*
-	@WithMockCustomUser
-	@Test
+	@WithMockCustomUser(role = "ROLE_USER")
 	@DisplayName("채팅방 찬성/반대 투표하기")
 	public void voteChatRoom() {
+		
+		// Given
+		
+		// 1-1. 요청 데이터
 		Long chatRoomId = 1L;
 		Long userId = 1L;
 		String opinion = "AGREE";
 
-		// 2. RESPONSE
+		// 1-2. 응답 데이터
 		ApiResult<Object> response = ApiResult.builder()
 			.status(200)
 			.code(ErrorCode.SUCCESS)
 			.message(opinion + "을 투표하셨습니다.")
 			.build();
 
+		// When & Then
+
+		// RESPONSE
 		Mockito.when(chatRoomServiceV1.vote(opinion, chatRoomId, userId))
 			.thenReturn(response);
 
+		// REQUEST
 		try {
 			mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/room/vote")
 					.characterEncoding(Charset.forName("UTF-8"))
@@ -280,8 +199,6 @@ public class ChatRoomControllerV1Test {
 		}
 
 	}
-
-	 */
 
 	// 동시성 테스트
 	@Test

@@ -20,7 +20,7 @@ public class IssueDAO {
 
 	}
 
-	//private Issue issue;
+	private String title;
 	private Map<String, Integer> map;
 	private List<ChatRoomDAO> chatRoomMap;
 }

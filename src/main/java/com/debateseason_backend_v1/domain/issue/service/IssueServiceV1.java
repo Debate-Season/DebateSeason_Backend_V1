@@ -218,7 +218,7 @@ public class IssueServiceV1 {
 
 		// 1-5 IssueDAO만들기
 		IssueDAO issueDAO = IssueDAO.builder()
-			//.issue(issue)
+			.title(issue.getTitle())
 			.map(sortedMap)
 			.chatRoomMap(chatRoomMap)
 			.build();

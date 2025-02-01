@@ -22,4 +22,8 @@ public class ErrorResponse {
 		return new ErrorResponse(httpStatus.value(), code, code.getMessage());
 	}
 
+	public static ErrorResponse of(HttpStatus httpStatus, ErrorCode code, String message) {
+		return new ErrorResponse(httpStatus.value(), code, message);
+	}
+
 }

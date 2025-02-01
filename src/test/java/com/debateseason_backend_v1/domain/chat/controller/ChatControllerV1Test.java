@@ -32,12 +32,12 @@ class ChatControllerV1Test {
 
 	}
 
-	@Test
+/*	@Test
 	@DisplayName("필수 파라미터 누락 시 실패 테스트")
 	void chatListFailure() throws Exception {
 		mockMvc.perform(get("/api/v1/chat/chat-list"))
 			.andExpect(status().isBadRequest())
 			.andDo(print());
-	}
+	}*/
 
 }

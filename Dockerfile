@@ -22,4 +22,4 @@ CMD ["-XX:+UseContainerSupport", \
      "-XX:MaxRAMPercentage=75.0", \
      "-XX:+UseSerialGC", \
      "-Djava.security.egd=file:/dev/./urandom", \
-     "org.springframework.boot.loader.JarLauncher"]
+     "org.springframework.boot.loader.launch.JarLauncher"]

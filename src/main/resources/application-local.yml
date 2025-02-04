@@ -4,14 +4,13 @@ spring:
       on-profile: local
   jpa:
     hibernate:
-      ddl-auto: create
-    defer-datasource-initialization: true
-
+      ddl-auto: update
     properties:
       hibernate:
         format_sql: true
         show-sql: true
         highlight_sql: true
+    defer-datasource-initialization: true
 
   sql:
     init:

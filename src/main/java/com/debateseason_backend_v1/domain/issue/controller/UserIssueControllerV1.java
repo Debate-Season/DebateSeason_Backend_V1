@@ -24,7 +24,7 @@ public class UserIssueControllerV1 {
 
 	// 2. 이슈방 단건 불러오기(+ 채팅방도 같이 불러와야 함.)
 	@Operation(
-		summary = "이슈방 단건 불러오기",
+		summary = "이슈방 1건 상세보기",
 		description = "이슈방 상세보기(+ 채팅방도 같이 불러와야 함.)")
 	@GetMapping("/issue")
 	public ApiResult<Object> getIssue(@RequestParam(name = "issue-id") Long issueId,

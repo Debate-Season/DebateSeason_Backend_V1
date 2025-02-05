@@ -136,7 +136,7 @@ public class ChatRoomServiceV1 {
 		}
 
 
-		String opinion = "none";
+		String opinion = "NEUTRAL";// 아무런 의견을 표명하지 않은 경우에는 NEUTRAL로 반환을 하는데, 이건 저장할 가치가 없다.
 		UserChatRoom tmpuserChatRoom = userChatRoomRepository.findByUserIdAndChatRoomId(userId,chatRoomId);
 		if(tmpuserChatRoom!=null){
 			opinion = tmpuserChatRoom.getOpinion();

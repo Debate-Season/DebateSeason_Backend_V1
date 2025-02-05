@@ -4,8 +4,7 @@ spring:
       on-profile: dev
   jpa:
     hibernate:
-      ddl-auto: create
-    defer-datasource-initialization: true
+      ddl-auto: update
 
   datasource:
     driver-class-name: ${DB_DRIVER_CLASS_NAME}
@@ -17,10 +16,6 @@ spring:
       maximum-pool-size: 5
       minimum-idle: 2
       connection-timeout: 20000
-
-  sql:
-    init:
-      mode: always
 
   flyway:
     enabled: false

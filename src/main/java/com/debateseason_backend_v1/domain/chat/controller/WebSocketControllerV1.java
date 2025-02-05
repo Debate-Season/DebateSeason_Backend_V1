@@ -10,8 +10,7 @@ import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.stereotype.Controller;
 
 import com.debateseason_backend_v1.common.enums.MessageType;
-import com.debateseason_backend_v1.domain.chat.model.ChatMessage;
-import com.debateseason_backend_v1.domain.chat.service.ChatServiceV1;
+import com.debateseason_backend_v1.domain.chat.model.request.ChatMessageRequest;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -29,9 +28,9 @@ public class WebSocketControllerV1 {
 
     @MessageMapping("/chat.room.{roomId}")
     @SendTo("/topic/room{roomId}")
-    public ChatMessage message(@DestinationVariable Long roomId, @Payload ChatMessage chatMessage) {
+    public ChatMessageRequest message(@DestinationVariable Long roomId, @Payload ChatMessageRequest chatMessage) {
         log.debug("채팅 메시지 수신: roomId={}, sender={}", roomId, chatMessage.getSender());
-        ChatMessage chatMessage1 = ChatMessage.builder()
+        ChatMessageRequest chatMessage1 = ChatMessageRequest.builder()
                 .roomId(roomId)
                 .messageType(MessageType.CHAT)
                 .sender(chatMessage.getSender())
@@ -49,11 +48,11 @@ public class WebSocketControllerV1 {
     @Operation(summary = "채팅 메시지 전송")
     @MessageMapping("chat.sendMessage")
     @SendTo("/topic/public")
-    public ChatMessage broadcastChatMessage(
+    public ChatMessageRequest broadcastChatMessage(
             @Parameter(description = "사용자 입장 정보")
-            @Payload ChatMessage chatMessage) {
+            @Payload ChatMessageRequest chatMessage) {
 
-        return ChatMessage.builder()
+        return ChatMessageRequest.builder()
                 .messageType(MessageType.CHAT)
                 .sender(chatMessage.getSender())
                 .content(chatMessage.getContent())
@@ -66,11 +65,11 @@ public class WebSocketControllerV1 {
     @Operation(summary = "사용자 입장")
     @MessageMapping("chat.addUser")
     @SendTo("/topic/public")
-    public ChatMessage announceUserJoin (
+    public ChatMessageRequest announceUserJoin (
             @Parameter(description = "사용자 입장 정보")
-            @Payload ChatMessage chatMessage
+            @Payload ChatMessageRequest chatMessage
     ) {
-        return ChatMessage.builder()
+        return ChatMessageRequest.builder()
             .messageType(MessageType.JOIN)
             .sender(chatMessage.getSender())
             .content(chatMessage.getContent() + " joined!")

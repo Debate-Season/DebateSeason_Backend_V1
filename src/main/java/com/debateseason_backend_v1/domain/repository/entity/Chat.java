@@ -8,6 +8,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 import java.time.LocalDateTime;
 
@@ -40,5 +41,6 @@ public class Chat {
 
 	private String userCommunity;
 
+	@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss.SSSSSS")
 	private LocalDateTime timeStamp;
 }

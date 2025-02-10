@@ -4,7 +4,7 @@ spring:
       on-profile: dev
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
 
   datasource:
     driver-class-name: ${DB_DRIVER_CLASS_NAME}

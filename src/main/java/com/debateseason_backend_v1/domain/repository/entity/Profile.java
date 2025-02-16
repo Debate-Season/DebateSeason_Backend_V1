@@ -37,7 +37,7 @@ public class Profile {
 	@Column(name = "user_id")
 	private Long userId;
 
-	@Column(name = "profile_coler")
+	@Column(name = "profile_color")
 	private String profileColor;
 
 	@Column(name = "nickname", unique = true)

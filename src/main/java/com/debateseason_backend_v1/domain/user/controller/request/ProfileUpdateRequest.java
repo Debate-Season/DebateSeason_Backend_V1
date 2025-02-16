@@ -10,6 +10,9 @@ import jakarta.validation.constraints.NotNull;
 
 @Schema(description = "프로필 수정 요청 DTO")
 public record ProfileUpdateRequest(
+	@Schema(description = "사용자 색상", example = "RED")
+	String profileColor,
+
 	@Schema(description = "사용자 닉네임", example = "토론왕")
 	@NotBlank(message = "닉네임은 필수입니다.")
 	String nickname,
@@ -31,6 +34,7 @@ public record ProfileUpdateRequest(
 
 		return ProfileUpdateServiceRequest.builder()
 			.userId(userId)
+			.profileColor(profileColor)
 			.nickname(nickname)
 			.communityId(communityId)
 			.gender(gender)

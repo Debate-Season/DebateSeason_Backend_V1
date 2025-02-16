@@ -40,6 +40,7 @@ public class ProfileServiceV1 {
 
 		Profile profile = Profile.builder()
 			.userId(request.userId())
+			.profileColor(request.profileColor())
 			.nickname(request.nickname())
 			.gender(request.gender())
 			.ageRange(request.ageRange())
@@ -83,7 +84,7 @@ public class ProfileServiceV1 {
 		}
 		communityValidator.validate(request.communityId());
 
-		profile.update(request.nickname(), request.gender(), request.ageRange());
+		profile.update(request.profileColor(), request.nickname(), request.gender(), request.ageRange());
 
 		ProfileCommunity profileCommunity = profileCommunityRepository.getByProfileId(profile.getId());
 		profileCommunity.updateCommunity(request.communityId());

@@ -9,6 +9,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
 
 @Schema(description = "내 프로필 조회 응답")
 public record ProfileResponse(
+	@Schema(description = "프로필 컬러", example = "RED")
+	String profileColor,
+
 	@Schema(description = "닉네임", example = "토론왕")
 	String nickname,
 
@@ -25,6 +28,7 @@ public record ProfileResponse(
 	public static ProfileResponse of(Profile profile, Community community) {
 
 		return new ProfileResponse(
+			profile.getProfileColor(),
 			profile.getNickname(),
 			profile.getGender(),
 			profile.getAgeRange(),

@@ -26,7 +26,7 @@ dependencies {
 
     // Security
     implementation 'org.springframework.boot:spring-boot-starter-security'
-    
+
     // Jwt
     implementation 'io.jsonwebtoken:jjwt-api:0.12.3'
     implementation 'io.jsonwebtoken:jjwt-impl:0.12.3'
@@ -47,10 +47,6 @@ dependencies {
 
     // H2database
     testRuntimeOnly 'com.h2database:h2'
-
-    // flyway
-    implementation 'org.flywaydb:flyway-core'
-    implementation 'org.flywaydb:flyway-mysql'
 
     // Lombok
     compileOnly 'org.projectlombok:lombok'

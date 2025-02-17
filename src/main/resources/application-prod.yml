@@ -17,9 +17,6 @@ spring:
       minimum-idle: 2
       connection-timeout: 20000
 
-  flyway:
-    enabled: false
-
 jwt:
   secret:
     key: ${JWT_SECRET}

@@ -28,9 +28,6 @@ spring:
       minimum-idle: 2
       connection-timeout: 11000
 
-  flyway:
-    enabled: false
-
   output:
     ansi:
       enabled: always

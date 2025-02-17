@@ -2,6 +2,7 @@ spring:
   config:
     activate:
       on-profile: local
+
   jpa:
     hibernate:
       ddl-auto: create
@@ -17,7 +18,6 @@ spring:
       mode: always
 
   datasource:
-
     driver-class-name: org.mariadb.jdbc.Driver
     url: jdbc:mariadb://127.0.0.1:3307/debate?serverTimezone=Asia/Seoul
     username: root
@@ -50,8 +50,6 @@ logging.level:
 
 server:
   port: 8080
-
-
 
 jwt:
   secret:

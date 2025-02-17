@@ -9,6 +9,8 @@ FROM amazoncorretto:17.0.7-al2023-headless
 
 WORKDIR /app
 
+ENV TZ=Asia/Seoul
+
 COPY --from=builder /build/dependencies/ ./
 COPY --from=builder /build/spring-boot-loader/ ./
 COPY --from=builder /build/snapshot-dependencies/ ./

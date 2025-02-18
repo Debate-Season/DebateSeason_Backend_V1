@@ -55,3 +55,5 @@ jwt:
     expire-time: 6000000   # 10분
   refresh-token:
     expire-time: 86400000 # 24시간
+
+swagger-base-url: "http://localhost:8080"

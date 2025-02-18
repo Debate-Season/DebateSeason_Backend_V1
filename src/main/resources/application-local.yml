@@ -2,27 +2,36 @@ spring:
   config:
     activate:
       on-profile: local
+
   jpa:
+    hibernate:
+      ddl-auto: create
     properties:
       hibernate:
         format_sql: true
         show-sql: true
         highlight_sql: true
-    hibernate:
-      ddl-auto: create
+    defer-datasource-initialization: true
+
+  sql:
+    init:
+      mode: always
 
   datasource:
+    driver-class-name: org.mariadb.jdbc.Driver
+    url: jdbc:mariadb://127.0.0.1:3307/debate?serverTimezone=Asia/Seoul
+    username: root
+    password: "1234"
+
     hikari:
       maximum-pool-size: 5
       minimum-idle: 2
       connection-timeout: 11000
 
-  flyway:
-    enabled: false
-
   output:
     ansi:
       enabled: always
+
 
 logging.level:
   root: info
@@ -38,3 +47,13 @@ logging.level:
 
 server:
   port: 8080
+
+jwt:
+  secret:
+    key: "yourTestSecretKeyMustBeLongEnoughForHS256Algorithm"
+  access-token:
+    expire-time: 6000000   # 10분
+  refresh-token:
+    expire-time: 86400000 # 24시간
+
+swagger-base-url: "http://localhost:8080"

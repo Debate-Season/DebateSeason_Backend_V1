@@ -1,7 +1,17 @@
 package com.debateseason_backend_v1.domain.repository.entity;
 
+import com.debateseason_backend_v1.common.enums.MessageType;
+import com.debateseason_backend_v1.common.enums.OpinionType;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import com.fasterxml.jackson.annotation.JsonFormat;
+
+import java.time.LocalDateTime;
+
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
@@ -10,16 +20,27 @@ import lombok.*;
 @Entity
 public class Chat {
 
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "chat_id")
+	private Long id;
 
-    @Id @GeneratedValue(strategy = GenerationType.AUTO)
-    private long id;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "chat_room_id", nullable = false)
+	private ChatRoom chatRoomId;
 
-    @ManyToOne
-    private ChatRoom chatRoom;
+	@Enumerated(EnumType.STRING)
+	private MessageType messageType;
 
-    // 발신자
-    private String sender;
-    // 소속 커뮤니티
-    private String category;
-    private String content;
+	private String content;
+
+	private String sender;
+
+	@Enumerated(EnumType.STRING)
+	private OpinionType opinionType;
+
+	private String userCommunity;
+
+	@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss.SSSSSS")
+	private LocalDateTime timeStamp;
 }

@@ -4,7 +4,7 @@ spring:
       on-profile: prod
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: none
 
   datasource:
     driver-class-name: ${DB_DRIVER_CLASS_NAME}
@@ -13,49 +13,74 @@ spring:
     password: ${DB_PASSWORD}
 
     hikari:
-      maximum-pool-size: 10
-      minimum-idle: 5
+      maximum-pool-size: 5
+      minimum-idle: 2
       connection-timeout: 20000
 
-  flyway:
-    enabled: true
-    baseline-on-migrate: true
-    locations: classpath:db/migration
-    clean-disabled: true  # DB 보호
-    clean-on-validation-error: false  # 검증 실패시 에러로 처리
+jwt:
+  secret:
+    key: ${JWT_SECRET}
+  access-token:
+    expire-time: ${ACCESS_EXPIRE_TIME}
+  refresh-token:
+    expire-time: ${REFRESH_EXPIRE_TIME}
 
 logging:
-  pattern:
-    console: "[%d{yyyy-MM-dd HH:mm:ss}] [%thread] %-5level %logger{36} - %msg%n"
-
   level:
+    # 1) 루트 레벨
     root: error
+    # 2) 애플리케이션 패키지
     com.debateseason_backend_v1: info
 
+    # -------------------------------
     # Database & ORM
-    org.hibernate.SQL: warn  # SQL 쿼리 로깅
-    org.hibernate.orm.jdbc.bind: warn # SQL 파라미터 바인딩
-    com.zaxxer.hikari: warn # 커넥션 풀 관련
+    # -------------------------------
+    # SQL 실행 로그를 상세히 보고 싶다면 info, 단 성능 부담이 큼
+    org.hibernate.SQL: warn
+    # 파라미터(바인딩 값)까지 로그를 찍으려면 debug,
+    # 프로덕션에서는 warn 또는 info 정도로 제한 권장
+    org.hibernate.orm.jdbc.bind: warn
 
+    com.zaxxer.hikari: info   # 커넥션 풀 동작 관련 로그
+
+    # -------------------------------
     # Network & Performance
-    org.apache.tomcat: warn # Tomcat 서버 관련
-    org.apache.coyote: warn # HTTP 커넥터 관련
+    # -------------------------------
+    org.apache.tomcat: info   # 톰캣 기동이나 에러 정도
+    org.apache.coyote: info   # 톰캣 커넥션/프로토콜 관련
 
+    # -------------------------------
     # Spring Framework
-    org.springframework.web: warn
-    org.springframework.security: warn
-    org.springframework.cache: warn
-    org.springframework.transaction: warn
+    # -------------------------------
+    org.springframework.web: info
+    org.springframework.security: info   # 운영에서 불필요한 시큐리티 디버그 로그는 지양
+    org.springframework.cache: warn      # 캐시 관련 중요 오류만
+    org.springframework.transaction: info
 
-    # WebSocket & STOMP 관련
-    org.springframework.web.socket: warn  # 프로덕션에서는 WARN
-    org.springframework.messaging: warn   # STOMP 메시징 관련
-    org.springframework.web.socket.messaging: warn  # STOMP 메시지 처리
+    # -------------------------------
+    # WebSocket & STOMP
+    # -------------------------------
+    # 운영 중에는 warn 정도로 두고, 문제 발생 시 일시적으로 debug로 전환
+    org.springframework.web.socket: warn
+    org.springframework.messaging: warn
+    org.springframework.web.socket.messaging: warn
 
-    # Application Layers
-    com.debateseason_backend_v1.domain.*.controller: info   # API 요청/응답
-    com.debateseason_backend_v1.domain.*.service: warn      # 비즈니스 로직 경고/에러
-    com.debateseason_backend_v1.domain.*.repository: warn   # 데이터 접근 경고/에러
+    # -------------------------------
+    # Application Layers (구체적인 애플리케이션 코드)
+    # -------------------------------
+    # Controller: 사용자가 호출한 API 흐름은 info 정도로 남기면 운영 시 유용
+    com.debateseason_backend_v1.domain.*.controller: info
+
+    # Service, Repository: 대량 호출되거나 내부 로직이 많다면 warn 이상으로 조절
+    # 성능이나 로그량에 주의
+    com.debateseason_backend_v1.domain.*.service: warn
+    com.debateseason_backend_v1.domain.*.repository: warn
 
 server:
+  servlet:
+    context-path: /prod
+
   port: 80
+
+# 환경별로 스웨거 요청 분리
+swagger-base-url: "https://debate-season.click/prod"

@@ -67,4 +67,8 @@ logging:
 server:
   servlet:
     context-path: /dev
+
   port: 80
+
+# 환경별로 스웨거 요청 분리
+swagger-base-url: ${SWAGGER_BASE_URL}

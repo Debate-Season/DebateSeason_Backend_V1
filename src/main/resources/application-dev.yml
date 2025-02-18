@@ -17,9 +17,6 @@ spring:
       minimum-idle: 2
       connection-timeout: 20000
 
-  flyway:
-    enabled: false
-
 jwt:
   secret:
     key: ${JWT_SECRET}
@@ -29,37 +26,45 @@ jwt:
     expire-time: ${REFRESH_EXPIRE_TIME}
 
 logging:
-  pattern:
-    console: "[%d{yyyy-MM-dd HH:mm:ss}] [%thread] %-5level %logger{36} - %msg%n"
-
   level:
-    root: error
-    com.debateseason_backend_v1: info
+    # 1) 루트 레벨: 개발 중에도 너무 과도한 로그는 피하기 위해 'info' 정도 권장
+    root: info
 
-    # Database & ORM
-    org.hibernate.SQL: debug        # SQL 쿼리는 문제 추적을 위해 보는게 좋습니다
-    org.hibernate.orm.jdbc.bind: debug  # 파라미터 확인을 위해 필요
-    com.zaxxer.hikari: info        # 커넥션 풀 이슈 모니터링에 info면 충분
+    # 2) 애플리케이션 패키지 (예: com.example 패키지)
+    #    - Dev에서는 Controller, Service, Repository 모두 DEBUG로 두고 세부 흐름 파악
+    com.example: debug
 
-    # Network & Performance
-    org.apache.tomcat: info       # 일반적인 작동 확인에 info면 충분
-    org.apache.coyote: info       # 기본적인 요청 처리 모니터링
+    # -------------------------------
+    # Spring MVC / Web
+    # -------------------------------
+    # 요청/응답 처리 과정을 상세히 보고 싶으면 debug,
+    # 정보 과다 시 info로 조절
+    org.springframework.web: debug
 
-    # Spring Framework
-    org.springframework.web: info
-    org.springframework.security: info
-    org.springframework.cache: info
-    org.springframework.transaction: info
+    # -------------------------------
+    # Security
+    # -------------------------------
+    # 개발 중에도 인증/인가 과정 디버깅이 필요하다면 debug
+    org.springframework.security: debug
 
-    # WebSocket & STOMP 관련
-    org.springframework.web.socket: debug  # 프로덕션에서는 WARN
-    org.springframework.messaging: debug   # STOMP 메시징 관련
-    org.springframework.web.socket.messaging: debug  # STOMP 메시지 처리
+    # -------------------------------
+    # JPA / Hibernate
+    # -------------------------------
+    # SQL 로그와 바인딩 파라미터까지 개발 중에는 보고 싶을 수 있음
+    org.hibernate.SQL: debug
+    org.hibernate.orm.jdbc.bind: debug
+    # Hikari(커넥션 풀)도 추가 정보 보고 싶다면 debug 가능
+    com.zaxxer.hikari: info
 
-    # Application Layers
-    com.debateseason_backend_v1.domain.*.controller: info   # API 요청/응답
-    com.debateseason_backend_v1.domain.*.service: warn      # 비즈니스 로직 경고/에러
-    com.debateseason_backend_v1.domain.*.repository: warn   # 데이터 접근 경고/에러
+    # -------------------------------
+    # WebSocket / STOMP
+    # -------------------------------
+    # STOMP 메시지의 트래픽 흐름, 메서드 실행 순서 등이 필요할 수 있으므로 debug
+    org.springframework.web.socket: debug
+    org.springframework.messaging: debug
+    org.springframework.web.socket.messaging: debug
 
 server:
+  servlet:
+    context-path: /dev
   port: 80

@@ -132,12 +132,12 @@ jobs:
           context: .
           push: true
           platforms: linux/arm64
-          tags: ${{ steps.login-ecr.outputs.registry }}/${{ secrets.DEV_ECR_REPOSITORY_URL }}:${{ env.IMAGE_TAG }}
+          tags: ${{ steps.login-ecr.outputs.registry }}/${{ secrets.DEV_ECR_REPOSITORY_NAME }}:${{ env.IMAGE_TAG }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
           build-args: |
             ECR_REGISTRY=${{ steps.login-ecr.outputs.registry }}
-            ECR_REPOSITORY=${{ secrets.DEV_ECR_REPOSITORY_URL }}
+            ECR_REPOSITORY=${{ secrets.DEV_ECR_REPOSITORY_NAME }}
 
       - name: Download Task Definition Template
         run: |
@@ -155,7 +155,7 @@ jobs:
         with:
           task-definition: task-definition.json
           container-name: ${{ secrets.DEV_CONTAINER_NAME }}
-          image: ${{ steps.login-ecr.outputs.registry }}/${{ secrets.DEV_ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
+          image: ${{ steps.login-ecr.outputs.registry }}/${{ secrets.DEV_ECR_REPOSITORY_NAME }}:${{ env.IMAGE_TAG }}
 
       - name: Deploy Amazon ECS task definition
         uses: aws-actions/amazon-ecs-deploy-task-definition@v2

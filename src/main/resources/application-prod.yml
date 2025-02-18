@@ -83,4 +83,4 @@ server:
   port: 80
 
 # 환경별로 스웨거 요청 분리
-swagger-base-url: ${SWAGGER_BASE_URL}
+swagger-base-url: "https://debate-season.click/prod"

@@ -74,4 +74,4 @@ server:
 swagger-base-url: "https://debate-season.click/dev"
 
 #stomp 연결 환경분리
-stomp-connect-url: "/ws-stomp/dev"
+stomp-connect-url: "/dev/ws-stomp"

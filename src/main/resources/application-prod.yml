@@ -84,3 +84,6 @@ server:
 
 # 환경별로 스웨거 요청 분리
 swagger-base-url: "https://debate-season.click/prod"
+
+#stomp 연결 환경분리
+stomp-connect-url: "/prod/ws-stomp"

@@ -57,3 +57,6 @@ jwt:
     expire-time: 86400000 # 24시간
 
 swagger-base-url: "http://localhost:8080"
+
+#stomp 연결 환경분리
+stomp-connect-url: "/local/ws-stomp"

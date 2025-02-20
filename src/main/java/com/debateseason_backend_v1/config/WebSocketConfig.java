@@ -1,5 +1,6 @@
 package com.debateseason_backend_v1.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
@@ -13,6 +14,9 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
+    @Value("${stomp-connect-url}")
+    private String stompConnectUrl;
+
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
         registry.enableSimpleBroker("/topic"); //sub
@@ -21,7 +25,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry register) {
-        register.addEndpoint("/ws-stomp")
+        register.addEndpoint(stompConnectUrl)
             .setAllowedOrigins("*");
             // .withSockJS();
     }

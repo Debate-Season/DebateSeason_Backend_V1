@@ -9,7 +9,7 @@ import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.servers.Server;
 
 @EnableScheduling
-@OpenAPIDefinition(servers = {@Server(url = "https://debate-season.click",description = "Swagger https 프로토콜 적용")})
+//@OpenAPIDefinition(servers = {@Server(url = "https://debate-season.click",description = "Swagger https 프로토콜 적용")})
 @SpringBootApplication(exclude = SecurityAutoConfiguration.class) // 자동으로 날짜 입력활성화
 public class DebateSeasonBackendV1Application {
 

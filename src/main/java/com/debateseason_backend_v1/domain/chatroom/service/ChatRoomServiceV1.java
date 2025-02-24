@@ -1,6 +1,10 @@
 package com.debateseason_backend_v1.domain.chatroom.service;
 
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
@@ -96,7 +100,7 @@ public class ChatRoomServiceV1 {
 				.opinion(opinion)
 				.build();
 
-			userChatRoomRepository.save(userChatRoom);
+			userChatRoomRepository.save(userChatRoom); // 1. 투표를 할 때 userChatRoom에 저장이 된다.
 		} else {
 			// DirtyChecking
 			UserChatRoom userChatRoom = userChatRoomRepository.findByUserAndChatRoom(user, chatRoom);
@@ -185,15 +189,77 @@ public class ChatRoomServiceV1 {
 			.message("채팅방을 불러왔습니다.")
 			.data(chatRoomDAO)
 			.build();
-
+		// interest를 반환해야 한다.
 		return response;
 
 	}
-
 
 	public ChatRoom findChatRoomById(Long chatRoomId) {
 
 		return chatRoomRepository.findById(chatRoomId)
 				.orElseThrow(() -> new IllegalArgumentException("채팅방을 찾을 수 없습니다 chatRoomID: " + chatRoomId));
 	}
+
+	// 4. 투표한 여러 채팅방 가져오기
+	public ApiResult<Object> findVotedChatRoom(Long userId,int page){
+
+		// 여기서 페이지네이션을 하고, 아래에서 데이터를 fetch하자
+		List<Long> chatRoomIds = userChatRoomRepository.findChatRoomsByPage(userId,page*2);
+
+		if(chatRoomIds.isEmpty()){
+			return ApiResult.builder()
+				.status(200)
+				.code(ErrorCode.SUCCESS)
+				.message("마지막 페이지입니다.")
+				.data("")
+				.build();
+
+		}
+
+		// 1.제대로 가져왔나 확인해보기
+		for(Long l:chatRoomIds){
+			System.out.println("chat_room_id: "+l);
+		}
+
+		List<Object[]> chatRoomList = userChatRoomRepository.findChatRoomByChatRoomIds(chatRoomIds);
+		List<ChatRoomDAO> fetchedChatRoomList = chatRoomList.stream().map(
+			e->{
+				// AGREE, DISAGREE, chat_room_id, title, content, created_at 순으로 가져오기
+				Long agree = (Long)e[0];
+				Long disagree = (Long)e[1];
+				Long chatRoomId = (Long)e[2];
+				String title = (String)e[3];
+				String content = (String)e[4];
+				String time = e[5].toString();
+
+				String result = time.split("\\.")[0];
+
+
+				LocalDateTime createdAt = LocalDateTime.parse(result, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+
+
+
+				return ChatRoomDAO.builder()
+					.chatRoomId(chatRoomId)
+					.title(title)
+					.content(content)
+					.agree(Math.toIntExact(agree))
+					.disagree(Math.toIntExact(disagree))
+					.createdAt(createdAt)
+					.build();
+
+			}
+		).collect(Collectors.toList());
+
+		ApiResult<Object> response = ApiResult.builder()
+			.status(200)
+			.code(ErrorCode.SUCCESS)
+			.message("채팅방을 불러왔습니다.")
+			.data(fetchedChatRoomList)
+			.build();
+
+		return response;
+
+	}
+
 }

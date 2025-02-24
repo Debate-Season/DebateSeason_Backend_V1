@@ -7,4 +7,8 @@ import lombok.Setter;
 @Setter
 public class IssueDTO {
     private String title;
+
+    private String majorCategory;
+
+    //private String middleCategory;
 }

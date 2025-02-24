@@ -1,7 +1,5 @@
 package com.debateseason_backend_v1.domain.user.controller;
 
-import java.util.List;
-
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -11,7 +9,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.debateseason_backend_v1.common.response.ApiResult;
 import com.debateseason_backend_v1.common.response.VoidApiResult;
-import com.debateseason_backend_v1.domain.issue.model.response.IssueBriefResponse;
 import com.debateseason_backend_v1.domain.issue.service.IssueServiceV1;
 import com.debateseason_backend_v1.domain.user.controller.docs.UserControllerV1Docs;
 import com.debateseason_backend_v1.domain.user.controller.request.LogoutRequest;
@@ -59,24 +56,6 @@ public class UserControllerV1 implements UserControllerV1Docs {
 		userServiceV1.withdraw(userDetails.getUserId());
 
 		return VoidApiResult.success("회원 탈퇴가 완료되었습니다.");
-	}
-
-	// 2. 인덱스 페이지(홈)
-	// 이슈방 전체 나열
-	@Operation(
-		summary = "이슈방 전체를 불러옵니다(수정가능)  ",
-		description = " ")
-	@GetMapping("/home")
-	public ApiResult<List<IssueBriefResponse>> indexPage(
-		//@RequestParam(name = "page", required = false) Long page,
-		@AuthenticationPrincipal CustomUserDetails principal
-	) {
-		Long userId = principal.getUserId();
-		//return chatRoomServiceV1.findVotedChatRoom(userId,page);
-
-		// 활성도가 가장 높은 토론방 5개 표시
-
-		return issueServiceV1.fetchAll();
 	}
 
 }

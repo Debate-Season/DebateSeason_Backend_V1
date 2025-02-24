@@ -1,39 +1,41 @@
 package com.debateseason_backend_v1.domain.issue.service;
 
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
+import java.util.Map;
+import java.util.Set;
 
 import org.springframework.stereotype.Service;
 
-import com.debateseason_backend_v1.common.exception.CustomException;
 import com.debateseason_backend_v1.common.exception.ErrorCode;
 import com.debateseason_backend_v1.common.response.ApiResult;
-import com.debateseason_backend_v1.domain.chatroom.model.response.chatroom.ChatRoomResponse;
-import com.debateseason_backend_v1.domain.chatroom.model.response.chatroom.type.ResponseWithTimeAndOpinion;
-import com.debateseason_backend_v1.domain.issue.PaginationDTO;
-import com.debateseason_backend_v1.domain.issue.model.response.IssueDetailResponse;
-import com.debateseason_backend_v1.domain.issue.model.request.IssueRequest;
+import com.debateseason_backend_v1.domain.chatroom.dto.ChatRoomDAO;
+import com.debateseason_backend_v1.domain.chatroom.model.response.ChatRoomResponse;
+import com.debateseason_backend_v1.domain.issue.dto.IssueDAO;
+import com.debateseason_backend_v1.domain.issue.dto.IssueDTO;
 import com.debateseason_backend_v1.domain.issue.model.CommunityRecords;
-import com.debateseason_backend_v1.domain.issue.model.response.IssueBriefResponse;
-import com.debateseason_backend_v1.domain.profile.enums.CommunityType;
-import com.debateseason_backend_v1.domain.repository.ChatRepository;
+import com.debateseason_backend_v1.domain.issue.model.response.IssueResponse;
 import com.debateseason_backend_v1.domain.repository.ChatRoomRepository;
+import com.debateseason_backend_v1.domain.repository.CommunityRepository;
 import com.debateseason_backend_v1.domain.repository.IssueRepository;
+import com.debateseason_backend_v1.domain.repository.ProfileCommunityRepository;
 import com.debateseason_backend_v1.domain.repository.ProfileRepository;
 import com.debateseason_backend_v1.domain.repository.UserChatRoomRepository;
 import com.debateseason_backend_v1.domain.repository.UserIssueRepository;
 import com.debateseason_backend_v1.domain.repository.UserRepository;
+import com.debateseason_backend_v1.domain.repository.entity.ChatRoom;
+import com.debateseason_backend_v1.domain.repository.entity.Community;
 import com.debateseason_backend_v1.domain.repository.entity.Issue;
 import com.debateseason_backend_v1.domain.repository.entity.Profile;
+import com.debateseason_backend_v1.domain.repository.entity.ProfileCommunity;
 import com.debateseason_backend_v1.domain.repository.entity.User;
+import com.debateseason_backend_v1.domain.repository.entity.UserChatRoom;
 import com.debateseason_backend_v1.domain.repository.entity.UserIssue;
 import com.debateseason_backend_v1.domain.user.dto.UserDTO;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
@@ -46,138 +48,292 @@ public class IssueServiceV1 {
 
 	private final IssueRepository issueRepository;
 	private final UserIssueRepository userIssueRepository;
+	private final ChatRoomRepository chatRoomRepository;
 	private final UserChatRoomRepository userChatRoomRepository;
 	private final UserRepository userRepository;
 
 	private final ProfileRepository profileRepository;
-	private final ChatRepository chatRepository;
+	private final ProfileCommunityRepository profileCommunityRepository;
+	private final CommunityRepository communityRepository;
 
-	private final ChatRoomRepository chatRoomRepository;
-
-
+	private final ObjectMapper objectMapper;
 
 	// 1. save 이슈방
-	public ApiResult<Object> save(IssueRequest issueRequest) {
+	public ApiResult<Object> save(IssueDTO issueDTO) {
 
 		Issue issue = Issue.builder()
-			.title(issueRequest.getTitle())
-			.majorCategory(issueRequest.getMajorCategory())
+			.title(issueDTO.getTitle())
+			.majorCategory(issueDTO.getMajorCategory())
 			//.middleCategory(issueDTO.getMiddleCategory())
 			.build();
 		issueRepository.save(issue);
 
-		return ApiResult.builder()
+		ApiResult<Object> response = ApiResult.builder()
 			.status(200)
 			.code(ErrorCode.SUCCESS)
-			.message("이슈방 " + issueRequest.getTitle() + "가 생성되었습니다.")
+			.message("이슈방 " + issueDTO.getTitle() + "가 생성되었습니다.")
 			.build();
+
+		return response;
 
 	}
 
 	//2. fetch 단건 이슈방
 	@Transactional
-	public ApiResult<IssueDetailResponse> fetch2(Long issueId, Long userId, Long ChatRoomId) {
+	public ApiResult<Object> fetch(Long issueId, Long userId) {
 
-		Long chats = 0L;
+		// 1. 이슈방 불러오기
+		Issue issue = null;
+		try{
+			issue = issueRepository.findById(issueId).orElseThrow(
+				() -> new NullPointerException("There is no " + issueId)
+			);
 
-		List<Object[]> object = userIssueRepository.findByIssueIdAndUserId(issueId,userId);
-
-		String bookMarkState = "no";
-		// 첫 방문 항상 bookmarkState는 no
-		if(!object.isEmpty()){
-			Object[] object2 = object.get(0);
-			bookMarkState = (String)object2[0];
+		}
+		catch (NullPointerException | IllegalArgumentException e){
+			return ApiResult.builder()
+				.status(400)
+				.code(ErrorCode.BAD_REQUEST)
+				.message("선택하신 이슈방은 존재하지 않습니다.")
+				.build();
 
 		}
 
+		// 2. User 찾기
+		/*
+		User user = userRepository.findById(userId).orElseThrow(
+			() -> new RuntimeException("There is no " + userId)
+		);
+		 */
 
-		// issue_id, title, COUNT(ui.issue_id) AS bookmarks
-		List<Object[]> fetchIssue = issueRepository.findSingleIssueWithBookmarks(issueId);
-
-		// 수정. issue없는 에러 조회
-		if(issueRepository.findById(issueId).isEmpty()){
-			throw new CustomException(ErrorCode.NOT_FOUND_ISSUE);
-		}
-
-		String issueTitle = "this is error" ;
-		Long bookMarks = 0L;
-		for(Object[] obj : fetchIssue){
-			issueTitle = (String)obj[1];
-			bookMarks = (Long)obj[2];
-		}
+		// 2. Community 찾는 과정
+		/*
+			userId로 Profile 찾기
+			Profile.id로 ProfileCommunity.communityId 찾기
+			위에서 찾은 communityId로 Community 테이블에서 community,name 가져오기
+			select 쿼리만해도 3번이 나가는데 -> 비효율적임.
+		 */
 
 		Profile profile = profileRepository.findByUserId(userId).orElseThrow(
-			() -> new CustomException(ErrorCode.NOT_FOUND_PROFILE)
+			() -> new RuntimeException("There is no "+ userId)
 		);
 
-		CommunityType communityType = profile.getCommunityType();
-		if (communityType == null) {
-			throw new CustomException(ErrorCode.NOT_FOUND_COMMUNITY);
+		ProfileCommunity profileCommunity = profileCommunityRepository.findByProfileId(profile.getId()).orElseThrow(
+			() -> new RuntimeException("There is no "+ profile.getId())
+		);
+
+		Community community = communityRepository.findById(profileCommunity.getCommunityId()).orElseThrow(
+			() -> new RuntimeException("There is no "+ profileCommunity.getCommunityId())
+		);
+
+
+		UserDTO userDTO = new UserDTO();
+		userDTO.setCommunity(community.getName());
+		userDTO.setId(userId);
+
+		CommunityRecords.record(userDTO, issueId);
+		Map<String, Integer> map = CommunityRecords.getSortedCommunity(issueId);
+		Set<String> keySet = map.keySet();
+
+		log.info("Ok1");
+		// 1-1. User 불러오기. 참여 커뮤니티를 보여주기 위함임(내림차순으로) <-  즐겨찾기
+		/*
+		List<UserIssue> userIssueList = userIssueRepository.findByIssue(issue);
+
+		//
+		List<User> userList = new ArrayList<>();
+		for (UserIssue e : userIssueList) {
+			userList.add(e.getUser());
 		}
+
+		// Map
+		Map<String, Integer> map = new HashMap<>();
+		for (User u : userList) {
+
+			String key = u.getCommunity();
+
+			// 1. community에 없는 경우 -> 새로 추가를 한다.
+			if (!map.containsKey(key)) {
+				map.put(key, 1);
+			}
+			// 2. community에 있는 경우 -> value를 찾은 후 +1
+			else {
+				int count = map.get(key);
+				map.put(key, count + 1);
+			}
+
+		}
+
+		// 1-3. Map을 커뮤니티 count 내림차순으로 정렬
+
+		List<String> keySet = new ArrayList<>(map.keySet());
+		keySet.sort((o1, o2) -> map.get(o2).compareTo(map.get(o1)));
+
+		 */
+
+		// LinkedHashMap을 써서 순서를 보장한다.
+		Map<String, Integer> sortedMap = new LinkedHashMap<>();
+
+		for (String key : keySet) {
+			sortedMap.put(key, map.get(key));
+		}
+
+		log.info("Ok2");
+		// 1-4. 채팅방도 같이 넘기자. null이어도 가능! <- 수정
+		List<ChatRoom> chatRoomList = chatRoomRepository.findByIssue(issue);
+
+		//  나중에 정렬같은거 할 때, 써먹을 듯
+		List<ChatRoomDAO> chatRoomDaoList = new ArrayList<>();
+
+		// 이거 때문에 loop가 ㅈㄴ 발생한다 -> 최적화 필요!
+		for (ChatRoom c : chatRoomList) {
+			// 찬성/반대 조회
+			List<UserChatRoom> chatRooms = userChatRoomRepository.findByChatRoom(c);
+
+			int countAgree = 0;
+			int countDisagree = 0;
+
+			for (UserChatRoom u : chatRooms) {
+				if (u.getOpinion().equals("AGREE")) {
+					countAgree++;
+				} else if (u.getOpinion().equals("DISAGREE")) {
+					countDisagree++;
+				}
+				// 의견없음 -> 집계안함.
+			}
+
+			ChatRoomDAO chatRoomDAO = ChatRoomDAO.builder()
+				.chatRoomId(c.getId())
+				.title(c.getTitle())
+				.content(c.getContent())
+				//.issue(c.getIssue())
+				.createdAt(c.getCreatedAt())
+				.agree(countAgree)
+				.disagree(countDisagree)
+				.build();
+
+			chatRoomDaoList.add(chatRoomDAO);
+		}
+		log.info("Ok3");
+
+		List<ChatRoomDAO> chatRoomMap = new ArrayList<>();
+
+		for (int i = 1; i < chatRoomDaoList.size() + 1; i++) {
+			chatRoomMap.add(chatRoomDaoList.get(i - 1));
+		}
+
+		// 1-5 IssueDAO만들기
+		/*
+		IssueDAO issueDAO = IssueDAO.builder()
+			.title(issue.getTitle())
+			.map(sortedMap)
+			.chatRoomMap(chatRoomMap)
+			.build();
+
+		 */
+
+		//
+		/*
+		ApiResult<Object> response = ApiResult.builder()
+			.status(200)
+			.code(ErrorCode.SUCCESS)
+			.message("이슈방 " + issueId + "조회")
+			.data(issueDAO)
+			.build();
+
+
+		 */
+		return null;
+
+	}
+
+	@Transactional
+	public ApiResult<Object> fetch2(Long issueId, Long userId, Integer page) {
+
+		// 1. 이슈방 불러오기
+		Issue issue = null;
+		try{
+			issue = issueRepository.findById(issueId).orElseThrow(
+				() -> new NullPointerException("There is no " + issueId)
+			);
+
+		}
+		catch (NullPointerException | IllegalArgumentException e){
+			return ApiResult.builder()
+				.status(400)
+				.code(ErrorCode.BAD_REQUEST)
+				.message("선택하신 이슈방은 존재하지 않습니다.")
+				.build();
+
+		}
+
+
+		Profile profile = profileRepository.findByUserId(userId).orElseThrow(
+			() -> new RuntimeException("There is no profile "+ userId)
+		);
+
+		ProfileCommunity profileCommunity = profileCommunityRepository.findByProfileId(profile.getId()).orElseThrow(
+			() -> new RuntimeException("There is no profilecommunity"+ profile.getId())
+		);
+
+		Community community = communityRepository.findById(profileCommunity.getCommunityId()).orElseThrow(
+			() -> new RuntimeException("There is no community "+ profileCommunity.getCommunityId())
+		);
 
 
 		// 2. 서버 세션에 user 방문 기록 저장하기. 이는 커뮤니티 사용자 수를 내림차순으로 보여주기 위함임.
 		UserDTO userDTO = new UserDTO();
-		userDTO.setCommunity(communityType.getName());
+		userDTO.setCommunity(community.getName());
 		userDTO.setId(userId);
 
 		CommunityRecords.record(userDTO, issueId);
+		Map<String, Integer> map = CommunityRecords.getSortedCommunity(issueId);
+		Set<String> keySet = map.keySet();
+
 
 		// LinkedHashMap을 써서 순서를 보장한다.
-		LinkedHashMap<String, Integer> sortedMap = CommunityRecords.getSortedCommunity(issueId);
+		Map<String, Integer> sortedMap = new LinkedHashMap<>();
 
+		for (String key : keySet) {
+			System.out.println(key+":"+map.get(key));
+			sortedMap.put(key, map.get(key));
+		}
+
+		List<ChatRoomDAO> chatRoomMap = new ArrayList<>();
 
 		// 3. chatRoomList와 각 chatRoom에 대한 찬성/반대 수 가져온다.
+		
 
-		List<Long> chatRoomIds ;
+		List<Long> chatRoomIds = userChatRoomRepository.findChatRoomsByIssueId(issueId,page*2);
 
-		// 첫 페이지
-		if(ChatRoomId==null){
-			chatRoomIds = userChatRoomRepository.findTop3ChatRoomIdsByIssueId(issueId);
-		}
-		else{
-			// 그 이후 페이지
-			chatRoomIds = userChatRoomRepository.findTop3ChatRoomIdsByIssueIdAndChatRoomId(issueId,ChatRoomId);
-		}
-
-		// 채팅방은 없으면 없는대로 반환을 한다
 		if(chatRoomIds.isEmpty()){
-
-			IssueDetailResponse issueDetailResponse = IssueDetailResponse.builder()
-				.title(issueTitle)
-				.bookMarkState(bookMarkState)
-				.bookMarks(bookMarks)
-				.map(sortedMap)
-				.build();
-
-
-			return ApiResult.<IssueDetailResponse>builder()
+			return ApiResult.builder()
 				.status(200)
 				.code(ErrorCode.SUCCESS)
-				.message("이슈방 " + issueId + "조회")
-				.data(issueDetailResponse)
+				.message("해당 페이지 번호는 존재하지 않습니다. page : "+page)
+				.data("")
 				.build();
 		}
 
 		// chat_room_id, title, content, created_at,
 		//            COUNT(CASE WHEN ucr.opinion = 'AGREE' THEN 1 END) AS AGREE,
 		//            COUNT(CASE WHEN ucr.opinion = 'DISAGREE' THEN 1 END) AS DISAGREE
-		List<ResponseWithTimeAndOpinion> chatRooms =  userChatRoomRepository.findChatRoomAggregates(chatRoomIds).stream().map(
+		List<ChatRoomResponse> chatRooms =  userChatRoomRepository.findChatRoomAggregates(chatRoomIds).stream().map(
 			e->{
 				Long chatRoomId = (Long)e[0];
 				String title = (String)e[1];
 				String content = (String)e[2];
 
-				String localDateTime= e[3].toString();
-				String result = localDateTime.split("\\.")[0];
+				String time = e[3].toString();
+				String result = time.split("\\.")[0];
 				LocalDateTime createdAt = LocalDateTime.parse(result, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
 
-				int agree = Math.toIntExact((Long)e[4]);
-				int disagree = Math.toIntExact((Long)e[5]);
+				Long agree = (Long)e[4];
+				Long disagree = (Long)e[5];
 
-				String time = findLastestChatTime(chatRoomId);
+				System.out.println("id:" +chatRoomId);
 
-				return ResponseWithTimeAndOpinion.builder()
+				return ChatRoomResponse.builder()
 					.chatRoomId(chatRoomId)
 					.title(title)
 					.content(content)
@@ -185,13 +341,11 @@ public class IssueServiceV1 {
 					.opinion("NEUTRAL")
 					.agree(agree)
 					.disagree(disagree)
-					.time(time)
 					.build();
 
 
-
 			}
-		).collect(Collectors.toList());
+		).toList()
 			;
 
 		// chat_room_id, opinion AS opinion
@@ -204,7 +358,7 @@ public class IssueServiceV1 {
 					Long chatRoomId = (Long)obj[0];
 					String opinion = (String)obj[1];
 
-					for(ResponseWithTimeAndOpinion e: chatRooms){
+					for(ChatRoomResponse e: chatRooms){
 						if(e.getChatRoomId()==chatRoomId){
 							e.setOpinion(opinion);
 							break;
@@ -216,27 +370,21 @@ public class IssueServiceV1 {
 			}
 		}
 
-		// 오늘 신규 대화
-		chats = issueRepository.countChatsTodayByIssueId(issueId);
-
 
 		// 1-5 IssueDAO만들기
-		IssueDetailResponse issueDetailResponse = IssueDetailResponse.builder()
-			.title(issueTitle)
-			.bookMarkState(bookMarkState)
-			.bookMarks(bookMarks)
-			.chats(chats)
+		IssueDAO issueDAO = IssueDAO.builder()
+			.title(issue.getTitle())
 			.map(sortedMap)
 			.chatRoomMap(chatRooms)
 			.build();
 
 		//
 
-		return ApiResult.<IssueDetailResponse>builder()
+		return ApiResult.builder()
 			.status(200)
 			.code(ErrorCode.SUCCESS)
 			.message("이슈방 " + issueId + "조회")
-			.data(issueDetailResponse)
+			.data(issueDAO)
 			.build();
 
 
@@ -244,98 +392,47 @@ public class IssueServiceV1 {
 
 	// 즐겨찾기 등록하기
 	@Transactional // 만약에 하나로 문제가 생기면 바로 Rollback
-	public ApiResult<String> bookMark(Long issueId, Long userId){
+	public ApiResult<Object> booMark(Long issueId, Long userId){
 
 		User user = userRepository.findById(userId).orElseThrow(
-			()-> new CustomException(ErrorCode.NOT_FOUND_USER)
+			() -> new RuntimeException("There is no UserNumber like " + userId)
 		)
 		;
 
 		Issue issue = issueRepository.findById(issueId).orElseThrow(
-			() -> new CustomException(ErrorCode.NOT_FOUND_ISSUE)
+			() -> new RuntimeException("There is no IssueNumber like "+issueId)
 		);
 
-		UserIssue fetchUserIssue= userIssueRepository.findByIssueAndUser(issue,user);
-
-
-		// 중복 등록 방지
-		if(fetchUserIssue!=null){
-
-			String bookMarkState;
-
-			// 더티 체킹하자
-			if(fetchUserIssue.getBookmark().equals("yes")){
-				// no로 바꾸자
-				bookMarkState="no";
-				fetchUserIssue.setBookmark("no");
-			}
-			else{
-				bookMarkState="yes";
-				fetchUserIssue.setBookmark("yes");
-			}
-			return ApiResult.<String>builder()
-				.status(200)
-				.code(ErrorCode.SUCCESS)
-				.data("이슈방의 즐겨찾기가 "+bookMarkState+"로 바꿔었습니다")
-				.build();
-
-
-		}
-
-		// 첫 북마크일 경우 새로 등록을 한다.
 		UserIssue userIssue = new UserIssue();
 		userIssue.setUser(user);
 		userIssue.setIssue(issue);
-		userIssue.setBookmark("yes");
 
 		userIssueRepository.save(userIssue);
 
-		return ApiResult.<String>builder()
+		return ApiResult.builder()
 			.status(200)
 			.code(ErrorCode.SUCCESS)
-			.data("이슈방 "+issueId+"을 관심등록 했습니다.")
+			.message("이슈방 "+issueId+"을 관심등록 했습니다.")
 			.build();
 
 	}
-
-	// 4. issueMap 가져오기
-	// issue_id, title, major_category, (middle_category), created_at
-	public ApiResult<PaginationDTO> fetchIssueMap(Long page, String majorCategory//, String middleCategory
-	)
-	{
+	
+	// 3. issue를 커서 방식으로 가져오기
+	public ApiResult<Object> fetchAll(Long page) {
 
 		// 일단 issueId 여러개를 가져온다.
-		List<Long> issueIds;
-
-		if(majorCategory==null){
-
-			// 전체 불러오기
-			if(page == null){
-				issueIds = issueRepository.findTop6Issues();
-			}
-			else{
-				issueIds = issueRepository.findTop6IssuesByPage(page);
-			}
-
-		}else{
-			if(page == null){
-				issueIds = issueRepository.findTop6IssuesByCategory(majorCategory);
-			}
-			else{
-				issueIds = issueRepository.findTop6IssuesByPageAndCategory(majorCategory,page);
-			}
-		}
-
-
+		List<Long> issueIds = issueRepository.findIssuesByPage(page*2).stream().toList();
 
 		if (issueIds.isEmpty()){
-			// 페이지네이션 오류
-			throw new CustomException(ErrorCode.PAGE_OUT_OF_RANGE);
+			return ApiResult.builder()
+				.status(200)
+				.code(ErrorCode.SUCCESS)
+				.message("페이지를 불러올 수 없습니다.  페이지 번호: "+page)
+				.build();
 		}
 
 		// issue_id, title, created_at, chat_room_count, COUNT(ui2.issue_id) AS bookmarks
-		// issueIds를 넣어줌으로써 어떠한 page, category에 상관없이 하나의 쿼리로 커버가 가능하다.
-		List<IssueBriefResponse> issueBriefResponse = issueRepository.findIssuesWithBookmarks(issueIds).stream().map(
+		List<IssueResponse> issueResponses = issueRepository.findIssuesWithBookmarks(issueIds).stream().map(
 			e->{
 				Long issueId = (Long)e[0];
 				String title = (String)e[1];
@@ -347,7 +444,61 @@ public class IssueServiceV1 {
 				Long chatRoomCount = (Long)e[3];
 				Long bookMarkCount = (Long)e[4];
 
-				return IssueBriefResponse.builder()
+				return IssueResponse.builder()
+					.issueId(issueId)
+					.title(title)
+					.createdAt(createdAt)
+					.countChatRoom(chatRoomCount)
+					.bookMarks(bookMarkCount)
+					.build()
+					;
+
+
+
+
+			}
+		).toList();
+
+		return ApiResult.builder()
+			.status(200)
+			.code(ErrorCode.SUCCESS)
+			.message("이슈방 불러왔습니다.")
+			.data(issueResponses)
+			.build();
+
+	}
+
+	// 4. issueMap 가져오기
+	// issue_id, title, major_category, (middle_category), created_at
+	public ApiResult<Object> fetchIssueMap(Long page, String majorCategory//, String middleCategory
+	)
+	{
+
+		// 일단 issueId 여러개를 가져온다.
+		List<Long> issueIds = issueRepository.findIssuesByMajorCategoryWithPage(majorCategory,page*2).stream().toList();
+
+		if (issueIds.isEmpty()){
+			return ApiResult.builder()
+				.status(200)
+				.code(ErrorCode.SUCCESS)
+				.message("페이지를 불러올 수 없습니다.  페이지 번호: "+page)
+				.build();
+		}
+
+		// issue_id, title, created_at, chat_room_count, COUNT(ui2.issue_id) AS bookmarks
+		List<IssueResponse> issueResponses = issueRepository.findIssuesWithBookmarks(issueIds).stream().map(
+			e->{
+				Long issueId = (Long)e[0];
+				String title = (String)e[1];
+
+				String time = e[2].toString();
+				String result = time.split("\\.")[0];
+				LocalDateTime createdAt = LocalDateTime.parse(result, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+
+				Long chatRoomCount = (Long)e[3];
+				Long bookMarkCount = (Long)e[4];
+
+				return IssueResponse.builder()
 					.issueId(issueId)
 					.title(title)
 					.createdAt(createdAt)
@@ -358,138 +509,13 @@ public class IssueServiceV1 {
 			}
 		).toList();
 
-		PaginationDTO paginationDTO = new PaginationDTO();
-		paginationDTO.setItems(issueBriefResponse);
-
-		return ApiResult.<PaginationDTO>builder()
+		return ApiResult.builder()
 			.status(200)
 			.code(ErrorCode.SUCCESS)
 			.message("이슈방 불러왔습니다.")
-			.data(paginationDTO)
+			.data(issueResponses)
 			.build();
 
-	}
-
-	// 구버전
-	public ApiResult<List<IssueBriefResponse>> fetchAll() {
-		List<Issue> issueList = issueRepository.findAll();
-
-		// Gson,JSONArray이 없어서 Map으로 반환을 한다.
-		List<IssueBriefResponse> responseList = new ArrayList<>();
-
-		// loop를 돌면서, issueId에 해당하는 chatRoom을 count 한다.
-		for (int i = 0; i < issueList.size(); i++) {
-
-			Long id = issueList.get(i).getId();
-			IssueBriefResponse response = IssueBriefResponse.builder()
-				.issueId(id)
-				.title(issueList.get(i).getTitle())
-				.createdAt(issueList.get(i).getCreatedAt())
-				.countChatRoom(chatRoomRepository.countByIssue(issueList.get(i)))
-				.build();
-			responseList.add(response);
-		}
-
-		// chat_room_id, title, content
-		// 1. 활성화된 최상위 5개 토론방을 보여준다.
-		/*
-		List<Top5BestChatRoom> top5BestChatRooms = chatRoomRepository.findTop5ActiveChatRooms().stream().map(
-			e->{
-				Long chatRoomId = (Long)e[0];
-				String title = (String)e[1];
-				String content = (String)e[2];
-
-				return Top5BestChatRoom.builder()
-					.chatRoomId(chatRoomId)
-					.title(title)
-					.content(content)
-					.build()
-					;
-
-
-			}
-		).toList();
-
-		for(Top5BestChatRoom e: top5BestChatRooms){
-			System.out.println(e.getTitle());
-		}
-
-
-
-
-
-		// 2. 활성화된 최상위 5개 이슈방을 보여준다.
-		// issue_id, COUNT(ch.chat_room_id)
-		
-		// 최상위 5개의 이슈 id를 가져옴
-		List<Long> issueIds = issueRepository.findTop5ActiveIssuesByCountingChats().stream().map(
-			e-> (Long)e[0]
-		).toList();
-
-		// ui1.issue_id, ui1.title, ui1.created_at, ui1.chat_room_count, COUNT(ui2.issue_id) AS bookmarks
-		List<IssueBriefResponse> top5BestIssueRooms = issueRepository.findIssuesWithBookmarksOrderByCreatedDate(issueIds).stream().map(
-			e->{
-				Long issueId = (Long)e[0];
-				String title = (String)e[1];
-
-				String time = e[2].toString();
-				String result = time.split("\\.")[0];
-				LocalDateTime createdAt = LocalDateTime.parse(result, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-
-				Long chatRoomCount = (Long)e[3];
-				Long bookMarksCount = (Long)e[4];
-
-				return IssueBriefResponse.builder()
-					.issueId(issueId)
-					.title(title)
-					.createdAt(createdAt)
-					.countChatRoom(chatRoomCount)
-					.bookMarks(bookMarksCount)
-					.build()
-					;
-
-
-
-
-			}
-		).toList();
-
-		OnlyHomeResponse onlyHomeResponse = OnlyHomeResponse.builder()
-			.chatRoomResponse(responseList)
-			.top5BestChatRooms(top5BestChatRooms)
-			.top5BestIssueRooms(top5BestIssueRooms)
-			.build()
-			;
-
-
-
-		 */
-
-		return ApiResult.<List<IssueBriefResponse>>builder()
-			.status(200)
-			.code(ErrorCode.SUCCESS)
-			.message("이슈방 전체를 불러왔습니다.")
-			.data(responseList)
-			.build();
-
-	}
-
-	private String findLastestChatTime(Long chatRoomId){
-		Optional<LocalDateTime> latestChat = chatRepository.findLatestTimeStampByChatRoomId(chatRoomId);
-
-		String time = null; // 대화가 아무것도 없는 상태는 항상 null이다.
-
-		if(latestChat.isPresent()){
-			// 몇 분이 지났는지.
-			Duration outdated = Duration.between(latestChat.get(), LocalDateTime.now());
-
-			time = new StringBuilder()
-				.append(outdated.toMinutes())
-				.append("분 전 대화")
-				.toString();
-
-		}
-		return time;
 	}
 
 }

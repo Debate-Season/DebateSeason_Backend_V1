@@ -1,7 +1,6 @@
 package com.debateseason_backend_v1.domain.repository.entity;
 
 import java.time.LocalDateTime;
-import java.util.Objects;
 
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -38,6 +37,9 @@ public class Profile {
 	@Column(name = "user_id")
 	private Long userId;
 
+	@Column(name = "profile_color")
+	private String profileColor;
+
 	@Column(name = "nickname", unique = true)
 	private String nickname;
 
@@ -54,26 +56,22 @@ public class Profile {
 	private LocalDateTime updatedAt;
 
 	@Builder
-	private Profile(Long userId, String nickname, GenderType gender, AgeRangeType ageRange
+	private Profile(Long userId, String profileColor, String nickname, GenderType gender, AgeRangeType ageRange
 	) {
 
 		this.userId = userId;
+		this.profileColor = profileColor;
 		this.nickname = nickname;
 		this.gender = gender;
 		this.ageRange = ageRange;
 	}
 
-	public void update(String nickname, GenderType gender, AgeRangeType ageRange) {
+	public void update(String profileColor, String nickname, GenderType gender, AgeRangeType ageRange) {
 
-		if (!Objects.equals(nickname, this.nickname)) {
-			this.nickname = nickname;
-		}
-		if (!Objects.equals(gender, this.gender)) {
-			this.gender = gender;
-		}
-		if (!Objects.equals(ageRange, this.ageRange)) {
-			this.ageRange = ageRange;
-		}
+		this.profileColor = profileColor;
+		this.nickname = nickname;
+		this.gender = gender;
+		this.ageRange = ageRange;
 	}
 
 	public void anonymize(String anonymousNickname) {

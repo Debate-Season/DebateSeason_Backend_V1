@@ -14,6 +14,8 @@ import com.debateseason_backend_v1.common.response.VoidApiResult;
 import com.debateseason_backend_v1.domain.profile.controller.docs.ProfileControllerV1Docs;
 import com.debateseason_backend_v1.domain.profile.controller.request.ProfileRegisterRequest;
 import com.debateseason_backend_v1.domain.profile.controller.request.ProfileUpdateRequest;
+import com.debateseason_backend_v1.domain.profile.controller.request.request.ProfileRegisterRequest;
+import com.debateseason_backend_v1.domain.profile.controller.request.request.ProfileUpdateRequest;
 import com.debateseason_backend_v1.domain.profile.service.ProfileServiceV1;
 import com.debateseason_backend_v1.domain.profile.service.response.ProfileResponse;
 import com.debateseason_backend_v1.security.CustomUserDetails;
@@ -67,7 +69,7 @@ public class ProfileControllerV1 implements ProfileControllerV1Docs {
 		@RequestParam String query
 	) {
 
-		profileService.checkNicknameAvailability(query);
+		profileService.checkNickname(query);
 
 		return VoidApiResult.success("사용 가능한 닉네임입니다.");
 	}

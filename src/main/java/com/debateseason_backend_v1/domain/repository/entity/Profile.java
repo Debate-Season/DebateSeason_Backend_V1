@@ -6,7 +6,6 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import com.debateseason_backend_v1.domain.profile.enums.AgeRangeType;
-import com.debateseason_backend_v1.domain.profile.enums.CommunityType;
 import com.debateseason_backend_v1.domain.profile.enums.GenderType;
 
 import jakarta.persistence.Column;
@@ -44,9 +43,6 @@ public class Profile {
 	@Column(name = "nickname", unique = true)
 	private String nickname;
 
-	@Column(name = "community_id")
-	private Long communityId;
-
 	@Enumerated(EnumType.STRING)
 	@Column(name = "gender")
 	private GenderType gender;
@@ -60,25 +56,20 @@ public class Profile {
 	private LocalDateTime updatedAt;
 
 	@Builder
-	private Profile(
-		Long userId, String profileColor, String nickname, Long communityId, GenderType gender, AgeRangeType ageRange
+	private Profile(Long userId, String profileColor, String nickname, GenderType gender, AgeRangeType ageRange
 	) {
 
 		this.userId = userId;
 		this.profileColor = profileColor;
 		this.nickname = nickname;
-		this.communityId = communityId;
 		this.gender = gender;
 		this.ageRange = ageRange;
 	}
 
-	public void update(
-		String profileColor, String nickname, Long communityId, GenderType gender, AgeRangeType ageRange
-	) {
+	public void update(String profileColor, String nickname, GenderType gender, AgeRangeType ageRange) {
 
 		this.profileColor = profileColor;
 		this.nickname = nickname;
-		this.communityId = communityId;
 		this.gender = gender;
 		this.ageRange = ageRange;
 	}
@@ -87,11 +78,6 @@ public class Profile {
 
 		this.nickname = anonymousNickname;
 		this.gender = GenderType.UNDEFINED;
-	}
-
-	public CommunityType getCommunityType() {
-
-		return communityId != null ? CommunityType.findById(communityId) : null;
 	}
 
 }

@@ -5,13 +5,17 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.debateseason_backend_v1.common.exception.CustomException;
 import com.debateseason_backend_v1.common.exception.ErrorCode;
-import com.debateseason_backend_v1.domain.profile.enums.CommunityType;
+import com.debateseason_backend_v1.domain.repository.CommunityRepository;
+import com.debateseason_backend_v1.domain.repository.ProfileCommunityRepository;
+import com.debateseason_backend_v1.domain.repository.ProfileRepository;
+import com.debateseason_backend_v1.domain.repository.entity.Community;
+import com.debateseason_backend_v1.domain.repository.entity.Profile;
+import com.debateseason_backend_v1.domain.repository.entity.ProfileCommunity;
 import com.debateseason_backend_v1.domain.profile.service.request.ProfileRegisterServiceRequest;
 import com.debateseason_backend_v1.domain.profile.service.request.ProfileUpdateServiceRequest;
 import com.debateseason_backend_v1.domain.profile.service.response.ProfileResponse;
+import com.debateseason_backend_v1.domain.profile.validator.CommunityValidator;
 import com.debateseason_backend_v1.domain.profile.validator.ProfileValidator;
-import com.debateseason_backend_v1.domain.repository.ProfileRepository;
-import com.debateseason_backend_v1.domain.repository.entity.Profile;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,12 +27,16 @@ import lombok.extern.slf4j.Slf4j;
 public class ProfileServiceV1 {
 
 	private final ProfileRepository profileRepository;
+	private final CommunityRepository communityRepository;
+	private final ProfileCommunityRepository profileCommunityRepository;
 	private final ProfileValidator profileValidator;
+	private final CommunityValidator communityValidator;
 
 	@Transactional
 	public void register(ProfileRegisterServiceRequest request) {
 
-		validateProfileRegistration(request);
+		profileValidator.validateForRegister(request.userId(), request.nickname());
+		communityValidator.validate(request.communityId());
 
 		Profile profile = Profile.builder()
 			.userId(request.userId())
@@ -36,20 +44,32 @@ public class ProfileServiceV1 {
 			.nickname(request.nickname())
 			.gender(request.gender())
 			.ageRange(request.ageRange())
+			.build();
+
+		Profile savedProfile = profileRepository.save(profile);
+
+		ProfileCommunity profileCommunity = ProfileCommunity.builder()
+			.profileId(savedProfile.getId())
 			.communityId(request.communityId())
 			.build();
 
-		profileRepository.save(profile);
+		profileCommunityRepository.save(profileCommunity);
 	}
 
 	public ProfileResponse getProfileByUserId(Long userId) {
 
 		Profile profile = profileRepository.findByUserId(userId)
-			.orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_PROFILE));
+			.orElseThrow(() -> new CustomException(ErrorCode.NOT_EXIST_USER));
 
-		CommunityType communityType = CommunityType.findById(profile.getCommunityId());
+		ProfileCommunity profileCommunity = profileCommunityRepository.findByProfileId(profile.getId())
+			.orElseThrow(
+				() -> new CustomException(ErrorCode.NOT_FOUND_COMMUNITY_MEMBERSHIP)
+			);
 
-		return ProfileResponse.of(profile, communityType);
+		Community community = communityRepository.findById(profileCommunity.getCommunityId())
+			.orElseThrow(() -> new CustomException(ErrorCode.ALREADY_EXIST_PROFILE));
+
+		return ProfileResponse.of(profile, community);
 	}
 
 	@Transactional
@@ -58,35 +78,21 @@ public class ProfileServiceV1 {
 		Profile profile = profileRepository.findByUserId(request.userId())
 			.orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_PROFILE));
 
-		validateProfileUpdate(request, profile);
-
-		profile.update(
-			request.profileColor(), request.nickname(), request.communityId(), request.gender(), request.ageRange()
-		);
-	}
-
-	public void checkNicknameAvailability(String nickname) {
-
-		profileValidator.validateNicknamePattern(nickname);
-		profileValidator.validateNicknameExists(nickname);
-	}
-
-	private void validateProfileRegistration(ProfileRegisterServiceRequest request) {
-
-		profileValidator.validateProfileExists(request.userId());
-		profileValidator.validateNicknamePattern(request.nickname());
-		profileValidator.validateNicknameExists(request.nickname());
-		profileValidator.validateSupportedCommunity(request.communityId());
-	}
-
-	private void validateProfileUpdate(ProfileUpdateServiceRequest request, Profile profile) {
-
 		if (!profile.getNickname().equals(request.nickname())) {
-			profileValidator.validateNicknamePattern(request.nickname());
-			profileValidator.validateNicknameExists(request.nickname());
+			profileValidator.validateNicknameFormat(request.nickname());
+			profileValidator.validateNicknameDuplicate(request.nickname());
 		}
+		communityValidator.validate(request.communityId());
 
-		profileValidator.validateSupportedCommunity(request.communityId());
+		profile.update(request.profileColor(), request.nickname(), request.gender(), request.ageRange());
+
+		ProfileCommunity profileCommunity = profileCommunityRepository.getByProfileId(profile.getId());
+		profileCommunity.updateCommunity(request.communityId());
+	}
+
+	public void checkNickname(String nickname) {
+
+		profileValidator.validateNickname(nickname);
 	}
 
 }

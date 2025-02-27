@@ -33,4 +33,10 @@ public class ChatRoomDAO {
 	private LocalDateTime createdAt;
 
 	private String opinion;
+
+	@Override
+	public String toString() {
+		return "id: "+chatRoomId+" title: "+title+" content: "+content+" createdAt: "+createdAt + " agree: "+agree +" disagree: "+disagree ;
+	}
+
 }

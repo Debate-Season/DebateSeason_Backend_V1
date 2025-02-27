@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.debateseason_backend_v1.common.response.ApiResult;
-import com.debateseason_backend_v1.domain.chat.service.ChatServiceV1;
 import com.debateseason_backend_v1.domain.chatroom.dto.ChatRoomDTO;
 import com.debateseason_backend_v1.domain.chatroom.service.ChatRoomServiceV1;
 import com.debateseason_backend_v1.security.CustomUserDetails;
@@ -23,14 +22,14 @@ import lombok.RequiredArgsConstructor;
 public class ChatRoomControllerV1 {
 
 	private final ChatRoomServiceV1 chatRoomServiceV1;
-	private final ChatServiceV1 chatServiceV1;
 
 	@Operation(
 		summary = "채팅방(=안건=토론방)생성하기",
 		description = "title,content -> JSON, issue_id = 쿼리스트링")
 	// 4. 채팅방(=안건=토론방)생성하기, title,content -> JSON, issue_id = 쿼리스트링
 	@PostMapping("/room")
-	public ApiResult<Object> createChatRoom(@RequestBody ChatRoomDTO chatRoomDTO,
+	public ApiResult<Object> createChatRoom(
+		@RequestBody ChatRoomDTO chatRoomDTO,
 		@RequestParam(name = "issue-id") Long issue_id) {
 		return chatRoomServiceV1.save(chatRoomDTO, issue_id);
 	}
@@ -40,7 +39,8 @@ public class ChatRoomControllerV1 {
 		summary = "채팅방 단건 불러오기",
 		description = "채팅방 상세보기")
 	@GetMapping("/room")
-	public ApiResult<Object> getChatRoom(@RequestParam(name = "chatroom-id") Long chatRoomId,
+	public ApiResult<Object> getChatRoom(
+		@RequestParam(name = "chatroom-id") Long chatRoomId,
 		@AuthenticationPrincipal CustomUserDetails principal) {
 
 		Long userId = principal.getUserId();
@@ -52,7 +52,8 @@ public class ChatRoomControllerV1 {
 		summary = "채팅방 찬성/반대 투표하기",
 		description = "opinion, chatroomid = 쿼리스트링")
 	@PostMapping("/room/vote")
-	public ApiResult<Object> voteChatRoom(@RequestParam(name = "opinion") String opinion,
+	public ApiResult<Object> voteChatRoom(
+		@RequestParam(name = "opinion") String opinion,
 		@RequestParam(name = "chatroom-id") Long chatRoomId,
 		@AuthenticationPrincipal CustomUserDetails principal) {
 
@@ -60,4 +61,18 @@ public class ChatRoomControllerV1 {
 		return chatRoomServiceV1.vote(opinion, chatRoomId, userId);
 	}
 
+	// 5. 내가 투표한 토론방 가져오기
+	@GetMapping("/room/voted")
+	public ApiResult<Object> getVotedChatRoom(
+		@AuthenticationPrincipal CustomUserDetails principal,
+		@RequestParam(name = "page") int page
+		){
+		Long userId = principal.getUserId();
+		return chatRoomServiceV1.findVotedChatRoom(userId,page);
+
+	}
+	
+
 }
+
+

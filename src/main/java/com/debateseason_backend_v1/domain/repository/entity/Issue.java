@@ -33,6 +33,10 @@ public class Issue {
 
 	private String title;
 
+	private String majorCategory;
+
+	private String middleCategory;
+
 	@CreatedDate
 	@Column(name = "created_at", updatable = false)
 	private LocalDateTime createdAt;

@@ -34,4 +34,7 @@ public class UserChatRoom {
 	private ChatRoom chatRoom;
 
 	private String opinion;
+
+	// 관심등록
+	private String interest;// YES or NO
 }

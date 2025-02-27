@@ -16,8 +16,15 @@ public class IssueResponse {
 
 	private String title;
 
-	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "Asia/Seoul")
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
 	private LocalDateTime createdAt;
 
 	private Long countChatRoom;
+
+	private Long bookMarks;
+
+	@Override
+	public String toString() {
+		return "id: "+issueId+" : 제목"+title+" : 작성일"+createdAt.toString()+" : 채팅방 수"+countChatRoom;
+	}
 }

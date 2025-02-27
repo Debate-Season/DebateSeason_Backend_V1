@@ -174,7 +174,7 @@ class ProfileServiceV1Test {
 			// when & then
 			assertThatThrownBy(() -> profileService.getProfileByUserId(userId))
 				.isInstanceOf(CustomException.class)
-				.hasFieldOrPropertyWithValue("codeInterface", ErrorCode.NOT_FOUND_PROFILE);
+				.hasFieldOrPropertyWithValue("codeInterface", ErrorCode.NOT_EXIST_USER);
 		}
 	}
 

@@ -18,19 +18,16 @@ import com.debateseason_backend_v1.domain.issue.dto.IssueDAO;
 import com.debateseason_backend_v1.domain.issue.dto.IssueDTO;
 import com.debateseason_backend_v1.domain.issue.model.CommunityRecords;
 import com.debateseason_backend_v1.domain.issue.model.response.IssueResponse;
+import com.debateseason_backend_v1.domain.profile.enums.CommunityType;
 import com.debateseason_backend_v1.domain.repository.ChatRoomRepository;
-import com.debateseason_backend_v1.domain.repository.CommunityRepository;
 import com.debateseason_backend_v1.domain.repository.IssueRepository;
-import com.debateseason_backend_v1.domain.repository.ProfileCommunityRepository;
 import com.debateseason_backend_v1.domain.repository.ProfileRepository;
 import com.debateseason_backend_v1.domain.repository.UserChatRoomRepository;
 import com.debateseason_backend_v1.domain.repository.UserIssueRepository;
 import com.debateseason_backend_v1.domain.repository.UserRepository;
 import com.debateseason_backend_v1.domain.repository.entity.ChatRoom;
-import com.debateseason_backend_v1.domain.repository.entity.Community;
 import com.debateseason_backend_v1.domain.repository.entity.Issue;
 import com.debateseason_backend_v1.domain.repository.entity.Profile;
-import com.debateseason_backend_v1.domain.repository.entity.ProfileCommunity;
 import com.debateseason_backend_v1.domain.repository.entity.User;
 import com.debateseason_backend_v1.domain.repository.entity.UserChatRoom;
 import com.debateseason_backend_v1.domain.repository.entity.UserIssue;
@@ -53,8 +50,6 @@ public class IssueServiceV1 {
 	private final UserRepository userRepository;
 
 	private final ProfileRepository profileRepository;
-	private final ProfileCommunityRepository profileCommunityRepository;
-	private final CommunityRepository communityRepository;
 
 	private final ObjectMapper objectMapper;
 
@@ -118,17 +113,14 @@ public class IssueServiceV1 {
 			() -> new RuntimeException("There is no "+ userId)
 		);
 
-		ProfileCommunity profileCommunity = profileCommunityRepository.findByProfileId(profile.getId()).orElseThrow(
-			() -> new RuntimeException("There is no "+ profile.getId())
-		);
-
-		Community community = communityRepository.findById(profileCommunity.getCommunityId()).orElseThrow(
-			() -> new RuntimeException("There is no "+ profileCommunity.getCommunityId())
-		);
+		CommunityType communityType = profile.getCommunityType();
+		if (communityType == null) {
+			throw new RuntimeException("No community assigned for profile: " + profile.getId());
+		}
 
 
 		UserDTO userDTO = new UserDTO();
-		userDTO.setCommunity(community.getName());
+		userDTO.setCommunity(communityType.getName());
 		userDTO.setId(userId);
 
 		CommunityRecords.record(userDTO, issueId);
@@ -272,18 +264,15 @@ public class IssueServiceV1 {
 			() -> new RuntimeException("There is no profile "+ userId)
 		);
 
-		ProfileCommunity profileCommunity = profileCommunityRepository.findByProfileId(profile.getId()).orElseThrow(
-			() -> new RuntimeException("There is no profilecommunity"+ profile.getId())
-		);
-
-		Community community = communityRepository.findById(profileCommunity.getCommunityId()).orElseThrow(
-			() -> new RuntimeException("There is no community "+ profileCommunity.getCommunityId())
-		);
+		CommunityType communityType = profile.getCommunityType();
+		if (communityType == null) {
+			throw new RuntimeException("No community assigned for profile: " + profile.getId());
+		}
 
 
 		// 2. 서버 세션에 user 방문 기록 저장하기. 이는 커뮤니티 사용자 수를 내림차순으로 보여주기 위함임.
 		UserDTO userDTO = new UserDTO();
-		userDTO.setCommunity(community.getName());
+		userDTO.setCommunity(communityType.getName());
 		userDTO.setId(userId);
 
 		CommunityRecords.record(userDTO, issueId);

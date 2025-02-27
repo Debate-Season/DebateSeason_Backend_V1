@@ -1,7 +1,6 @@
 package com.debateseason_backend_v1.domain.user.controller;
 
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,7 +16,6 @@ import com.debateseason_backend_v1.domain.user.service.UserServiceV1;
 import com.debateseason_backend_v1.domain.user.service.response.LoginResponse;
 import com.debateseason_backend_v1.security.CustomUserDetails;
 
-import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 

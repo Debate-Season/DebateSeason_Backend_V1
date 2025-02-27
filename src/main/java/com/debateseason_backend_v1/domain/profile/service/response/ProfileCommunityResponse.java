@@ -1,4 +1,4 @@
-package com.debateseason_backend_v1.domain.user.service.response;
+package com.debateseason_backend_v1.domain.profile.service.response;
 
 import com.debateseason_backend_v1.domain.repository.entity.Community;
 

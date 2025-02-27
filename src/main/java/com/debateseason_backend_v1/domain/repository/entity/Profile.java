@@ -5,8 +5,8 @@ import java.time.LocalDateTime;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import com.debateseason_backend_v1.domain.user.enums.AgeRangeType;
-import com.debateseason_backend_v1.domain.user.enums.GenderType;
+import com.debateseason_backend_v1.domain.profile.enums.AgeRangeType;
+import com.debateseason_backend_v1.domain.profile.enums.GenderType;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

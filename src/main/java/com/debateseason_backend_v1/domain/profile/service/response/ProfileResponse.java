@@ -1,9 +1,9 @@
-package com.debateseason_backend_v1.domain.user.service.response;
+package com.debateseason_backend_v1.domain.profile.service.response;
 
 import com.debateseason_backend_v1.domain.repository.entity.Community;
 import com.debateseason_backend_v1.domain.repository.entity.Profile;
-import com.debateseason_backend_v1.domain.user.enums.AgeRangeType;
-import com.debateseason_backend_v1.domain.user.enums.GenderType;
+import com.debateseason_backend_v1.domain.profile.enums.AgeRangeType;
+import com.debateseason_backend_v1.domain.profile.enums.GenderType;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 

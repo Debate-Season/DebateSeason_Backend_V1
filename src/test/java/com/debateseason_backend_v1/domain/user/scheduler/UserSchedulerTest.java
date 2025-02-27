@@ -20,12 +20,12 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import com.debateseason_backend_v1.common.component.UuidShortener;
+import com.debateseason_backend_v1.domain.profile.enums.AgeRangeType;
+import com.debateseason_backend_v1.domain.profile.enums.GenderType;
 import com.debateseason_backend_v1.domain.repository.ProfileRepository;
 import com.debateseason_backend_v1.domain.repository.UserRepository;
 import com.debateseason_backend_v1.domain.repository.entity.Profile;
 import com.debateseason_backend_v1.domain.repository.entity.User;
-import com.debateseason_backend_v1.domain.user.enums.AgeRangeType;
-import com.debateseason_backend_v1.domain.user.enums.GenderType;
 import com.debateseason_backend_v1.domain.user.enums.SocialType;
 
 @ActiveProfiles("test")

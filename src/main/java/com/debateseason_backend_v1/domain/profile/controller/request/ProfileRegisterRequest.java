@@ -1,16 +1,16 @@
-package com.debateseason_backend_v1.domain.user.controller.request;
+package com.debateseason_backend_v1.domain.profile.controller.request;
 
-import com.debateseason_backend_v1.domain.user.enums.AgeRangeType;
-import com.debateseason_backend_v1.domain.user.enums.GenderType;
-import com.debateseason_backend_v1.domain.user.service.request.ProfileUpdateServiceRequest;
+import com.debateseason_backend_v1.domain.profile.enums.AgeRangeType;
+import com.debateseason_backend_v1.domain.profile.enums.GenderType;
+import com.debateseason_backend_v1.domain.profile.service.request.ProfileRegisterServiceRequest;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
-@Schema(description = "프로필 수정 요청 DTO")
-public record ProfileUpdateRequest(
-	@Schema(description = "사용자 색상", example = "RED")
+@Schema(description = "프로필 등록 요청 DTO")
+public record ProfileRegisterRequest(
+	@Schema(description = "프로필 컬러", example = "RED")
 	String profileColor,
 
 	@Schema(description = "사용자 닉네임", example = "토론왕")
@@ -30,9 +30,9 @@ public record ProfileUpdateRequest(
 	AgeRangeType ageRange
 ) {
 
-	public ProfileUpdateServiceRequest toServiceRequest(Long userId) {
+	public ProfileRegisterServiceRequest toServiceRequest(Long userId) {
 
-		return ProfileUpdateServiceRequest.builder()
+		return ProfileRegisterServiceRequest.builder()
 			.userId(userId)
 			.profileColor(profileColor)
 			.nickname(nickname)

@@ -1,21 +1,21 @@
-package com.debateseason_backend_v1.domain.user.service;
+package com.debateseason_backend_v1.domain.profile.service;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.debateseason_backend_v1.common.exception.CustomException;
 import com.debateseason_backend_v1.common.exception.ErrorCode;
+import com.debateseason_backend_v1.domain.profile.service.request.ProfileRegisterServiceRequest;
+import com.debateseason_backend_v1.domain.profile.service.request.ProfileUpdateServiceRequest;
+import com.debateseason_backend_v1.domain.profile.service.response.ProfileResponse;
+import com.debateseason_backend_v1.domain.profile.validator.CommunityValidator;
+import com.debateseason_backend_v1.domain.profile.validator.ProfileValidator;
 import com.debateseason_backend_v1.domain.repository.CommunityRepository;
 import com.debateseason_backend_v1.domain.repository.ProfileCommunityRepository;
 import com.debateseason_backend_v1.domain.repository.ProfileRepository;
 import com.debateseason_backend_v1.domain.repository.entity.Community;
 import com.debateseason_backend_v1.domain.repository.entity.Profile;
 import com.debateseason_backend_v1.domain.repository.entity.ProfileCommunity;
-import com.debateseason_backend_v1.domain.user.service.request.ProfileRegisterServiceRequest;
-import com.debateseason_backend_v1.domain.user.service.request.ProfileUpdateServiceRequest;
-import com.debateseason_backend_v1.domain.user.service.response.ProfileResponse;
-import com.debateseason_backend_v1.domain.user.validator.CommunityValidator;
-import com.debateseason_backend_v1.domain.user.validator.ProfileValidator;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

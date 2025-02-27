@@ -1,11 +1,11 @@
-package com.debateseason_backend_v1.domain.community.controller.docs;
+package com.debateseason_backend_v1.domain.profile.controller.docs;
 
 import java.util.List;
 
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.debateseason_backend_v1.common.response.ApiResult;
-import com.debateseason_backend_v1.domain.community.service.response.CommunityResponse;
+import com.debateseason_backend_v1.domain.profile.service.response.CommunityResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;

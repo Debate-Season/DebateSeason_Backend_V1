@@ -1,4 +1,4 @@
-package com.debateseason_backend_v1.domain.community.controller;
+package com.debateseason_backend_v1.domain.profile.controller;
 
 import java.util.List;
 
@@ -8,9 +8,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.debateseason_backend_v1.common.response.ApiResult;
-import com.debateseason_backend_v1.domain.community.controller.docs.CommunityControllerV1Docs;
-import com.debateseason_backend_v1.domain.community.service.CommunityServiceV1;
-import com.debateseason_backend_v1.domain.community.service.response.CommunityResponse;
+import com.debateseason_backend_v1.domain.profile.controller.docs.CommunityControllerV1Docs;
+import com.debateseason_backend_v1.domain.profile.service.CommunityServiceV1;
+import com.debateseason_backend_v1.domain.profile.service.response.CommunityResponse;
 
 import lombok.RequiredArgsConstructor;
 

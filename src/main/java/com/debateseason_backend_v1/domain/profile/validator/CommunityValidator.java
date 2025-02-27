@@ -1,4 +1,4 @@
-package com.debateseason_backend_v1.domain.user.validator;
+package com.debateseason_backend_v1.domain.profile.validator;
 
 import org.springframework.stereotype.Component;
 

@@ -1,11 +1,11 @@
-package com.debateseason_backend_v1.domain.community.service;
+package com.debateseason_backend_v1.domain.profile.service;
 
 import java.util.List;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.debateseason_backend_v1.domain.community.service.response.CommunityResponse;
+import com.debateseason_backend_v1.domain.profile.service.response.CommunityResponse;
 import com.debateseason_backend_v1.domain.repository.CommunityRepository;
 
 import lombok.RequiredArgsConstructor;

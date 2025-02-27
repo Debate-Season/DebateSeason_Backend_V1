@@ -12,8 +12,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.debateseason_backend_v1.common.response.ApiResult;
 import com.debateseason_backend_v1.common.response.VoidApiResult;
 import com.debateseason_backend_v1.domain.profile.controller.docs.ProfileControllerV1Docs;
-import com.debateseason_backend_v1.domain.profile.controller.request.ProfileRegisterRequest;
-import com.debateseason_backend_v1.domain.profile.controller.request.ProfileUpdateRequest;
 import com.debateseason_backend_v1.domain.profile.controller.request.request.ProfileRegisterRequest;
 import com.debateseason_backend_v1.domain.profile.controller.request.request.ProfileUpdateRequest;
 import com.debateseason_backend_v1.domain.profile.service.ProfileServiceV1;
@@ -69,7 +67,7 @@ public class ProfileControllerV1 implements ProfileControllerV1Docs {
 		@RequestParam String query
 	) {
 
-		profileService.checkNickname(query);
+		profileService.checkNicknameAvailability(query);
 
 		return VoidApiResult.success("사용 가능한 닉네임입니다.");
 	}

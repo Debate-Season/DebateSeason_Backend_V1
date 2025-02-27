@@ -67,7 +67,7 @@ public class ProfileControllerV1 implements ProfileControllerV1Docs {
 		@RequestParam String query
 	) {
 
-		profileService.checkNickname(query);
+		profileService.checkNicknameAvailability(query);
 
 		return VoidApiResult.success("사용 가능한 닉네임입니다.");
 	}

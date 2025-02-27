@@ -15,20 +15,16 @@ import com.debateseason_backend_v1.domain.issue.dto.IssueDAO;
 import com.debateseason_backend_v1.domain.issue.dto.IssueDTO;
 import com.debateseason_backend_v1.domain.issue.model.CommunityRecords;
 import com.debateseason_backend_v1.domain.issue.model.response.IssueResponse;
+import com.debateseason_backend_v1.domain.profile.enums.CommunityType;
 import com.debateseason_backend_v1.domain.repository.ChatRoomRepository;
-import com.debateseason_backend_v1.domain.repository.CommunityRepository;
 import com.debateseason_backend_v1.domain.repository.IssueRepository;
-import com.debateseason_backend_v1.domain.repository.ProfileCommunityRepository;
 import com.debateseason_backend_v1.domain.repository.ProfileRepository;
 import com.debateseason_backend_v1.domain.repository.UserChatRoomRepository;
 import com.debateseason_backend_v1.domain.repository.UserIssueRepository;
 import com.debateseason_backend_v1.domain.repository.UserRepository;
 import com.debateseason_backend_v1.domain.repository.entity.ChatRoom;
-import com.debateseason_backend_v1.domain.repository.entity.Community;
 import com.debateseason_backend_v1.domain.repository.entity.Issue;
 import com.debateseason_backend_v1.domain.repository.entity.Profile;
-import com.debateseason_backend_v1.domain.repository.entity.ProfileCommunity;
-import com.debateseason_backend_v1.domain.repository.entity.User;
 import com.debateseason_backend_v1.domain.repository.entity.UserChatRoom;
 import com.debateseason_backend_v1.domain.user.dto.UserDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -49,8 +45,6 @@ public class IssueServiceV1 {
 	private final UserRepository userRepository;
 
 	private final ProfileRepository profileRepository;
-	private final ProfileCommunityRepository profileCommunityRepository;
-	private final CommunityRepository communityRepository;
 
 	private final ObjectMapper objectMapper;
 
@@ -78,13 +72,12 @@ public class IssueServiceV1 {
 
 		// 1. 이슈방 불러오기
 		Issue issue = null;
-		try{
+		try {
 			issue = issueRepository.findById(issueId).orElseThrow(
 				() -> new NullPointerException("There is no " + issueId)
 			);
 
-		}
-		catch (NullPointerException | IllegalArgumentException e){
+		} catch (NullPointerException | IllegalArgumentException e) {
 			return ApiResult.builder()
 				.status(400)
 				.code(ErrorCode.BAD_REQUEST)
@@ -109,20 +102,16 @@ public class IssueServiceV1 {
 		 */
 
 		Profile profile = profileRepository.findByUserId(userId).orElseThrow(
-			() -> new RuntimeException("There is no "+ userId)
+			() -> new RuntimeException("There is no " + userId)
 		);
 
-		ProfileCommunity profileCommunity = profileCommunityRepository.findByProfileId(profile.getId()).orElseThrow(
-			() -> new RuntimeException("There is no "+ profile.getId())
-		);
-
-		Community community = communityRepository.findById(profileCommunity.getCommunityId()).orElseThrow(
-			() -> new RuntimeException("There is no "+ profileCommunity.getCommunityId())
-		);
-
+		CommunityType communityType = profile.getCommunityType();
+		if (communityType == null) {
+			throw new RuntimeException("No community assigned for profile: " + profile.getId());
+		}
 
 		UserDTO userDTO = new UserDTO();
-		userDTO.setCommunity(community.getName());
+		userDTO.setCommunity(communityType.getName());
 		userDTO.setId(userId);
 
 		CommunityRecords.record(userDTO, issueId);
@@ -247,11 +236,11 @@ public class IssueServiceV1 {
 
 			Long id = issueList.get(i).getId();
 			IssueResponse response = IssueResponse.builder()
-					.issueId(id)
-					.title(issueList.get(i).getTitle())
-					.createdAt(issueList.get(i).getCreatedAt())
-					.countChatRoom(chatRoomRepository.countByIssue(issueList.get(i)))
-					.build();
+				.issueId(id)
+				.title(issueList.get(i).getTitle())
+				.createdAt(issueList.get(i).getCreatedAt())
+				.countChatRoom(chatRoomRepository.countByIssue(issueList.get(i)))
+				.build();
 			responseList.add(response);
 		}
 

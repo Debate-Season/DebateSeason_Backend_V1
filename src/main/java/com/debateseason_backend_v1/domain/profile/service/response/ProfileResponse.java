@@ -1,8 +1,8 @@
 package com.debateseason_backend_v1.domain.profile.service.response;
 
 import com.debateseason_backend_v1.domain.profile.enums.AgeRangeType;
+import com.debateseason_backend_v1.domain.profile.enums.CommunityType;
 import com.debateseason_backend_v1.domain.profile.enums.GenderType;
-import com.debateseason_backend_v1.domain.repository.entity.Community;
 import com.debateseason_backend_v1.domain.repository.entity.Profile;
 
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -22,17 +22,17 @@ public record ProfileResponse(
 	AgeRangeType ageRange,
 
 	@Schema(description = "프로필에 등록된 커뮤니티 응답")
-	ProfileCommunityResponse community
+	CommunityResponse community
 ) {
 
-	public static ProfileResponse of(Profile profile, Community community) {
+	public static ProfileResponse of(Profile profile, CommunityType communityType) {
 
 		return new ProfileResponse(
 			// profile.getProfileColor(),
 			profile.getNickname(),
 			profile.getGender(),
 			profile.getAgeRange(),
-			ProfileCommunityResponse.from(community)
+			CommunityResponse.from(communityType)
 		);
 	}
 

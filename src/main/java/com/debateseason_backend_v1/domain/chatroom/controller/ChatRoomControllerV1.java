@@ -62,6 +62,7 @@ public class ChatRoomControllerV1 {
 	}
 
 	// 5. 내가 투표한 토론방 가져오기
+	/*
 	@GetMapping("/room/voted")
 	public ApiResult<Object> getVotedChatRoom(
 		@AuthenticationPrincipal CustomUserDetails principal,
@@ -69,8 +70,9 @@ public class ChatRoomControllerV1 {
 		){
 		Long userId = principal.getUserId();
 		return chatRoomServiceV1.findVotedChatRoom(userId,page);
-
 	}
+
+	 */
 	
 
 }

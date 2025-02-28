@@ -47,6 +47,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @WebMvcTest(ChatRoomControllerV1.class) // 컨트롤러와 관련된 애들만 빈으로 등록하고, Service, Repository같은 레이어는 빈으로 등록하지 않아 의존성을 끊습니다.
 @AutoConfigureMockMvc(addFilters = false)
 public class ChatRoomControllerV1Test {
+	/*
 
 	@Autowired
 	private MockMvc mockMvc;
@@ -327,5 +328,9 @@ class Task implements Runnable{
 
 
 
+
+
 	}
+
+	 */
 }

@@ -63,7 +63,7 @@ public class UserControllerV1 implements UserControllerV1Docs {
 	// 2. 인덱스 페이지(홈)
 	// 이슈방 전체 나열
 	@Operation(
-		summary = "이슈방 전체를 불러옵니다(수정가능)",
+		summary = "이슈방 전체를 불러옵니다(수정가능)  ",
 		description = " ")
 	@GetMapping("/home")
 	public ApiResult<Object> indexPage(

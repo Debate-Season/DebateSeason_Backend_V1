@@ -407,7 +407,7 @@ public class IssueServiceV1 {
 	}
 	
 	// 3. issue를 커서 방식으로 가져오기
-	public ApiResult<Object> fetchAll(Long page) {
+	public ApiResult<Object> fetchAll(Long userId,Long page) {
 
 		// 일단 issueId 여러개를 가져온다.
 		List<Long> issueIds = issueRepository.findIssuesByPage(page*2).stream().toList();

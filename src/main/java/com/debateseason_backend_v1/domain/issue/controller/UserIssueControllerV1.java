@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.debateseason_backend_v1.common.response.ApiResult;
+import com.debateseason_backend_v1.domain.chatroom.service.ChatRoomServiceV1;
 import com.debateseason_backend_v1.domain.issue.service.IssueServiceV1;
 import com.debateseason_backend_v1.domain.user.service.UserIssueServiceV1;
 import com.debateseason_backend_v1.security.CustomUserDetails;
@@ -21,7 +22,7 @@ import lombok.RequiredArgsConstructor;
 public class UserIssueControllerV1 {
 
 	private final IssueServiceV1 issueServiceV1;
-	private final UserIssueServiceV1 userIssueServiceV1;
+	private final ChatRoomServiceV1 chatRoomServiceV1;
 
 	// 2. 이슈방 단건 불러오기(+ 채팅방도 같이 불러와야 함.)
 	@Operation(
@@ -33,7 +34,6 @@ public class UserIssueControllerV1 {
 		@AuthenticationPrincipal CustomUserDetails principal,
 		@RequestParam(name = "page")Integer page) {
 		Long userId = principal.getUserId();
-		//return issueServiceV1.fetch(issueId, userId);
 		return issueServiceV1.fetch2(issueId, userId, page);
 	}
 
@@ -49,20 +49,6 @@ public class UserIssueControllerV1 {
 		Long userId = principal.getUserId();
 
 		return issueServiceV1.booMark(issueId,userId);
-	}
-
-
-	// 2. 인덱스 페이지(홈)
-	// 이슈방 전체 나열
-	@Operation(
-		summary = "이슈방 전체를 불러옵니다(수정가능)",
-		description = " ")
-	@GetMapping("/home")
-	public ApiResult<Object> indexPage(
-		@RequestParam(name = "page") Long page
-	) {
-
-		return issueServiceV1.fetchAll(page);
 	}
 
 	// 3. issueMap으로 이동하기

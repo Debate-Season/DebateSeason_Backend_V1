@@ -12,11 +12,11 @@ public class WebConfig implements WebMvcConfigurer {
 	public void addCorsMappings(CorsRegistry registry) {
 		registry.addMapping("/**") //모든 경로 허용
 			.allowedOrigins(
-				"*"
+				"https://debate-season.click"
 			)
 			.allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
 			.allowedHeaders("*")
-			.allowCredentials(false) // 자격 증명 허용
+			.allowCredentials(true) // 자격 증명 허용
 			.maxAge(3600); //preflight
 	}
 }

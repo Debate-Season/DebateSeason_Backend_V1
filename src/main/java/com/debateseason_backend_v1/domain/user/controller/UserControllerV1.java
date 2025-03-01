@@ -30,6 +30,7 @@ public class UserControllerV1 implements UserControllerV1Docs {
 
 	private final UserServiceV1 userServiceV1;
 	private final ChatRoomServiceV1 chatRoomServiceV1;
+	private final IssueServiceV1 issueServiceV1;
 
 	@PostMapping("/login")
 	public ApiResult<LoginResponse> login(@Valid @RequestBody SocialLoginRequest request) {
@@ -67,12 +68,12 @@ public class UserControllerV1 implements UserControllerV1Docs {
 		description = " ")
 	@GetMapping("/home")
 	public ApiResult<Object> indexPage(
-		@RequestParam(name = "page", required = false) Long page,
+		//@RequestParam(name = "page", required = false) Long page,
 		@AuthenticationPrincipal CustomUserDetails principal
 	) {
 		Long userId = principal.getUserId();
-		System.out.println("page:"+page);
-		return chatRoomServiceV1.findVotedChatRoom(userId,page);
+		//return chatRoomServiceV1.findVotedChatRoom(userId,page);
+		return issueServiceV1.fetchAll();
 	}
 
 }

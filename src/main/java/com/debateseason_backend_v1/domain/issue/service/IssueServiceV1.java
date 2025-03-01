@@ -50,6 +50,8 @@ public class IssueServiceV1 {
 
 	private final ProfileRepository profileRepository;
 
+	private final ChatRoomRepository chatRoomRepository;
+
 
 
 	// 1. save 이슈방
@@ -348,6 +350,37 @@ public class IssueServiceV1 {
 			.message("이슈방 불러왔습니다.")
 			.data(issueResponses)
 			.build();
+
+	}
+
+	// 구버전
+	public ApiResult<Object> fetchAll() {
+		List<Issue> issueList = issueRepository.findAll();
+
+		// Gson,JSONArray이 없어서 Map으로 반환을 한다.
+		List<IssueResponse> responseList = new ArrayList<>();
+
+		// loop를 돌면서, issueId에 해당하는 chatRoom을 count 한다.
+		for (int i = 0; i < issueList.size(); i++) {
+
+			Long id = issueList.get(i).getId();
+			IssueResponse response = IssueResponse.builder()
+				.issueId(id)
+				.title(issueList.get(i).getTitle())
+				.createdAt(issueList.get(i).getCreatedAt())
+				.countChatRoom(chatRoomRepository.countByIssue(issueList.get(i)))
+				.build();
+			responseList.add(response);
+		}
+
+		ApiResult<Object> response = ApiResult.builder()
+			.status(200)
+			.code(ErrorCode.SUCCESS)
+			.message("이슈방 전체를 불러왔습니다.")
+			.data(responseList)
+			.build();
+
+		return response;
 
 	}
 

@@ -14,7 +14,7 @@ public class WebConfig implements WebMvcConfigurer {
 			.allowedOrigins(
 				"https://debate-season.click"
 			)
-			.allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+			.allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH")
 			.allowedHeaders("*")
 			.allowCredentials(true) // 자격 증명 허용
 			.maxAge(3600); //preflight

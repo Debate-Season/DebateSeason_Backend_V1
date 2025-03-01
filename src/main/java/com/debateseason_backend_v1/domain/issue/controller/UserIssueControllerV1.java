@@ -32,7 +32,7 @@ public class UserIssueControllerV1 {
 	public ApiResult<Object> getIssue(
 		@RequestParam(name = "issue-id") Long issueId,
 		@AuthenticationPrincipal CustomUserDetails principal,
-		@RequestParam(name = "page")Integer page) {
+		@RequestParam(name = "page",required = false)Long page) {
 		Long userId = principal.getUserId();
 		return issueServiceV1.fetch2(issueId, userId, page);
 	}

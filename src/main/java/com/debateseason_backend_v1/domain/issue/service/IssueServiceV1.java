@@ -45,13 +45,12 @@ public class IssueServiceV1 {
 
 	private final IssueRepository issueRepository;
 	private final UserIssueRepository userIssueRepository;
-	private final ChatRoomRepository chatRoomRepository;
 	private final UserChatRoomRepository userChatRoomRepository;
 	private final UserRepository userRepository;
 
 	private final ProfileRepository profileRepository;
 
-	private final ObjectMapper objectMapper;
+
 
 	// 1. save 이슈방
 	public ApiResult<Object> save(IssueDTO issueDTO) {
@@ -75,175 +74,10 @@ public class IssueServiceV1 {
 
 	//2. fetch 단건 이슈방
 	@Transactional
-	public ApiResult<Object> fetch(Long issueId, Long userId) {
+	public ApiResult<Object> fetch2(Long issueId, Long userId, Long ChatRoomId) {
 
 		// 1. 이슈방 불러오기
-		Issue issue = null;
-		try{
-			issue = issueRepository.findById(issueId).orElseThrow(
-				() -> new NullPointerException("There is no " + issueId)
-			);
-
-		}
-		catch (NullPointerException | IllegalArgumentException e){
-			return ApiResult.builder()
-				.status(400)
-				.code(ErrorCode.BAD_REQUEST)
-				.message("선택하신 이슈방은 존재하지 않습니다.")
-				.build();
-
-		}
-
-		// 2. User 찾기
-		/*
-		User user = userRepository.findById(userId).orElseThrow(
-			() -> new RuntimeException("There is no " + userId)
-		);
-		 */
-
-		// 2. Community 찾는 과정
-		/*
-			userId로 Profile 찾기
-			Profile.id로 ProfileCommunity.communityId 찾기
-			위에서 찾은 communityId로 Community 테이블에서 community,name 가져오기
-			select 쿼리만해도 3번이 나가는데 -> 비효율적임.
-		 */
-
-		Profile profile = profileRepository.findByUserId(userId).orElseThrow(
-			() -> new RuntimeException("There is no "+ userId)
-		);
-
-		CommunityType communityType = profile.getCommunityType();
-		if (communityType == null) {
-			throw new RuntimeException("No community assigned for profile: " + profile.getId());
-		}
-
-
-		UserDTO userDTO = new UserDTO();
-		userDTO.setCommunity(communityType.getName());
-		userDTO.setId(userId);
-
-		CommunityRecords.record(userDTO, issueId);
-		Map<String, Integer> map = CommunityRecords.getSortedCommunity(issueId);
-		Set<String> keySet = map.keySet();
-
-		log.info("Ok1");
-		// 1-1. User 불러오기. 참여 커뮤니티를 보여주기 위함임(내림차순으로) <-  즐겨찾기
-		/*
-		List<UserIssue> userIssueList = userIssueRepository.findByIssue(issue);
-
-		//
-		List<User> userList = new ArrayList<>();
-		for (UserIssue e : userIssueList) {
-			userList.add(e.getUser());
-		}
-
-		// Map
-		Map<String, Integer> map = new HashMap<>();
-		for (User u : userList) {
-
-			String key = u.getCommunity();
-
-			// 1. community에 없는 경우 -> 새로 추가를 한다.
-			if (!map.containsKey(key)) {
-				map.put(key, 1);
-			}
-			// 2. community에 있는 경우 -> value를 찾은 후 +1
-			else {
-				int count = map.get(key);
-				map.put(key, count + 1);
-			}
-
-		}
-
-		// 1-3. Map을 커뮤니티 count 내림차순으로 정렬
-
-		List<String> keySet = new ArrayList<>(map.keySet());
-		keySet.sort((o1, o2) -> map.get(o2).compareTo(map.get(o1)));
-
-		 */
-
-		// LinkedHashMap을 써서 순서를 보장한다.
-		Map<String, Integer> sortedMap = new LinkedHashMap<>();
-
-		for (String key : keySet) {
-			sortedMap.put(key, map.get(key));
-		}
-
-		log.info("Ok2");
-		// 1-4. 채팅방도 같이 넘기자. null이어도 가능! <- 수정
-		List<ChatRoom> chatRoomList = chatRoomRepository.findByIssue(issue);
-
-		//  나중에 정렬같은거 할 때, 써먹을 듯
-		List<ChatRoomDAO> chatRoomDaoList = new ArrayList<>();
-
-		// 이거 때문에 loop가 ㅈㄴ 발생한다 -> 최적화 필요!
-		for (ChatRoom c : chatRoomList) {
-			// 찬성/반대 조회
-			List<UserChatRoom> chatRooms = userChatRoomRepository.findByChatRoom(c);
-
-			int countAgree = 0;
-			int countDisagree = 0;
-
-			for (UserChatRoom u : chatRooms) {
-				if (u.getOpinion().equals("AGREE")) {
-					countAgree++;
-				} else if (u.getOpinion().equals("DISAGREE")) {
-					countDisagree++;
-				}
-				// 의견없음 -> 집계안함.
-			}
-
-			ChatRoomDAO chatRoomDAO = ChatRoomDAO.builder()
-				.chatRoomId(c.getId())
-				.title(c.getTitle())
-				.content(c.getContent())
-				//.issue(c.getIssue())
-				.createdAt(c.getCreatedAt())
-				.agree(countAgree)
-				.disagree(countDisagree)
-				.build();
-
-			chatRoomDaoList.add(chatRoomDAO);
-		}
-		log.info("Ok3");
-
-		List<ChatRoomDAO> chatRoomMap = new ArrayList<>();
-
-		for (int i = 1; i < chatRoomDaoList.size() + 1; i++) {
-			chatRoomMap.add(chatRoomDaoList.get(i - 1));
-		}
-
-		// 1-5 IssueDAO만들기
-		/*
-		IssueDAO issueDAO = IssueDAO.builder()
-			.title(issue.getTitle())
-			.map(sortedMap)
-			.chatRoomMap(chatRoomMap)
-			.build();
-
-		 */
-
-		//
-		/*
-		ApiResult<Object> response = ApiResult.builder()
-			.status(200)
-			.code(ErrorCode.SUCCESS)
-			.message("이슈방 " + issueId + "조회")
-			.data(issueDAO)
-			.build();
-
-
-		 */
-		return null;
-
-	}
-
-	@Transactional
-	public ApiResult<Object> fetch2(Long issueId, Long userId, Integer page) {
-
-		// 1. 이슈방 불러오기
-		Issue issue = null;
+		Issue issue;
 		try{
 			issue = issueRepository.findById(issueId).orElseThrow(
 				() -> new NullPointerException("There is no " + issueId)
@@ -293,13 +127,23 @@ public class IssueServiceV1 {
 		// 3. chatRoomList와 각 chatRoom에 대한 찬성/반대 수 가져온다.
 		
 
-		List<Long> chatRoomIds = userChatRoomRepository.findChatRoomsByIssueId(issueId,page*2);
+		//List<Long> chatRoomIds = userChatRoomRepository.findChatRoomsByIssueId(issueId,page*2);
+		List<Long> chatRoomIds ;
+
+		// 첫 페이지
+		if(ChatRoomId==null){
+			chatRoomIds = userChatRoomRepository.findTop2ChatRoomIdsByIssueId(issueId);
+		}
+		else{
+			// 그 이후 페이지
+			chatRoomIds = userChatRoomRepository.findTop2ChatRoomIdsByIssueIdAndChatRoomId(issueId,ChatRoomId);
+		}
 
 		if(chatRoomIds.isEmpty()){
 			return ApiResult.builder()
 				.status(200)
 				.code(ErrorCode.SUCCESS)
-				.message("해당 페이지 번호는 존재하지 않습니다. page : "+page)
+				.message("해당 페이지 번호는 존재하지 않습니다. page : "+ChatRoomId)
 				.data("")
 				.build();
 		}

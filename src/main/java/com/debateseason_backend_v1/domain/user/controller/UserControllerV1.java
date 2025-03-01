@@ -67,10 +67,11 @@ public class UserControllerV1 implements UserControllerV1Docs {
 		description = " ")
 	@GetMapping("/home")
 	public ApiResult<Object> indexPage(
-		@RequestParam(name = "page") int page,
+		@RequestParam(name = "page", required = false) Long page,
 		@AuthenticationPrincipal CustomUserDetails principal
 	) {
 		Long userId = principal.getUserId();
+		System.out.println("page:"+page);
 		return chatRoomServiceV1.findVotedChatRoom(userId,page);
 	}
 

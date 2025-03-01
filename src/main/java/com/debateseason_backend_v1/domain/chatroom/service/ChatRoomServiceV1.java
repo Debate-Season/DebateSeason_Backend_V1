@@ -201,19 +201,16 @@ public class ChatRoomServiceV1 {
 	}
 
 	// 4. 투표한 여러 채팅방 가져오기
-	public ApiResult<Object> findVotedChatRoom(Long userId,int page){
+	public ApiResult<Object> findVotedChatRoom(Long userId,Long pageChatRoomId){
 
-		// 여기서 페이지네이션을 하고, 아래에서 데이터를 fetch하자
-		List<Long> chatRoomIds = userChatRoomRepository.findChatRoomsByPage(userId,page*2);
-
-		if(chatRoomIds.isEmpty()){
-			return ApiResult.builder()
-				.status(200)
-				.code(ErrorCode.SUCCESS)
-				.message("마지막 페이지입니다.")
-				.data("")
-				.build();
-
+		List<Long> chatRoomIds;
+		// 첫 페이지
+		if(pageChatRoomId==null){
+			chatRoomIds = userChatRoomRepository.findTop2ChatRoomIdsByUserId(userId);
+		}
+		else{
+			// 그 이후 페이지
+			chatRoomIds = userChatRoomRepository.findTop2ChatRoomIdsByUserIdAndChatRoomId(userId,pageChatRoomId);
 		}
 
 		// 1.제대로 가져왔나 확인해보기
@@ -222,6 +219,17 @@ public class ChatRoomServiceV1 {
 		}
 
 		List<Object[]> chatRoomList = userChatRoomRepository.findChatRoomByChatRoomIds(chatRoomIds);
+
+		if (chatRoomList.isEmpty()){
+			return ApiResult.builder()
+				.status(200)
+				.code(ErrorCode.SUCCESS)
+				.message("채팅방을 불러왔습니다.")
+				.data("해당 페이지는 존재하지 않습니다 page:"+pageChatRoomId)
+				.build();
+
+		}
+
 		List<ChatRoomDAO> fetchedChatRoomList = chatRoomList.stream().map(
 			e->{
 				// AGREE, DISAGREE, chat_room_id, title, content, created_at 순으로 가져오기

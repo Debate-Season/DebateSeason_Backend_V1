@@ -18,6 +18,7 @@ public interface UserChatRoomRepository extends JpaRepository<UserChatRoom, Long
 	UserChatRoom findByUserIdAndChatRoomId(Long userId,Long chatroomId);
 
 	// 1. userId를 이용해서 해당 user가 투표한 토론방의 id값들 조회하기
+	/*
 	@Query(value = """
     SELECT cr.chat_room_id 
     FROM chat_room cr,
@@ -32,7 +33,23 @@ public interface UserChatRoomRepository extends JpaRepository<UserChatRoom, Long
 	List<Long> findChatRoomsByPage(@Param("userId") Long userId,
 		@Param("page") int page);
 
-	
+	 */
+
+
+	// 1-1 Paramter가 없는 경우
+	@Query(value = "SELECT chat_room_id FROM user_chat_room WHERE user_id = :userId ORDER BY chat_room_id DESC LIMIT 2", nativeQuery = true)
+	List<Long> findTop2ChatRoomIdsByUserId(@Param("userId") Long userId);
+
+	// 1-2. Parameter가 있는 경우
+	@Query(value = "SELECT chat_room_id FROM user_chat_room WHERE user_id = :userId AND chat_room_id < :ChatRoomId ORDER BY chat_room_id DESC LIMIT 2", nativeQuery = true)
+	List<Long> findTop2ChatRoomIdsByUserIdAndChatRoomId(
+		@Param("userId") Long userId,
+		@Param("ChatRoomId") Long ChatRoomId
+	);
+
+
+
+
 	// 1-1. 1.에서 가져온 토론방의 id값들로 해당 user가 투표한 토론방 여러개 조회하기.
 	// AGREE, DISAGREE, chat_room_id, title, content, created_at 순으로 가져오기
 	@Query(value = """

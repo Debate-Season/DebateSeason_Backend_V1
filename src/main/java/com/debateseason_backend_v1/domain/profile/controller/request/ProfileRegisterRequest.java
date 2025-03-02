@@ -1,4 +1,4 @@
-package com.debateseason_backend_v1.domain.profile.controller.request.request;
+package com.debateseason_backend_v1.domain.profile.controller.request;
 
 import com.debateseason_backend_v1.domain.profile.enums.AgeRangeType;
 import com.debateseason_backend_v1.domain.profile.enums.GenderType;
@@ -26,7 +26,7 @@ public record ProfileRegisterRequest(
 	GenderType gender,
 
 	@Schema(description = "연령대", example = "20대")
-	@NotNull(message = "나이대 선택은 필수입니다.")
+	@NotNull(message = "연령대 선택은 필수입니다.")
 	AgeRangeType ageRange
 ) {
 

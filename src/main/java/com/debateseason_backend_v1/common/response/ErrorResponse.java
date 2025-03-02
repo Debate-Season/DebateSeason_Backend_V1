@@ -1,7 +1,5 @@
 package com.debateseason_backend_v1.common.response;
 
-import org.springframework.http.HttpStatus;
-
 import com.debateseason_backend_v1.common.exception.ErrorCode;
 
 import lombok.AccessLevel;

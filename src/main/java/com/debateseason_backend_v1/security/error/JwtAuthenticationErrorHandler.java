@@ -27,7 +27,6 @@ public class JwtAuthenticationErrorHandler {
 		log.error("만료된 토큰입니다, uri: {}", requestURI);
 
 		ErrorResponse errorResponse = ErrorResponse.of(
-			HttpStatus.UNAUTHORIZED,
 			ErrorCode.EXPIRED_ACCESS_TOKEN
 		);
 
@@ -39,7 +38,6 @@ public class JwtAuthenticationErrorHandler {
 		log.error("유효하지 않은 토큰입니다, uri: {}", requestURI);
 
 		ErrorResponse errorResponse = ErrorResponse.of(
-			HttpStatus.UNAUTHORIZED,
 			ErrorCode.INVALID_ACCESS_TOKEN
 		);
 		writeErrorResponse(response, HttpStatus.UNAUTHORIZED, errorResponse);

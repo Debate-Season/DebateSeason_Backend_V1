@@ -53,7 +53,7 @@ public class GlobalExceptionHandler {
 		// message detail 생성
 		String detailMessage = createDetailMessage(e.getBindingResult().getFieldErrors());
 
-		ErrorResponse errorResponse = ErrorResponse.of(errorCode.getHttpStatus(), errorCode, detailMessage);
+		ErrorResponse errorResponse = ErrorResponse.of(errorCode, detailMessage);
 
 		return new ResponseEntity<>(errorResponse, errorCode.getHttpStatus());
 	}
@@ -61,7 +61,7 @@ public class GlobalExceptionHandler {
 	private ResponseEntity<ErrorResponse> createErrorResponseEntity(ErrorCode errorCode) {
 
 		return new ResponseEntity<>(
-			ErrorResponse.of(errorCode.getHttpStatus(), errorCode),
+			ErrorResponse.of(errorCode),
 			errorCode.getHttpStatus());
 	}
 

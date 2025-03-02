@@ -18,12 +18,12 @@ public class ErrorResponse {
 	private ErrorCode code;
 	private String message;
 
-	public static ErrorResponse of(HttpStatus httpStatus, ErrorCode code) {
-		return new ErrorResponse(httpStatus.value(), code, code.getMessage());
+	public static ErrorResponse of(ErrorCode code) {
+		return new ErrorResponse(code.getHttpStatus().value(), code, code.getMessage());
 	}
 
-	public static ErrorResponse of(HttpStatus httpStatus, ErrorCode code, String message) {
-		return new ErrorResponse(httpStatus.value(), code, message);
+	public static ErrorResponse of(ErrorCode code, String message) {
+		return new ErrorResponse(code.getHttpStatus().value(), code, message);
 	}
 
 }

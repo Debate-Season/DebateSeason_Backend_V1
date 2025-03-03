@@ -28,8 +28,9 @@ public enum ErrorCode implements CodeInterface {
 	VALUE_OUT_OF_RANGE(103, HttpStatus.BAD_REQUEST, "입력값이 허용 범위를 벗어났습니다"),
 
 	// 1000번대 JWT 에러
-	EXPIRED_ACCESS_TOKEN(1000, HttpStatus.UNAUTHORIZED, "Access Token이 만료되었습니다. 다시 로그인해주세요."),
-	EXPIRED_REFRESH_TOKEN(1004, HttpStatus.UNAUTHORIZED, "Refresh Token이 만료되었습니다. 다시 로그인해주세요."),
+	MISSING_ACCESS_TOKEN(1002, HttpStatus.UNAUTHORIZED, "Access Token이 필요합니다."),
+	EXPIRED_ACCESS_TOKEN(1000, HttpStatus.UNAUTHORIZED, "Access Token이 만료되었습니다."),
+	EXPIRED_REFRESH_TOKEN(1004, HttpStatus.UNAUTHORIZED, "Refresh Token이 만료되었습니다."),
 	INVALID_ACCESS_TOKEN(1001, HttpStatus.UNAUTHORIZED, "유효하지 않은 Access Token 입니다."),
 	INVALID_REFRESH_TOKEN(1003, HttpStatus.UNAUTHORIZED, "유효하지 않은 Refresh Token 입니다."),
 

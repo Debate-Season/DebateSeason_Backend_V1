@@ -5,11 +5,12 @@ import java.io.IOException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.debateseason_backend_v1.common.enums.TokenType;
+import com.debateseason_backend_v1.config.WebSecurityConfig;
 import com.debateseason_backend_v1.security.CustomUserDetails;
-import com.debateseason_backend_v1.security.component.SecurityPathMatcher;
 import com.debateseason_backend_v1.security.error.JwtAuthenticationErrorHandler;
 
 import io.jsonwebtoken.ExpiredJwtException;
@@ -29,7 +30,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 	public static final String BEARER_PREFIX = "Bearer ";
 	private final JwtUtil jwtUtil;
 	private final JwtAuthenticationErrorHandler errorHandler;
-	private final SecurityPathMatcher securityPathMatcher;
 
 	@Override
 	protected void doFilterInternal(
@@ -40,7 +40,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
 		String requestURI = request.getRequestURI();
 
-		if (securityPathMatcher.isPublicUrl(requestURI)) {
+		if (isPublicUrl(requestURI)) {
 			filterChain.doFilter(request, response);
 			return;
 		}
@@ -91,7 +91,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 	}
 
 	private void authenticateWithAccessToken(String token, String requestURI) {
-
+		
 		jwtUtil.validate(token);
 		TokenType tokenType = jwtUtil.getTokenType(token);
 		if (tokenType != TokenType.ACCESS) {
@@ -118,6 +118,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 			"Security Context에 '{}' 인증 정보를 저장했습니다, uri: {}",
 			authentication.getName(), requestURI
 		);
+	}
+
+	// 공개 URL 여부 확인
+	private boolean isPublicUrl(String requestURI) {
+
+		for (String publicUrl : WebSecurityConfig.PUBLIC_URLS) {
+			if (new AntPathMatcher().match(publicUrl, requestURI)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 }

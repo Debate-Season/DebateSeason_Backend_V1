@@ -8,7 +8,6 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import com.debateseason_backend_v1.security.component.SecurityPathMatcher;
 import com.debateseason_backend_v1.security.error.JwtAuthenticationErrorHandler;
 import com.debateseason_backend_v1.security.jwt.JwtAuthenticationFilter;
 import com.debateseason_backend_v1.security.jwt.JwtUtil;
@@ -22,7 +21,6 @@ public class WebSecurityConfig {
 
 	private final JwtUtil jwtUtil;
 	private final JwtAuthenticationErrorHandler errorHandler;
-	private final SecurityPathMatcher securityPathMatcher;
 
 	public static final String[] PUBLIC_URLS = {
 		"/swagger-ui/**",
@@ -32,9 +30,12 @@ public class WebSecurityConfig {
 		"/stomp/**",
 		"/topic/**",
 		"/api/v1/users/login",
-		"/api/v2/users/login",
 		"/api/v1/auth/reissue",
-		"/api/v1/app/**"
+		// "/api/v1/communities/**",
+		// "/api/v1/profiles/**",
+		// "api/v1/auth/**",
+		// "/api/v1/room/**",
+		// "/api/v1/issue/**"
 	};
 
 	@Bean
@@ -45,11 +46,12 @@ public class WebSecurityConfig {
 			.formLogin(AbstractHttpConfigurer::disable)
 			.httpBasic(AbstractHttpConfigurer::disable)
 			.authorizeHttpRequests(auth -> auth
+				// .anyRequest().permitAll()
 				.requestMatchers(PUBLIC_URLS).permitAll()
 				.anyRequest().authenticated()
 			)
 			.addFilterBefore(
-				new JwtAuthenticationFilter(jwtUtil, errorHandler, securityPathMatcher),
+				new JwtAuthenticationFilter(jwtUtil, errorHandler),
 				UsernamePasswordAuthenticationFilter.class
 			)
 			.build();

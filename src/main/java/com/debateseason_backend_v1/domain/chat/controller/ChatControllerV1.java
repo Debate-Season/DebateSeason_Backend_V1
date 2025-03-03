@@ -5,7 +5,6 @@ import com.debateseason_backend_v1.domain.chat.model.response.ChatMessagesRespon
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
-import com.debateseason_backend_v1.domain.chat.model.response.ChatListResponse;
 import com.debateseason_backend_v1.domain.chat.service.ChatServiceV1;
 
 import io.swagger.v3.oas.annotations.Operation;

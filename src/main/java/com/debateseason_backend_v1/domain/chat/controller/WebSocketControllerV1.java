@@ -47,7 +47,8 @@ public class WebSocketControllerV1 {
         SimpMessageHeaderAccessor headerAccessor
     ) {
         try {
-            return chatService.processChatMessage(roomId, message);
+            return chatService.processChatMessage(roomId, message,headerAccessor);
+
         } catch (CustomException e) {
             throw e; // MessageExceptionHandler 로 전달
         }
@@ -71,12 +72,12 @@ public class WebSocketControllerV1 {
     @MessageExceptionHandler(CustomException.class)
     @SendToUser("/queue/errors")
     public ChatMessageErrorResponse handleCustomException(CustomException ex) {
-        log.error("채팅 정책 검증 처리 중 오류 발생: {}", ex.getMessage());
+        log.error("메시지 처리 중 오류 발생: {}", ex.getMessage());
         
         return ChatMessageErrorResponse.builder()
-            .messageType(MessageType.ERROR)
-            .message(ex.getMessage())
-            .build();
+                .messageType(MessageType.ERROR)
+                .message(ex.getMessage())
+                .build();
     }
 
     @MessageExceptionHandler(Exception.class)

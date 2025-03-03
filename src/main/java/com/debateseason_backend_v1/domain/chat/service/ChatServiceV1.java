@@ -3,7 +3,6 @@ package com.debateseason_backend_v1.domain.chat.service;
 import com.debateseason_backend_v1.common.enums.MessageType;
 import com.debateseason_backend_v1.common.response.ApiResult;
 import com.debateseason_backend_v1.domain.chat.model.request.ChatMessageRequest;
-import com.debateseason_backend_v1.domain.chat.model.response.ChatListResponse;
 import com.debateseason_backend_v1.domain.chat.model.response.ChatMessageResponse;
 import com.debateseason_backend_v1.domain.chat.model.response.ChatMessagesByDate;
 import com.debateseason_backend_v1.domain.chat.model.response.ChatMessagesResponse;
@@ -15,11 +14,13 @@ import com.debateseason_backend_v1.domain.repository.entity.ChatRoom;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.context.ApplicationEventPublisher;
 
+import java.security.Principal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -41,21 +42,30 @@ public class ChatServiceV1 {
 
 	// ---------- WebSocket 실시간 메시지 처리 ----------
 	
-	public ChatMessageResponse processChatMessage(Long roomId, ChatMessageRequest message) {
+	public ChatMessageResponse processChatMessage(Long roomId, ChatMessageRequest message, SimpMessageHeaderAccessor headerAccessor) {
+		// 메시지 유효성 검사
 		chatValidate.validateMessageLength(message);
 		
-		enrichChatMessage(message, roomId);
-		eventPublisher.publishEvent(message);  // 비동기 저장을 위한 이벤트 발행
-		return ChatMessageResponse.from(message);
+		// 채팅방 존재 여부 확인
+		ChatRoom chatRoom = chatRoomService.findChatRoomById(roomId);
+
+
+		// 인증 정보에서 사용자 ID 가져오기
+		Long userId = null;
+		Principal principal = headerAccessor.getUser();
+		if (principal != null) {
+			userId = Long.valueOf(principal.getName());
+		}
+
+		// 메시지 저장
+		Chat chat = Chat.from(message, chatRoom, userId);
+		Chat savedchat = chatRepository.save(chat);
+		log.debug("채팅 메시지 저장 완료: roomId={}, sender={}", roomId, message.getSender());
+
+
+		// 응답 생성
+		return ChatMessageResponse.from(savedchat);
 	}
-
-	private void enrichChatMessage(ChatMessageRequest message, Long roomId) {
-		message.setRoomId(roomId);
-		message.setMessageType(MessageType.CHAT);
-		message.setTimeStamp(LocalDateTime.now());
-	}
-
-
 
 	public ChatMessageResponse processJoinMessage(ChatMessageRequest joinRequest) {
 		return ChatMessageResponse.builder()

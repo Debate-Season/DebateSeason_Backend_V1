@@ -3,6 +3,7 @@ package com.debateseason_backend_v1.domain.chat.model.response;
 import com.debateseason_backend_v1.common.enums.MessageType;
 import com.debateseason_backend_v1.common.enums.OpinionType;
 import com.debateseason_backend_v1.domain.chat.model.request.ChatMessageRequest;
+import com.debateseason_backend_v1.domain.repository.entity.Chat;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
@@ -18,6 +19,8 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 @Builder
 public class ChatMessageResponse {
 
+    @Schema(description = "채팅 ID",example = "1L")
+    private Long id;
     @Schema(description = "룸ID",example = "1L")
     private Long roomId;
     @Schema(description = "메시지 타입", example = "CHAT")
@@ -48,6 +51,17 @@ public class ChatMessageResponse {
                 .opinionType(request.getOpinionType())
                 .userCommunity(request.getUserCommunity())
                 .timeStamp(request.getTimeStamp())
+                .build();
+    }
+    public static ChatMessageResponse from(Chat chat) {
+        return ChatMessageResponse.builder()
+                .id(chat.getId())
+                .messageType(chat.getMessageType())
+                .sender(chat.getSender())
+                .content(chat.getContent())
+                .opinionType(chat.getOpinionType())
+                .userCommunity(chat.getUserCommunity())
+                .timeStamp(chat.getTimeStamp())
                 .build();
     }
 

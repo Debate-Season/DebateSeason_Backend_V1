@@ -11,6 +11,8 @@ import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -28,7 +30,7 @@ public class ChatMessageRequest {
     private Long roomId;
     @Schema(description = "메시지 타입", example = "CHAT")
     private MessageType messageType;
-    @Schema(description = "메시지 내용" , example = "안녕하세요.")
+    @Schema(description = "메시지 내용 (메시지는 1자 이상 500자 이하여야 합니다.)" , example = "안녕하세요.")
     private String content;
     @Schema(description = "발신자", example = "홍길동")
     private String sender;
@@ -43,4 +45,16 @@ public class ChatMessageRequest {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss.SSSSSS")
     private LocalDateTime timeStamp;
 
+    public static ChatMessageRequest of(Long roomId, String sender, String content,
+                                        OpinionType opinionType, String userCommunity) {
+        return ChatMessageRequest.builder()
+                .roomId(roomId)
+                .messageType(MessageType.CHAT)
+                .sender(sender)
+                .content(content)
+                .opinionType(opinionType)
+                .userCommunity(userCommunity)
+                .timeStamp(LocalDateTime.now())
+                .build();
+    }
 }

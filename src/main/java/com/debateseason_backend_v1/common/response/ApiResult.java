@@ -23,7 +23,7 @@ public class ApiResult<T> {
 	@Schema(description = "응답 코드", example = "SUCCESS", implementation = ErrorCode.class)
 	private ErrorCode code;
 
-	@Schema(description = "응답 메시지", example = "정상적으로 처리되었습니다")
+	@Schema(description = "응답 메시지", example = "정상적으로 처리되었습니다.")
 	private String message;
 
 	@Schema(description = "응답 데이터")
@@ -40,7 +40,7 @@ public class ApiResult<T> {
 			.build();
 	}
 
-	// 데이터가 있는 성공 응답
+	// 기본 성공 응답
 	public static <T> ApiResult<T> success(String message, T data) {
 
 		return ApiResult.<T>builder()

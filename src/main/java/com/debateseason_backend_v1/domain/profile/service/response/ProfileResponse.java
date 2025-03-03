@@ -1,13 +1,13 @@
 package com.debateseason_backend_v1.domain.profile.service.response;
 
-import com.debateseason_backend_v1.domain.profile.enums.CommunityType;
-import com.debateseason_backend_v1.domain.repository.entity.Profile;
 import com.debateseason_backend_v1.domain.profile.enums.AgeRangeType;
+import com.debateseason_backend_v1.domain.profile.enums.CommunityType;
 import com.debateseason_backend_v1.domain.profile.enums.GenderType;
+import com.debateseason_backend_v1.domain.repository.entity.Profile;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
-@Schema(description = "내 프로필 조회 응답")
+@Schema(title = "내 프로필 조회 응답 DTO", description = "내 프로필 조회 응답")
 public record ProfileResponse(
 	// @Schema(description = "프로필 컬러", example = "RED")
 	// String profileColor,

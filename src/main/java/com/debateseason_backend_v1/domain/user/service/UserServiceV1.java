@@ -82,7 +82,7 @@ public class UserServiceV1 {
 	public void withdraw(Long userId) {
 
 		User user = userRepository.findById(userId)
-			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+			.orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_USER));
 
 		user.withdraw();
 

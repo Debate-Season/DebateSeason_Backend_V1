@@ -9,6 +9,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.debateseason_backend_v1.common.enums.TokenType;
 import com.debateseason_backend_v1.security.CustomUserDetails;
+import com.debateseason_backend_v1.security.component.SecurityPathMatcher;
 import com.debateseason_backend_v1.security.error.JwtAuthenticationErrorHandler;
 
 import io.jsonwebtoken.ExpiredJwtException;
@@ -28,6 +29,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 	public static final String BEARER_PREFIX = "Bearer ";
 	private final JwtUtil jwtUtil;
 	private final JwtAuthenticationErrorHandler errorHandler;
+	private final SecurityPathMatcher securityPathMatcher;
 
 	@Override
 	protected void doFilterInternal(
@@ -38,11 +40,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
 		String requestURI = request.getRequestURI();
 
+		if (securityPathMatcher.isPublicUrl(requestURI)) {
+			filterChain.doFilter(request, response);
+			return;
+		}
+
 		// 1. Authorization 헤더 검증
 		String authorizationHeader = request.getHeader(AUTHORIZATION_HEADER);
+
 		if (!containsValidHeader(authorizationHeader)) {
 			log.debug("JWT 토큰이 없습니다, uri: {}", requestURI);
-			filterChain.doFilter(request, response);
+			errorHandler.handleMissingToken(response, requestURI);
 			return;
 		}
 
@@ -83,6 +91,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 	}
 
 	private void authenticateWithAccessToken(String token, String requestURI) {
+
 		jwtUtil.validate(token);
 		TokenType tokenType = jwtUtil.getTokenType(token);
 		if (tokenType != TokenType.ACCESS) {

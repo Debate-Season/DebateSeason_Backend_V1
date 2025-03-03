@@ -47,47 +47,19 @@ public class GlobalExceptionHandler {
 
 		log.error("Validation error occurred", e);
 
-		FieldError fieldError = e.getBindingResult().getFieldError();
-		ErrorCode errorCode = determineErrorCode(fieldError);
-
 		// message detail 생성
 		String detailMessage = createDetailMessage(e.getBindingResult().getFieldErrors());
 
-		ErrorResponse errorResponse = ErrorResponse.of(errorCode.getHttpStatus(), errorCode, detailMessage);
+		ErrorResponse errorResponse = ErrorResponse.of(ErrorCode.BAD_REQUEST, detailMessage);
 
-		return new ResponseEntity<>(errorResponse, errorCode.getHttpStatus());
+		return new ResponseEntity<>(errorResponse, ErrorCode.BAD_REQUEST.getHttpStatus());
 	}
 
 	private ResponseEntity<ErrorResponse> createErrorResponseEntity(ErrorCode errorCode) {
 
 		return new ResponseEntity<>(
-			ErrorResponse.of(errorCode.getHttpStatus(), errorCode),
+			ErrorResponse.of(errorCode),
 			errorCode.getHttpStatus());
-	}
-
-	// validation 오류에 대한 ErrorCode 결정
-	private ErrorCode determineErrorCode(FieldError fieldError) {
-
-		if (fieldError == null) {
-			return ErrorCode.INVALID_INPUT_VALUE;
-		}
-
-		String code = fieldError.getCode();
-		switch (code) {
-			case "NotBlank":
-			case "NotNull":
-			case "NotEmpty":
-				return ErrorCode.MISSING_REQUIRED_VALUE;
-			case "Pattern":
-			case "Email":
-				return ErrorCode.INVALID_FORMAT;
-			case "Min":
-			case "Max":
-			case "Size":
-				return ErrorCode.VALUE_OUT_OF_RANGE;
-			default:
-				return ErrorCode.INVALID_INPUT_VALUE;
-		}
 	}
 
 	private String createDetailMessage(List<FieldError> fieldErrors) {

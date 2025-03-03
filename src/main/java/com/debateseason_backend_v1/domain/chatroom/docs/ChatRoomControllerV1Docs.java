@@ -1,15 +1,18 @@
 package com.debateseason_backend_v1.domain.chatroom.docs;
 
-
+import java.util.List;
 
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.debateseason_backend_v1.common.response.ApiResult;
-import com.debateseason_backend_v1.domain.chatroom.model.response.etc.Opinion;
-import com.debateseason_backend_v1.domain.chatroom.model.response.chatroom.ChatRoomResponse;
-import com.debateseason_backend_v1.domain.chatroom.model.request.ChatRoomRequest;
+import com.debateseason_backend_v1.domain.chatroom.dto.ChatRoomDAO;
+import com.debateseason_backend_v1.domain.chatroom.dto.ChatRoomDTO;
+import com.debateseason_backend_v1.domain.issue.docs.CustomApiErrorCode;
+import com.debateseason_backend_v1.domain.issue.docs.CustomErrorCode;
+import com.debateseason_backend_v1.domain.issue.dto.IssueDAO;
+import com.debateseason_backend_v1.domain.issue.model.response.IssueResponse;
 import com.debateseason_backend_v1.security.CustomUserDetails;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -30,6 +33,11 @@ public interface ChatRoomControllerV1Docs {
 		@ApiResponse(responseCode = "200", description = "성공적으로 채팅방을 생성했습니다."),
 
 	})
+	@CustomApiErrorCode(
+		{
+			CustomErrorCode.NOT_FOUND_ISSUE
+		}
+	)
 	@Parameter(
 		name = "issue-id",
 		description = "이슈방 id",
@@ -37,7 +45,7 @@ public interface ChatRoomControllerV1Docs {
 		example = "1"
 	)
 	public ApiResult<Object> createChatRoom(
-		@RequestBody ChatRoomRequest chatRoomRequest,
+		@RequestBody ChatRoomDTO chatRoomDTO,
 		@RequestParam(name = "issue-id") Long issue_id
 	);
 
@@ -55,23 +63,17 @@ public interface ChatRoomControllerV1Docs {
 		example = "1",
 		schema = @Schema(type = "string")
 	)
-	/*
-	@Parameter(
-		name = "type",
-		description = "토론위키(wiki)냐 하이라이트(highlight)냐 없어도 상관없음",
-		required = false,
-		example = "highlight",
-		schema = @Schema(type = "string")
-	)
-
-	 */
 	@ApiResponses({
 		@ApiResponse(responseCode = "200", description = "해당 채팅방을 성공적으로 불러왔습니다."),
 		@ApiResponse(responseCode = "400", description = "해당 채팅방을 불러오지 못했습니다.")
 	})
-	public ApiResult<ChatRoomResponse> getChatRoom(
+	@CustomApiErrorCode(
+		{
+			CustomErrorCode.NOT_FOUND_ISSUE
+		}
+	)
+	public ApiResult<ChatRoomDAO> getChatRoom(
 		@RequestParam(name = "chatroom-id") Long chatRoomId,
-		//@RequestParam(name = "type",required = false) String type,
 		@AuthenticationPrincipal CustomUserDetails principal);
 	//
 
@@ -98,8 +100,13 @@ public interface ChatRoomControllerV1Docs {
 		@ApiResponse(responseCode = "200", description = "성공적으로 투표했습니다."),
 
 	})
+	@CustomApiErrorCode(
+		{
+			CustomErrorCode.NOT_FOUND_ISSUE
+		}
+	)
 	public ApiResult<String> voteChatRoom(
-		@RequestParam(name = "opinion") Opinion opinion,
+		@RequestParam(name = "opinion") String opinion,
 		@RequestParam(name = "chatroom-id") Long chatRoomId,
 		@AuthenticationPrincipal CustomUserDetails principal)
 		;

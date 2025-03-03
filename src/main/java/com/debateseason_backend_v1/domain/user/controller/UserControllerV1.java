@@ -1,5 +1,7 @@
 package com.debateseason_backend_v1.domain.user.controller;
 
+import java.util.List;
+
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -11,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.debateseason_backend_v1.common.response.ApiResult;
 import com.debateseason_backend_v1.common.response.VoidApiResult;
 import com.debateseason_backend_v1.domain.chatroom.service.ChatRoomServiceV1;
+import com.debateseason_backend_v1.domain.issue.model.response.IssueResponse;
 import com.debateseason_backend_v1.domain.issue.service.IssueServiceV1;
 import com.debateseason_backend_v1.domain.user.controller.docs.UserControllerV1Docs;
 import com.debateseason_backend_v1.domain.user.controller.request.LogoutRequest;
@@ -67,7 +70,7 @@ public class UserControllerV1 implements UserControllerV1Docs {
 		summary = "이슈방 전체를 불러옵니다(수정가능)  ",
 		description = " ")
 	@GetMapping("/home")
-	public ApiResult<Object> indexPage(
+	public ApiResult<List<IssueResponse>> indexPage(
 		//@RequestParam(name = "page", required = false) Long page,
 		@AuthenticationPrincipal CustomUserDetails principal
 	) {

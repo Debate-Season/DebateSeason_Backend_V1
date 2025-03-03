@@ -3,7 +3,7 @@ package com.debateseason_backend_v1.domain.user.service.response;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 
-@Schema(description = "로그인 응답")
+@Schema(title = "로그인 응답 DTO", description = "로그인 응답")
 @Builder
 public record LoginResponse(
 	@Schema(description = "액세스 토큰",

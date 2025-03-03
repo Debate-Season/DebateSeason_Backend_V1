@@ -45,7 +45,7 @@ public class ProfileServiceV1 {
 	public ProfileResponse getProfileByUserId(Long userId) {
 
 		Profile profile = profileRepository.findByUserId(userId)
-			.orElseThrow(() -> new CustomException(ErrorCode.NOT_EXIST_USER));
+			.orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_PROFILE));
 
 		CommunityType communityType = CommunityType.findById(profile.getCommunityId());
 

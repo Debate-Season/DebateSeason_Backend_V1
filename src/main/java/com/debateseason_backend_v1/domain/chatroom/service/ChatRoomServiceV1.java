@@ -37,7 +37,6 @@ public class ChatRoomServiceV1 {
 	private final IssueRepository issueRepository; // 혹시나 Service쓰면, 나중에 순환참조 발생할 것 같아서 Repository로 함.
 	private final UserChatRoomRepository userChatRoomRepository;
 
-	private final ObjectMapper objectMapper;
 
 	// 1. 채팅방 저장하기
 	public ApiResult<Object> save(ChatRoomDTO chatRoomDTO, long issueId) {
@@ -79,7 +78,7 @@ public class ChatRoomServiceV1 {
 	// 2. 채팅방 찬반 투표하기
 	// Dirty Checking을 위해서 Transactional을 통한 변경감지
 	@Transactional
-	public ApiResult<Object> vote(String opinion, Long chatRoomId, Long userId) {
+	public ApiResult<String> vote(String opinion, Long chatRoomId, Long userId) {
 
 		//1. 채팅방 가져오기
 		ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId).orElseThrow(
@@ -107,19 +106,7 @@ public class ChatRoomServiceV1 {
 			userChatRoom.setOpinion(opinion);
 		}
 
-		//2. 변경사항 반영하기
-        /*
-		if (opinion.equals("yes")) {
-			long countYes = chatRoom.getYes();
-			chatRoom.setYes((int)(countYes + 1));
-		} else {
-			long countNo = chatRoom.getNo();
-			chatRoom.setNo((int)(countNo + 1));
-		}
-
-         */
-
-		return ApiResult.builder()
+		return ApiResult.<String>builder()
 			.status(200)
 			.code(ErrorCode.SUCCESS)
 			.message(opinion + "을 투표하셨습니다.")
@@ -128,11 +115,11 @@ public class ChatRoomServiceV1 {
 
 	// 3. 채팅방 단건 불러오기
 	// Opinion값 같이 넘겨주면 될 듯하다. 없으면 null
-	public ApiResult<Object> fetch(Long userId,Long chatRoomId) {
+	public ApiResult<ChatRoomDAO> fetch(Long userId,Long chatRoomId) {
 
 		// 우선 해당 채팅방이 유효한지 먼저 파악부터 해야한다.
 		if(chatRoomRepository.findById(chatRoomId).isEmpty()){
-			return ApiResult.builder()
+			return ApiResult.<ChatRoomDAO>builder()
 				.status(400)
 				.code(ErrorCode.BAD_REQUEST)
 				.message("선택하신 채팅방은 존재하지 않습니다.")
@@ -183,14 +170,13 @@ public class ChatRoomServiceV1 {
 
 		// 3. 관련 채팅들 불러오기가 추가될지도? -> 향후 고려
 
-		ApiResult<Object> response = ApiResult.builder()
+		// interest를 반환해야 한다.
+		return ApiResult.<ChatRoomDAO>builder()
 			.status(200)
 			.code(ErrorCode.SUCCESS)
 			.message("채팅방을 불러왔습니다.")
 			.data(chatRoomDAO)
 			.build();
-		// interest를 반환해야 한다.
-		return response;
 
 	}
 

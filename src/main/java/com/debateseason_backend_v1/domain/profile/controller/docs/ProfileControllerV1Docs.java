@@ -20,19 +20,17 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
-@Tag(name = "Profile API", description = "프로필 관련 API")
+@Tag(name = "Profile API", description = "프로필 API")
 public interface ProfileControllerV1Docs {
 
 	@Operation(
 		summary = "프로필 등록",
-		description = """
-			✅ API를 사용하려면 Access Token이 필요합니다. \n
-			JWT 토큰에서 사용자 ID를 추출하여 프로필을 등록합니다.
-			""",
+		description = "사용자의 프로필을 등록합니다.",
 		security = @SecurityRequirement(name = "JWT")
 	)
 	@ApiResponse(responseCode = "200", description = "프로필 등록 성공")
 	@ApiErrorCode({
+		ErrorCode.MISSING_ACCESS_TOKEN,
 		ErrorCode.EXPIRED_ACCESS_TOKEN,
 		ErrorCode.INVALID_ACCESS_TOKEN,
 		ErrorCode.MISSING_REQUIRED_NICKNAME,
@@ -52,13 +50,11 @@ public interface ProfileControllerV1Docs {
 
 	@Operation(
 		summary = "내 프로필 조회",
-		description = """
-			✅ API를 사용하려면 Access Token이 필요합니다. \n
-			JWT 토큰에서 사용자 ID를 추출하여 자신의 프로필을 조회합니다.
-			"""
+		description = "사용자 자신의 프로필을 조회합니다."
 	)
 	@ApiResponse(responseCode = "200", description = "프로필 조회 성공")
 	@ApiErrorCode({
+		ErrorCode.MISSING_ACCESS_TOKEN,
 		ErrorCode.EXPIRED_ACCESS_TOKEN,
 		ErrorCode.INVALID_ACCESS_TOKEN,
 		ErrorCode.NOT_FOUND_PROFILE,
@@ -69,13 +65,13 @@ public interface ProfileControllerV1Docs {
 
 	@Operation(
 		summary = "프로필 수정",
-		description = """
-			✅ API를 사용하려면 Access Token이 필요합니다. \n
-			JWT 토큰에서 사용자 ID를 추출하여 프로필을 수정합니다.
-			"""
+		description = "사용자의 프로필을 수정합니다."
 	)
 	@ApiResponse(responseCode = "200", description = "프로필 수정 성공")
 	@ApiErrorCode({
+		ErrorCode.MISSING_ACCESS_TOKEN,
+		ErrorCode.EXPIRED_ACCESS_TOKEN,
+		ErrorCode.INVALID_ACCESS_TOKEN,
 		ErrorCode.MISSING_REQUIRED_NICKNAME,
 		ErrorCode.MISSING_REQUIRED_COMMUNITY,
 		ErrorCode.MISSING_REQUIRED_GENDER_TYPE,
@@ -93,23 +89,26 @@ public interface ProfileControllerV1Docs {
 	);
 
 	@Operation(
-		summary = "닉네임 중복 확인",
-		description = "닉네임의 중복 여부를 확인합니다."
+		summary = "닉네임 검사",
+		description = "닉네임이 사용 가능한지 검사합니다."
 	)
 	@Parameter(
 		name = "query",
-		description = "중복 확인할 닉네임",
+		description = "검사할 닉네임",
 		required = true,
 		example = "홍길동",
 		schema = @Schema(type = "string")
 	)
 	@ApiResponse(responseCode = "200", description = "닉네임 사용 가능")
 	@ApiErrorCode({
+		ErrorCode.MISSING_ACCESS_TOKEN,
+		ErrorCode.EXPIRED_ACCESS_TOKEN,
+		ErrorCode.INVALID_ACCESS_TOKEN,
 		ErrorCode.INVALID_NICKNAME_PATTERN,
 		ErrorCode.DUPLICATE_NICKNAME
 	})
 	public VoidApiResult checkNicknameDuplicate(
 		@RequestParam String query
 	);
-	
+
 }

@@ -8,7 +8,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
-@Schema(description = "프로필 수정 요청 DTO")
+@Schema(title = "프로필 수정 요청 DTO", description = "프로필 수정 요청")
 public record ProfileUpdateRequest(
 	@Schema(description = "사용자 색상", example = "RED")
 	String profileColor,

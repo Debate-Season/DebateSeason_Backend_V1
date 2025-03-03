@@ -24,7 +24,7 @@ public class JwtAuthenticationErrorHandler {
 
 	public void handleExpiredToken(HttpServletResponse response, String requestURI) throws IOException {
 
-		log.error("만료된 토큰입니다, uri: {}", requestURI);
+		log.error("Token has expired. [ API URI: {} ]", requestURI);
 
 		ErrorResponse errorResponse = ErrorResponse.of(
 			ErrorCode.EXPIRED_ACCESS_TOKEN
@@ -35,7 +35,7 @@ public class JwtAuthenticationErrorHandler {
 
 	public void handleInvalidToken(HttpServletResponse response, String requestURI) throws IOException {
 
-		log.error("유효하지 않은 토큰입니다, uri: {}", requestURI);
+		log.error("Invalid token. [ API URI: {} ]", requestURI);
 
 		ErrorResponse errorResponse = ErrorResponse.of(
 			ErrorCode.INVALID_ACCESS_TOKEN
@@ -55,5 +55,16 @@ public class JwtAuthenticationErrorHandler {
 
 		String jsonResponse = objectMapper.writeValueAsString(errorResponse);
 		response.getWriter().write(jsonResponse);
+	}
+
+	public void handleMissingToken(HttpServletResponse response, String requestURI) throws IOException {
+
+		log.error("Authentication token is missing. [ API URI: {} ]", requestURI);
+
+		ErrorResponse errorResponse = ErrorResponse.of(
+			ErrorCode.MISSING_ACCESS_TOKEN
+		);
+
+		writeErrorResponse(response, HttpStatus.UNAUTHORIZED, errorResponse);
 	}
 }

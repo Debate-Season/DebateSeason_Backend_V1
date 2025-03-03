@@ -22,7 +22,7 @@ public class WebSecurityConfig {
 	private final JwtUtil jwtUtil;
 	private final JwtAuthenticationErrorHandler errorHandler;
 
-	private static final String[] PUBLIC_URLS = {
+	public static final String[] PUBLIC_URLS = {
 		"/swagger-ui/**",
 		"/v3/api-docs/**",
 		"/actuator/**",
@@ -46,7 +46,7 @@ public class WebSecurityConfig {
 			.formLogin(AbstractHttpConfigurer::disable)
 			.httpBasic(AbstractHttpConfigurer::disable)
 			.authorizeHttpRequests(auth -> auth
-					// .anyRequest().permitAll()
+				// .anyRequest().permitAll()
 				.requestMatchers(PUBLIC_URLS).permitAll()
 				.anyRequest().authenticated()
 			)

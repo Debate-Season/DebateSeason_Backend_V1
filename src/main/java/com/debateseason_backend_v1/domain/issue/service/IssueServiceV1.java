@@ -76,7 +76,7 @@ public class IssueServiceV1 {
 
 	//2. fetch 단건 이슈방
 	@Transactional
-	public ApiResult<Object> fetch2(Long issueId, Long userId, Long ChatRoomId) {
+	public ApiResult<IssueDAO> fetch2(Long issueId, Long userId, Long ChatRoomId) {
 
 		// 1. 이슈방 불러오기
 		Issue issue;
@@ -87,7 +87,7 @@ public class IssueServiceV1 {
 
 		}
 		catch (NullPointerException | IllegalArgumentException e){
-			return ApiResult.builder()
+			return ApiResult.<IssueDAO>builder()
 				.status(400)
 				.code(ErrorCode.BAD_REQUEST)
 				.message("선택하신 이슈방은 존재하지 않습니다.")
@@ -119,12 +119,6 @@ public class IssueServiceV1 {
 		// LinkedHashMap을 써서 순서를 보장한다.
 		Map<String, Integer> sortedMap = new LinkedHashMap<>();
 
-		for (String key : keySet) {
-			System.out.println(key+":"+map.get(key));
-			sortedMap.put(key, map.get(key));
-		}
-
-		List<ChatRoomDAO> chatRoomMap = new ArrayList<>();
 
 		// 3. chatRoomList와 각 chatRoom에 대한 찬성/반대 수 가져온다.
 		
@@ -142,11 +136,10 @@ public class IssueServiceV1 {
 		}
 
 		if(chatRoomIds.isEmpty()){
-			return ApiResult.builder()
+			return ApiResult.<IssueDAO>builder()
 				.status(200)
 				.code(ErrorCode.SUCCESS)
 				.message("해당 페이지 번호는 존재하지 않습니다. page : "+ChatRoomId)
-				.data("")
 				.build();
 		}
 
@@ -215,7 +208,7 @@ public class IssueServiceV1 {
 
 		//
 
-		return ApiResult.builder()
+		return ApiResult.<IssueDAO>builder()
 			.status(200)
 			.code(ErrorCode.SUCCESS)
 			.message("이슈방 " + issueId + "조회")
@@ -227,7 +220,7 @@ public class IssueServiceV1 {
 
 	// 즐겨찾기 등록하기
 	@Transactional // 만약에 하나로 문제가 생기면 바로 Rollback
-	public ApiResult<Object> booMark(Long issueId, Long userId){
+	public ApiResult<String> bookMark(Long issueId, Long userId){
 
 		User user = userRepository.findById(userId).orElseThrow(
 			() -> new RuntimeException("There is no UserNumber like " + userId)
@@ -244,10 +237,10 @@ public class IssueServiceV1 {
 
 		userIssueRepository.save(userIssue);
 
-		return ApiResult.builder()
+		return ApiResult.<String>builder()
 			.status(200)
 			.code(ErrorCode.SUCCESS)
-			.message("이슈방 "+issueId+"을 관심등록 했습니다.")
+			.data("이슈방 "+issueId+"을 관심등록 했습니다.")
 			.build();
 
 	}
@@ -305,15 +298,36 @@ public class IssueServiceV1 {
 
 	// 4. issueMap 가져오기
 	// issue_id, title, major_category, (middle_category), created_at
-	public ApiResult<Object> fetchIssueMap(Long page, String majorCategory//, String middleCategory
+	public ApiResult<List<IssueResponse>> fetchIssueMap(Long page, String majorCategory//, String middleCategory
 	)
 	{
 
 		// 일단 issueId 여러개를 가져온다.
-		List<Long> issueIds = issueRepository.findIssuesByMajorCategoryWithPage(majorCategory,page*2).stream().toList();
+		List<Long> issueIds;
+
+		if(majorCategory==null){
+
+			// 전체 불러오기
+			if(page == null){
+				issueIds = issueRepository.findTop2Issues();
+			}
+			else{
+				issueIds = issueRepository.findTop2IssuesByPage(page);
+			}
+
+		}else{
+			if(page == null){
+				issueIds = issueRepository.findTop2IssuesByCategory(majorCategory);
+			}
+			else{
+				issueIds = issueRepository.findTop2IssuesByPageAndCategory(majorCategory,page);
+			}
+		}
+
+
 
 		if (issueIds.isEmpty()){
-			return ApiResult.builder()
+			return ApiResult.<List<IssueResponse>>builder()
 				.status(200)
 				.code(ErrorCode.SUCCESS)
 				.message("페이지를 불러올 수 없습니다.  페이지 번호: "+page)
@@ -321,6 +335,7 @@ public class IssueServiceV1 {
 		}
 
 		// issue_id, title, created_at, chat_room_count, COUNT(ui2.issue_id) AS bookmarks
+		// issueIds를 넣어줌으로써 어떠한 page, category에 상관없이 하나의 쿼리로 커버가 가능하다.
 		List<IssueResponse> issueResponses = issueRepository.findIssuesWithBookmarks(issueIds).stream().map(
 			e->{
 				Long issueId = (Long)e[0];
@@ -344,7 +359,7 @@ public class IssueServiceV1 {
 			}
 		).toList();
 
-		return ApiResult.builder()
+		return ApiResult.<List<IssueResponse>>builder()
 			.status(200)
 			.code(ErrorCode.SUCCESS)
 			.message("이슈방 불러왔습니다.")
@@ -354,7 +369,7 @@ public class IssueServiceV1 {
 	}
 
 	// 구버전
-	public ApiResult<Object> fetchAll() {
+	public ApiResult<List<IssueResponse>> fetchAll() {
 		List<Issue> issueList = issueRepository.findAll();
 
 		// Gson,JSONArray이 없어서 Map으로 반환을 한다.
@@ -373,14 +388,12 @@ public class IssueServiceV1 {
 			responseList.add(response);
 		}
 
-		ApiResult<Object> response = ApiResult.builder()
+		return ApiResult.<List<IssueResponse>>builder()
 			.status(200)
 			.code(ErrorCode.SUCCESS)
 			.message("이슈방 전체를 불러왔습니다.")
 			.data(responseList)
 			.build();
-
-		return response;
 
 	}
 

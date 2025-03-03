@@ -4,10 +4,10 @@ import org.springframework.http.HttpStatus;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.Setter;
 
 @AllArgsConstructor
 @Getter
-
 public enum ErrorCode implements CodeInterface {
 
 	//result code 는 임의 설정 논의를 통해 변경 될 수 있음 -ksb

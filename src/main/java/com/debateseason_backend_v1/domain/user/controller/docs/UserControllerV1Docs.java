@@ -45,6 +45,7 @@ public interface UserControllerV1Docs {
 	)
 	@ApiResponse(responseCode = "200", description = "로그아웃 성공")
 	@ApiErrorCode({
+		ErrorCode.MISSING_REFRESH_TOKEN,
 		ErrorCode.MISSING_ACCESS_TOKEN,
 		ErrorCode.EXPIRED_ACCESS_TOKEN,
 		ErrorCode.EXPIRED_REFRESH_TOKEN,

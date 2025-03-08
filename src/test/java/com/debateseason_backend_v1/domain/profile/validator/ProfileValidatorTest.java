@@ -117,7 +117,7 @@ class ProfileValidatorTest {
 		void passesWithNonDuplicateNickname() {
 			// given
 			String nickname = "토론왕";
-			given(profileRepository.existsByNickname(nickname)).willReturn(false);
+			given(profileRepository.existsByPersonalInfo_Nickname(nickname)).willReturn(false);
 
 			// when & then
 			assertThatCode(() -> profileValidator.validateNicknameExists(nickname))
@@ -129,7 +129,7 @@ class ProfileValidatorTest {
 		void throwsExceptionWithDuplicateNickname() {
 			// given
 			String nickname = "토론왕";
-			given(profileRepository.existsByNickname(nickname)).willReturn(true);
+			given(profileRepository.existsByPersonalInfo_Nickname(nickname)).willReturn(true);
 
 			// when & then
 			assertThatThrownBy(() -> profileValidator.validateNicknameExists(nickname))

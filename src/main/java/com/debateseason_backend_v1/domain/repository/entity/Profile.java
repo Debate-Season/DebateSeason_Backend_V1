@@ -5,28 +5,29 @@ import java.time.LocalDateTime;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import com.debateseason_backend_v1.domain.profile.enums.AgeRangeType;
 import com.debateseason_backend_v1.domain.profile.enums.CommunityType;
-import com.debateseason_backend_v1.domain.profile.enums.GenderType;
+import com.debateseason_backend_v1.domain.repository.entity.vo.PersonalInfo;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
+@Builder
 @Table(name = "profile")
 @EntityListeners(AuditingEntityListener.class)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Profile {
 
@@ -38,56 +39,45 @@ public class Profile {
 	@Column(name = "user_id")
 	private Long userId;
 
-	@Column(name = "profile_color")
-	private String profileColor;
-
-	@Column(name = "nickname", unique = true)
-	private String nickname;
-
 	@Column(name = "community_id")
 	private Long communityId;
 
-	@Enumerated(EnumType.STRING)
-	@Column(name = "gender")
-	private GenderType gender;
+	@Column(name = "profile_image")
+	private String profileImage;
 
-	@Enumerated(EnumType.STRING)
-	@Column(name = "age_range")
-	private AgeRangeType ageRange;
+	@Embedded
+	PersonalInfo personalInfo;
 
 	@LastModifiedDate
 	@Column(name = "updated_at")
 	private LocalDateTime updatedAt;
 
-	@Builder
-	private Profile(
-		Long userId, String profileColor, String nickname, Long communityId, GenderType gender, AgeRangeType ageRange
+	public static Profile create(
+		Long userId, Long communityId, String profileImage, PersonalInfo personalInfo
 	) {
 
-		this.userId = userId;
-		this.profileColor = profileColor;
-		this.nickname = nickname;
-		this.communityId = communityId;
-		this.gender = gender;
-		this.ageRange = ageRange;
+		return Profile.builder()
+			.userId(userId)
+			.communityId(communityId)
+			.profileImage(profileImage)
+			.personalInfo(personalInfo)
+			.build();
 	}
 
 	public void update(
-		String profileColor, String nickname, Long communityId, GenderType gender, AgeRangeType ageRange
+		Long communityId, String profileImage, PersonalInfo personalInfo
 	) {
-
-		this.profileColor = profileColor;
-		this.nickname = nickname;
+		
+		this.profileImage = profileImage;
 		this.communityId = communityId;
-		this.gender = gender;
-		this.ageRange = ageRange;
+		this.personalInfo = personalInfo;
 	}
 
-	public void anonymize(String anonymousNickname) {
-
-		this.nickname = anonymousNickname;
-		this.gender = GenderType.UNDEFINED;
-	}
+	// public void anonymize(String anonymousNickname) {
+	//
+	// 	this.nickname = anonymousNickname;
+	// 	this.gender = GenderType.UNDEFINED;
+	// }
 
 	public CommunityType getCommunityType() {
 

@@ -44,7 +44,7 @@ public class ProfileValidator {
 
 	public void validateNicknameExists(String nickname) {
 
-		if (profileRepository.existsByNickname(nickname)) {
+		if (profileRepository.existsByPersonalInfo_Nickname(nickname)) {
 			throw new CustomException(ErrorCode.DUPLICATE_NICKNAME);
 		}
 	}

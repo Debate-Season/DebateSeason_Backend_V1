@@ -12,7 +12,7 @@ public interface ProfileRepository extends JpaRepository<Profile, Long> {
 
 	boolean existsByUserId(Long userId);
 
-	boolean existsByNickname(String nickname);
+	boolean existsByPersonalInfo_Nickname(String nickname);
 
 	Optional<Profile> findByUserId(Long userId);
 }

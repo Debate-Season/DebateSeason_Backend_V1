@@ -1,0 +1,50 @@
+package com.debateseason_backend_v1.domain.repository.entity.vo;
+
+import org.springframework.util.Assert;
+
+import com.debateseason_backend_v1.common.exception.CustomException;
+import com.debateseason_backend_v1.common.exception.ErrorCode;
+import com.debateseason_backend_v1.domain.profile.enums.DistrictType;
+import com.debateseason_backend_v1.domain.profile.enums.ProvinceType;
+
+import jakarta.persistence.Embeddable;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+@Getter
+@Builder
+@Embeddable
+@EqualsAndHashCode
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class Region {
+
+	@Enumerated(EnumType.STRING)
+	private ProvinceType provinceType;
+
+	@Enumerated(EnumType.STRING)
+	private DistrictType districtType;
+
+	public static Region of(ProvinceType provinceType, DistrictType districtType) {
+
+		Assert.notNull(provinceType, "시/도는 필수입니다.");
+		Assert.notNull(districtType, "시/군/구는 필수입니다.");
+
+		// district가 있는 경우 province와의 관계 검증
+		if (districtType.getProvinceType() != provinceType) {
+			throw new CustomException(ErrorCode.INVALID_DISTRICT_PROVINCE_RELATION);
+		}
+
+		return Region.builder()
+			.provinceType(provinceType)
+			.districtType(districtType)
+			.build();
+	}
+
+}

@@ -44,7 +44,7 @@ public class UserScheduler {
 				.orElse(null);
 
 			if (profile != null) {
-				profile.anonymize("탈퇴회원#" + uuid);
+				// profile.anonymize("탈퇴회원#" + uuid);
 				log.info("회원 ID: {}의 프로필 익명화 완료", user.getId());
 			}
 		}

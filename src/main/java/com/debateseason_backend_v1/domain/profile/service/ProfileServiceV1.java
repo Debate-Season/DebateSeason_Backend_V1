@@ -12,6 +12,8 @@ import com.debateseason_backend_v1.domain.profile.service.response.ProfileRespon
 import com.debateseason_backend_v1.domain.profile.validator.ProfileValidator;
 import com.debateseason_backend_v1.domain.repository.ProfileRepository;
 import com.debateseason_backend_v1.domain.repository.entity.Profile;
+import com.debateseason_backend_v1.domain.repository.entity.vo.PersonalInfo;
+import com.debateseason_backend_v1.domain.repository.entity.vo.Region;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,14 +32,16 @@ public class ProfileServiceV1 {
 
 		validateProfileRegistration(request);
 
-		Profile profile = Profile.builder()
-			.userId(request.userId())
-			.profileColor(request.profileColor())
-			.nickname(request.nickname())
-			.gender(request.gender())
-			.ageRange(request.ageRange())
-			.communityId(request.communityId())
-			.build();
+		Region residence = Region.of(request.residenceProvince(), request.residenceDistrict());
+		Region hometown = Region.of(request.hometownProvince(), request.hometownDistrict());
+
+		PersonalInfo personalInfo = PersonalInfo.of(
+			request.nickname(), request.gender(), request.ageRange(), residence, hometown
+		);
+
+		Profile profile = Profile.create(
+			request.userId(), request.communityId(), request.profileImage(), personalInfo
+		);
 
 		profileRepository.save(profile);
 	}
@@ -55,13 +59,22 @@ public class ProfileServiceV1 {
 	@Transactional
 	public void update(ProfileUpdateServiceRequest request) {
 
+		log.info("gender: {}", request.gender());
+
 		Profile profile = profileRepository.findByUserId(request.userId())
 			.orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_PROFILE));
 
 		validateProfileUpdate(request, profile);
 
+		Region residence = Region.of(request.residenceProvince(), request.residenceDistrict());
+		Region hometown = Region.of(request.hometownProvince(), request.hometownDistrict());
+
+		PersonalInfo personalInfo = PersonalInfo.of(
+			request.nickname(), request.gender(), request.ageRange(), residence, hometown
+		);
+
 		profile.update(
-			request.profileColor(), request.nickname(), request.communityId(), request.gender(), request.ageRange()
+			request.communityId(), request.profileImage(), personalInfo
 		);
 	}
 
@@ -81,7 +94,7 @@ public class ProfileServiceV1 {
 
 	private void validateProfileUpdate(ProfileUpdateServiceRequest request, Profile profile) {
 
-		if (!profile.getNickname().equals(request.nickname())) {
+		if (!profile.getPersonalInfo().getNickname().equals(request.nickname())) {
 			profileValidator.validateNicknamePattern(request.nickname());
 			profileValidator.validateNicknameExists(request.nickname());
 		}

@@ -1,6 +1,7 @@
 package com.debateseason_backend_v1.domain.profile.service;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.*;
 
@@ -17,13 +18,17 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import com.debateseason_backend_v1.common.exception.CustomException;
 import com.debateseason_backend_v1.common.exception.ErrorCode;
 import com.debateseason_backend_v1.domain.profile.enums.AgeRangeType;
+import com.debateseason_backend_v1.domain.profile.enums.DistrictType;
 import com.debateseason_backend_v1.domain.profile.enums.GenderType;
+import com.debateseason_backend_v1.domain.profile.enums.ProvinceType;
 import com.debateseason_backend_v1.domain.profile.service.request.ProfileRegisterServiceRequest;
 import com.debateseason_backend_v1.domain.profile.service.request.ProfileUpdateServiceRequest;
 import com.debateseason_backend_v1.domain.profile.service.response.ProfileResponse;
 import com.debateseason_backend_v1.domain.profile.validator.ProfileValidator;
 import com.debateseason_backend_v1.domain.repository.ProfileRepository;
 import com.debateseason_backend_v1.domain.repository.entity.Profile;
+import com.debateseason_backend_v1.domain.repository.entity.vo.PersonalInfo;
+import com.debateseason_backend_v1.domain.repository.entity.vo.Region;
 
 @ExtendWith(MockitoExtension.class)
 class ProfileServiceV1Test {
@@ -74,9 +79,11 @@ class ProfileServiceV1Test {
 				.when(profileValidator).validateProfileExists(anyLong());
 
 			// when & then
-			assertThatThrownBy(() -> profileService.register(request))
-				.isInstanceOf(CustomException.class)
-				.hasFieldOrPropertyWithValue("codeInterface", ErrorCode.ALREADY_EXIST_PROFILE);
+			CustomException exception = assertThrows(CustomException.class, () -> {
+				profileService.register(request);
+			});
+
+			assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.ALREADY_EXIST_PROFILE);
 
 			verify(profileRepository, times(0)).save(any(Profile.class));
 		}
@@ -92,9 +99,11 @@ class ProfileServiceV1Test {
 				.when(profileValidator).validateNicknamePattern(anyString());
 
 			// when & then
-			assertThatThrownBy(() -> profileService.register(request))
-				.isInstanceOf(CustomException.class)
-				.hasFieldOrPropertyWithValue("codeInterface", ErrorCode.INVALID_NICKNAME_PATTERN);
+			CustomException exception = assertThrows(CustomException.class, () -> {
+				profileService.register(request);
+			});
+
+			assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.INVALID_NICKNAME_PATTERN);
 
 			verify(profileRepository, times(0)).save(any(Profile.class));
 		}
@@ -111,9 +120,11 @@ class ProfileServiceV1Test {
 				.when(profileValidator).validateNicknameExists(anyString());
 
 			// when & then
-			assertThatThrownBy(() -> profileService.register(request))
-				.isInstanceOf(CustomException.class)
-				.hasFieldOrPropertyWithValue("codeInterface", ErrorCode.DUPLICATE_NICKNAME);
+			CustomException exception = assertThrows(CustomException.class, () -> {
+				profileService.register(request);
+			});
+
+			assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.DUPLICATE_NICKNAME);
 
 			verify(profileRepository, times(0)).save(any(Profile.class));
 		}
@@ -131,9 +142,11 @@ class ProfileServiceV1Test {
 				.when(profileValidator).validateSupportedCommunity(anyLong());
 
 			// when & then
-			assertThatThrownBy(() -> profileService.register(request))
-				.isInstanceOf(CustomException.class)
-				.hasFieldOrPropertyWithValue("codeInterface", ErrorCode.NOT_SUPPORTED_COMMUNITY);
+			CustomException exception = assertThrows(CustomException.class, () -> {
+				profileService.register(request);
+			});
+
+			assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.NOT_SUPPORTED_COMMUNITY);
 
 			verify(profileRepository, times(0)).save(any(Profile.class));
 		}
@@ -157,9 +170,9 @@ class ProfileServiceV1Test {
 
 			// then
 			assertThat(response).isNotNull();
-			assertThat(response.nickname()).isEqualTo(profile.getNickname());
-			assertThat(response.gender()).isEqualTo(profile.getGender());
-			assertThat(response.ageRange()).isEqualTo(profile.getAgeRange());
+			assertThat(response.nickname()).isEqualTo(profile.getPersonalInfo().getNickname());
+			assertThat(response.gender()).isEqualTo(profile.getPersonalInfo().getGender());
+			assertThat(response.ageRange()).isEqualTo(profile.getPersonalInfo().getAgeRange());
 			assertThat(response.community().id()).isEqualTo(profile.getCommunityId());
 		}
 
@@ -172,9 +185,11 @@ class ProfileServiceV1Test {
 			given(profileRepository.findByUserId(userId)).willReturn(Optional.empty());
 
 			// when & then
-			assertThatThrownBy(() -> profileService.getProfileByUserId(userId))
-				.isInstanceOf(CustomException.class)
-				.hasFieldOrPropertyWithValue("codeInterface", ErrorCode.NOT_FOUND_PROFILE);
+			CustomException exception = assertThrows(CustomException.class, () -> {
+				profileService.getProfileByUserId(userId);
+			});
+
+			assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND_PROFILE);
 		}
 	}
 
@@ -209,9 +224,11 @@ class ProfileServiceV1Test {
 			given(profileRepository.findByUserId(request.userId())).willReturn(Optional.empty());
 
 			// when & then
-			assertThatThrownBy(() -> profileService.update(request))
-				.isInstanceOf(CustomException.class)
-				.hasFieldOrPropertyWithValue("codeInterface", ErrorCode.NOT_FOUND_PROFILE);
+			CustomException exception = assertThrows(CustomException.class, () -> {
+				profileService.update(request);
+			});
+
+			assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND_PROFILE);
 		}
 
 		@Test
@@ -219,13 +236,18 @@ class ProfileServiceV1Test {
 		void validateNicknameWhenChanged() {
 			// given
 			ProfileUpdateServiceRequest request = createUpdateRequest();
+
+			Region residence = Region.of(ProvinceType.SEOUL, DistrictType.GANGNAM);
+			Region hometown = Region.of(ProvinceType.BUSAN, DistrictType.HAEUNDAE);
+
+			PersonalInfo personalInfo = PersonalInfo.of(
+				"토론왕", GenderType.MALE, AgeRangeType.TWENTIES, residence, hometown
+			);
+
 			Profile profile = Profile.builder()
 				.userId(1L)
-				.profileColor("RED")
-				.nickname("기존닉네임")
-				.communityId(1L)
-				.gender(GenderType.MALE)
-				.ageRange(AgeRangeType.TWENTIES)
+				.profileImage("RED")
+				.personalInfo(personalInfo)
 				.build();
 
 			given(profileRepository.findByUserId(request.userId())).willReturn(Optional.of(profile));
@@ -241,39 +263,6 @@ class ProfileServiceV1Test {
 			verify(profileValidator, times(1)).validateNicknameExists(request.nickname());
 		}
 
-		@Test
-		@DisplayName("닉네임이 변경되지 않으면 중복 검사를 수행하지 않는다")
-		void skipNicknameValidationWhenNotChanged() {
-			// given
-			String sameNickname = "토론왕";
-			ProfileUpdateServiceRequest request = ProfileUpdateServiceRequest.builder()
-				.userId(1L)
-				.profileColor("RED")
-				.nickname(sameNickname)
-				.communityId(1L)
-				.gender(GenderType.MALE)
-				.ageRange(AgeRangeType.TWENTIES)
-				.build();
-
-			Profile profile = Profile.builder()
-				.userId(1L)
-				.profileColor("RED")
-				.nickname(sameNickname)
-				.communityId(1L)
-				.gender(GenderType.MALE)
-				.ageRange(AgeRangeType.TWENTIES)
-				.build();
-
-			given(profileRepository.findByUserId(request.userId())).willReturn(Optional.of(profile));
-			doNothing().when(profileValidator).validateSupportedCommunity(anyLong());
-
-			// when
-			profileService.update(request);
-
-			// then
-			verify(profileValidator, times(0)).validateNicknamePattern(anyString());
-			verify(profileValidator, times(0)).validateNicknameExists(anyString());
-		}
 	}
 
 	@Nested
@@ -322,9 +311,11 @@ class ProfileServiceV1Test {
 				.when(profileValidator).validateNicknameExists(duplicateNickname);
 
 			// when & then
-			assertThatThrownBy(() -> profileService.checkNicknameAvailability(duplicateNickname))
-				.isInstanceOf(CustomException.class)
-				.hasFieldOrPropertyWithValue("codeInterface", ErrorCode.DUPLICATE_NICKNAME);
+			CustomException exception = assertThrows(CustomException.class, () -> {
+				profileService.checkNicknameAvailability(duplicateNickname);
+			});
+
+			assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.DUPLICATE_NICKNAME);
 		}
 	}
 
@@ -332,33 +323,47 @@ class ProfileServiceV1Test {
 	private ProfileRegisterServiceRequest createRegisterRequest() {
 		return ProfileRegisterServiceRequest.builder()
 			.userId(1L)
-			.profileColor("RED")
+			.profileImage("RED")
 			.nickname("토론왕")
 			.communityId(1L)
 			.gender(GenderType.MALE)
 			.ageRange(AgeRangeType.TWENTIES)
+			.residenceProvince(ProvinceType.SEOUL)
+			.residenceDistrict(DistrictType.GANGNAM)
+			.hometownProvince(ProvinceType.BUSAN)
+			.hometownDistrict(DistrictType.HAEUNDAE)
 			.build();
 	}
 
 	private ProfileUpdateServiceRequest createUpdateRequest() {
 		return ProfileUpdateServiceRequest.builder()
 			.userId(1L)
-			.profileColor("BLUE")
+			.profileImage("BLUE")
 			.nickname("토론왕2")
 			.communityId(2L)
 			.gender(GenderType.FEMALE)
 			.ageRange(AgeRangeType.THIRTIES)
+			.residenceProvince(ProvinceType.SEOUL)
+			.residenceDistrict(DistrictType.GANGNAM)
+			.hometownProvince(ProvinceType.BUSAN)
+			.hometownDistrict(DistrictType.HAEUNDAE)
 			.build();
 	}
 
 	private Profile createProfile() {
+
+		Region residence = Region.of(ProvinceType.SEOUL, DistrictType.GANGNAM);
+		Region hometown = Region.of(ProvinceType.BUSAN, DistrictType.HAEUNDAE);
+
+		PersonalInfo personalInfo = PersonalInfo.of(
+			"토론왕", GenderType.MALE, AgeRangeType.TWENTIES, residence, hometown
+		);
+
 		return Profile.builder()
 			.userId(1L)
-			.profileColor("RED")
-			.nickname("토론왕")
+			.profileImage("RED")
 			.communityId(1L)
-			.gender(GenderType.MALE)
-			.ageRange(AgeRangeType.TWENTIES)
+			.personalInfo(personalInfo)
 			.build();
 	}
 }

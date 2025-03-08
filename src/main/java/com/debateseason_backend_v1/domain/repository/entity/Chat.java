@@ -33,20 +33,26 @@ public class Chat {
 	private Long userId;
 
 	@Enumerated(EnumType.STRING)
+	@Column(name = "message_type")
 	private MessageType messageType;
 
-	@Column(length = 500)
+	@Column(name = "content", length = 500)
 	private String content;
 
+	@Column(name = "sender")
 	private String sender;
 
 	@Enumerated(EnumType.STRING)
+	@Column(name = "opinion_type")
 	private OpinionType opinionType;
 
+	@Column(name = "user_community")
 	private String userCommunity;
 
 	@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss.SSSSSS")
+	@Column(name = "time_stamp")
 	private LocalDateTime timeStamp;
+
 
 	public static Chat from(ChatMessageRequest request, ChatRoom chatRoom, Long userId) {
 		return Chat.builder()
@@ -60,4 +66,5 @@ public class Chat {
 				.timeStamp(LocalDateTime.now())
 				.build();
 	}
+
 }

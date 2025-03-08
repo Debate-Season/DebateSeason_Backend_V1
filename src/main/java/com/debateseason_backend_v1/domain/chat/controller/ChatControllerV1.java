@@ -127,7 +127,7 @@ public class ChatControllerV1 {
 					}
 					
 					if (userId == null) {
-						throw new CustomException(ErrorCode.NOT_FOUND_USER, "userId 가 null 입니다.");
+						throw new CustomException(ErrorCode.USER_NOT_FOUND, "userId 가 null 입니다.");
 					}
 				}
 		return chatService.getChatMessages(roomId, cursor, userId);
@@ -184,7 +184,7 @@ public class ChatControllerV1 {
 			}
 			
 			if (userId == null) {
-				throw new CustomException(ErrorCode.NOT_FOUND_USER, "userId 가 null 입니다.");
+				throw new CustomException(ErrorCode.USER_NOT_FOUND, "userId 가 null 입니다.");
 			}
 		}
 		

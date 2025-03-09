@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ReactionResponse {
+public class ChatReactionResponse {
 
     @Schema(description = "논리적 이모티콘 반응 수", example = "1")
     private int logicCount;

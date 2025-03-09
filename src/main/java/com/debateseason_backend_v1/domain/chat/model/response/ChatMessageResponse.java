@@ -4,7 +4,6 @@ import com.debateseason_backend_v1.common.enums.MessageType;
 import com.debateseason_backend_v1.common.enums.OpinionType;
 import com.debateseason_backend_v1.domain.chat.model.request.ChatMessageRequest;
 import com.debateseason_backend_v1.domain.repository.entity.Chat;
-import com.debateseason_backend_v1.domain.repository.entity.ChatReaction;
 import com.debateseason_backend_v1.domain.repository.ChatReactionRepository;
 import com.debateseason_backend_v1.domain.chat.model.request.ChatReactionRequest;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -13,13 +12,11 @@ import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
+
 import java.time.LocalDateTime;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import java.util.HashMap;
 
 @Getter
 @Builder
@@ -48,7 +45,7 @@ public class ChatMessageResponse {
     private LocalDateTime timeStamp;
     
     @Schema(description = "이모티콘 반응 정보")
-    private ReactionResponse reactions;
+    private ChatReactionResponse reactions;
 
     public static ChatMessageResponse from(ChatMessageRequest request) {
         return ChatMessageResponse.builder()
@@ -88,7 +85,7 @@ public class ChatMessageResponse {
                 .opinionType(chat.getOpinionType())
                 .userCommunity(chat.getUserCommunity())
                 .timeStamp(chat.getTimeStamp())
-                .reactions(ReactionResponse.builder()
+                .reactions(ChatReactionResponse.builder()
                         .logicCount(logicCount)
                         .attitudeCount(attitudeCount)
                         .userReactedLogic(userReactedLogic)
@@ -99,7 +96,7 @@ public class ChatMessageResponse {
 
     public static ChatMessageResponse from(Chat chat) {
         // 빈 ReactionResponse 객체 생성
-        ReactionResponse emptyReaction = ReactionResponse.builder()
+        ChatReactionResponse emptyReaction = ChatReactionResponse.builder()
             .logicCount(0)
             .attitudeCount(0)
             .userReactedLogic(false)

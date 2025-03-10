@@ -7,13 +7,13 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.debateseason_backend_v1.common.response.ApiResult;
 import com.debateseason_backend_v1.common.response.VoidApiResult;
+import com.debateseason_backend_v1.domain.chatroom.model.response.OnlyHomeResponse;
 import com.debateseason_backend_v1.domain.chatroom.service.ChatRoomServiceV1;
-import com.debateseason_backend_v1.domain.issue.model.response.IssueResponse;
+import com.debateseason_backend_v1.domain.issue.model.response.IssueBriefResponse;
 import com.debateseason_backend_v1.domain.issue.service.IssueServiceV1;
 import com.debateseason_backend_v1.domain.user.controller.docs.UserControllerV1Docs;
 import com.debateseason_backend_v1.domain.user.controller.request.LogoutRequest;
@@ -70,12 +70,16 @@ public class UserControllerV1 implements UserControllerV1Docs {
 		summary = "이슈방 전체를 불러옵니다(수정가능)  ",
 		description = " ")
 	@GetMapping("/home")
-	public ApiResult<List<IssueResponse>> indexPage(
+	public ApiResult<OnlyHomeResponse> indexPage(
 		//@RequestParam(name = "page", required = false) Long page,
 		@AuthenticationPrincipal CustomUserDetails principal
 	) {
 		Long userId = principal.getUserId();
 		//return chatRoomServiceV1.findVotedChatRoom(userId,page);
+
+		// 활성도가 가장 높은 토론방 5개 표시
+
+
 		return issueServiceV1.fetchAll();
 	}
 

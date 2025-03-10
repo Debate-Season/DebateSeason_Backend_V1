@@ -19,8 +19,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import com.debateseason_backend_v1.common.exception.ErrorCode;
 import com.debateseason_backend_v1.common.response.ApiResult;
-import com.debateseason_backend_v1.domain.chatroom.controller.WithMockCustomUser;
-import com.debateseason_backend_v1.domain.issue.dto.IssueDTO;
+import com.debateseason_backend_v1.domain.issue.model.request.IssueRequest;
 import com.debateseason_backend_v1.domain.issue.service.IssueServiceV1;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -44,22 +43,22 @@ public class AdminIssueControllerV1Test {
 		// given
 
 		// IssueDTO
-		IssueDTO issueDTO = new IssueDTO();
-		issueDTO.setTitle("중국 Deepseek 개발");
+		IssueRequest issueRequest = new IssueRequest();
+		issueRequest.setTitle("중국 Deepseek 개발");
 
-		String json = objectMapper.writeValueAsString(issueDTO);
+		String json = objectMapper.writeValueAsString(issueRequest);
 
 		// 응답값
 		ApiResult<Object> response = ApiResult.builder()
 			.status(200)
 			.code(ErrorCode.SUCCESS)
-			.message("이슈방 " + issueDTO.getTitle() + "가 생성되었습니다.")
+			.message("이슈방 " + issueRequest.getTitle() + "가 생성되었습니다.")
 			.build();
 
 		// When & Then
 
 		// RESPONSE
-		Mockito.when(issueServiceV1.save(Mockito.any(IssueDTO.class)))
+		Mockito.when(issueServiceV1.save(Mockito.any(IssueRequest.class)))
 			.thenReturn(response);
 
 		// REQUEST

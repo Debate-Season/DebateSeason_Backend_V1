@@ -1,22 +1,17 @@
 package com.debateseason_backend_v1.domain.issue.docs;
 
-import java.util.List;
-
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.RequestParam;
 
 
 import com.debateseason_backend_v1.common.response.ApiResult;
 
 
-import com.debateseason_backend_v1.domain.issue.dto.IssueDAO;
-import com.debateseason_backend_v1.domain.issue.model.response.IssueResponse;
+import com.debateseason_backend_v1.domain.issue.model.response.IssueDetailResponse;
 import com.debateseason_backend_v1.security.CustomUserDetails;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -34,18 +29,14 @@ public interface UserIssueControllerV1Docs {
 		@ApiResponse(responseCode = "200", description = "해당 이슈방을 성공적으로 조회했습니다."),
 		@ApiResponse(responseCode = "400", description = "해당 이슈방은 존재하지 않습니다")
 	})
-	@CustomApiErrorCode(
-		{
-			CustomErrorCode.NOT_FOUND_ISSUE
-		}
-	)
+
 	@Parameter(
 		name = "issue-id",
 		description = "이슈방 id",
 		required = true,
 		example = "1"
 	)
-	public ApiResult<IssueDAO> getIssue(
+	public ApiResult<IssueDetailResponse> getIssue(
 		@RequestParam(name = "issue-id") Long issueId,
 		@AuthenticationPrincipal CustomUserDetails principal,
 		@RequestParam(name = "page",required = false)Long page
@@ -68,11 +59,6 @@ public interface UserIssueControllerV1Docs {
 		@ApiResponse(responseCode = "200", description = "해당 이슈방을 성공적으로 즐겨찾기 했습니다."),
 		@ApiResponse(responseCode = "400", description = "해당 이슈방 즐겨찾기 실패했습니다.")
 	})
-	@CustomApiErrorCode(
-		{
-			CustomErrorCode.NOT_FOUND_ISSUE
-		}
-	)
 	public ApiResult<String> bookMarkIssue(
 		@RequestParam(name = "issue-id") Long issueId,
 		@AuthenticationPrincipal CustomUserDetails principal);

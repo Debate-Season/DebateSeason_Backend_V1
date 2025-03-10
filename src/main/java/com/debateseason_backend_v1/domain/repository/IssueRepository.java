@@ -2,6 +2,7 @@ package com.debateseason_backend_v1.domain.repository;
 
 import java.util.List;
 
+import com.debateseason_backend_v1.domain.issue.model.response.IssueDetailResponse;
 import com.debateseason_backend_v1.domain.repository.entity.Issue;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -69,6 +70,28 @@ public interface IssueRepository extends JpaRepository<Issue,Long> {
         ORDER BY ui1.issue_id DESC
         """, nativeQuery = true)
 	List<Object[]> findIssuesWithBookmarks(@Param("issueIds") List<Long> issueIds);
+
+	@Query(value = """
+    SELECT i.issue_id, i.title, COUNT(ui.issue_id) AS bookmarks 
+    FROM (SELECT issue_id, title FROM issue WHERE issue_id = :issueId) i
+    LEFT JOIN user_issue ui ON i.issue_id = ui.issue_id
+    """, nativeQuery = true)
+	List<Object[]> findIssueWithBookmarks(@Param("issueId") Long issueId);
+
+	@Query(value = """
+    SELECT chroom.issue_id, COUNT(ch.chat_room_id) AS chats
+    FROM chat_room chroom
+    LEFT JOIN (
+        SELECT chat_room_id, time_stamp 
+        FROM chat 
+        WHERE time_stamp <= NOW() AND time_stamp >= DATE(NOW())
+    ) ch ON chroom.chat_room_id = ch.chat_room_id
+    GROUP BY chroom.issue_id
+    ORDER BY chats DESC, ch.time_stamp DESC
+    LIMIT 5
+""", nativeQuery = true)
+	List<Object[]> findTop5ActiveIssuesByCountingChats();
+
 }
 
 

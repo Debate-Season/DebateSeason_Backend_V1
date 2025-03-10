@@ -112,7 +112,7 @@ public class CommunityRecords { // 자주 들락날락할텐데 DB에 기록하�
 
 	}
 
-	public static Map<String, Integer> getSortedCommunity(Long issueId) {
+	public static LinkedHashMap<String, Integer> getSortedCommunity(Long issueId) {
 
 		// 특정 이슈방에 대한 LinkedList 가져오기. 왜냐하면 userDTO에 community가 저장되어 있기 때문임. <- 이것도 나중에 최적화를 위해서 수정가능함.
 		LinkedList<UserDTO> linkedList = markUserWithIssue.get(issueId);
@@ -130,7 +130,7 @@ public class CommunityRecords { // 자주 들락날락할텐데 DB에 기록하�
 		List<String> keySet = new ArrayList<>(map.keySet());
 		keySet.sort((o1, o2) -> map.get(o2).compareTo(map.get(o1)));
 
-		Map<String, Integer> sortedMap = new LinkedHashMap<>();
+		LinkedHashMap<String, Integer> sortedMap = new LinkedHashMap<>();
 
 		for (String key : keySet) {
 			sortedMap.put(key, map.get(key));

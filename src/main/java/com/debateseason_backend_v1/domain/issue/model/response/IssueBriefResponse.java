@@ -12,7 +12,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Builder
-public class IssueResponse {
+public class IssueBriefResponse {
 
 	@Schema(description = "이슈방 Id", example = "1")
 	private long issueId;
@@ -20,7 +20,7 @@ public class IssueResponse {
 	@Schema(description = "이슈방 제목", example = "트럼프 관세 정책")
 	private String title;
 
-	@Schema(description = "이슈방 제목", example = "2024-12-03T08:51:57")
+	@Schema(description = "생성일", example = "2024-12-03T08:51:57")
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
 	private LocalDateTime createdAt;
 

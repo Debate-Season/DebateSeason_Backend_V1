@@ -1,47 +1,9 @@
 package com.debateseason_backend_v1.domain.chatroom.controller;
 
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.*;
-
-import java.io.UnsupportedEncodingException;
-import java.nio.charset.Charset;
-import java.time.LocalDateTime;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Set;
-
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.MediaType;
 
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-
-import com.debateseason_backend_v1.common.exception.ErrorCode;
-import com.debateseason_backend_v1.common.response.ApiResult;
-import com.debateseason_backend_v1.domain.chat.service.ChatServiceV1;
-import com.debateseason_backend_v1.domain.chatroom.dto.ChatRoomDAO;
-import com.debateseason_backend_v1.domain.chatroom.dto.ChatRoomDTO;
-
-import com.debateseason_backend_v1.domain.chatroom.service.ChatRoomServiceV1;
-
-import com.debateseason_backend_v1.domain.issue.model.CommunityRecords;
-import com.debateseason_backend_v1.domain.user.dto.UserDTO;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-
-
-
 
 @ActiveProfiles("test")
 @WebMvcTest(ChatRoomControllerV1.class) // 컨트롤러와 관련된 애들만 빈으로 등록하고, Service, Repository같은 레이어는 빈으로 등록하지 않아 의존성을 끊습니다.

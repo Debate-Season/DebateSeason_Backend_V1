@@ -1,6 +1,5 @@
 package com.debateseason_backend_v1.domain.chatroom.service;
 
-import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -10,9 +9,8 @@ import org.springframework.stereotype.Service;
 
 import com.debateseason_backend_v1.common.exception.ErrorCode;
 import com.debateseason_backend_v1.common.response.ApiResult;
-import com.debateseason_backend_v1.domain.chatroom.dto.ChatRoomDAO;
-import com.debateseason_backend_v1.domain.chatroom.dto.ChatRoomDTO;
-import com.debateseason_backend_v1.domain.chatroom.dto.ResponseDTO;
+import com.debateseason_backend_v1.domain.chatroom.model.response.ChatRoomResponse;
+import com.debateseason_backend_v1.domain.chatroom.model.request.ChatRoomRequest;
 import com.debateseason_backend_v1.domain.repository.ChatRoomRepository;
 import com.debateseason_backend_v1.domain.repository.IssueRepository;
 import com.debateseason_backend_v1.domain.repository.UserChatRoomRepository;
@@ -21,7 +19,6 @@ import com.debateseason_backend_v1.domain.repository.entity.ChatRoom;
 import com.debateseason_backend_v1.domain.repository.entity.Issue;
 import com.debateseason_backend_v1.domain.repository.entity.User;
 import com.debateseason_backend_v1.domain.repository.entity.UserChatRoom;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -39,7 +36,7 @@ public class ChatRoomServiceV1 {
 
 
 	// 1. 채팅방 저장하기
-	public ApiResult<Object> save(ChatRoomDTO chatRoomDTO, long issueId) {
+	public ApiResult<Object> save(ChatRoomRequest chatRoomRequest, long issueId) {
 
 		// 1. Issue 찾기
 		Issue issue = null ;
@@ -61,8 +58,8 @@ public class ChatRoomServiceV1 {
 		// 2 ChatRoom 엔티티 생성
 		ChatRoom chatRoom = ChatRoom.builder()
 			.issue(issue)
-			.title(chatRoomDTO.getTitle())
-			.content(chatRoomDTO.getContent())
+			.title(chatRoomRequest.getTitle())
+			.content(chatRoomRequest.getContent())
 			.build();
 
 		// 3. save ChatRoom
@@ -71,7 +68,7 @@ public class ChatRoomServiceV1 {
 		return ApiResult.builder()
 			.status(200)
 			.code(ErrorCode.SUCCESS)
-			.message("채팅방 " + chatRoomDTO.getTitle() + "이 생성되었습니다.")
+			.message("채팅방 " + chatRoomRequest.getTitle() + "이 생성되었습니다.")
 			.build();
 	}
 
@@ -115,11 +112,11 @@ public class ChatRoomServiceV1 {
 
 	// 3. 채팅방 단건 불러오기
 	// Opinion값 같이 넘겨주면 될 듯하다. 없으면 null
-	public ApiResult<ChatRoomDAO> fetch(Long userId,Long chatRoomId) {
+	public ApiResult<ChatRoomResponse> fetch(Long userId,Long chatRoomId) {
 
 		// 우선 해당 채팅방이 유효한지 먼저 파악부터 해야한다.
 		if(chatRoomRepository.findById(chatRoomId).isEmpty()){
-			return ApiResult.<ChatRoomDAO>builder()
+			return ApiResult.<ChatRoomResponse>builder()
 				.status(400)
 				.code(ErrorCode.BAD_REQUEST)
 				.message("선택하신 채팅방은 존재하지 않습니다.")
@@ -157,7 +154,7 @@ public class ChatRoomServiceV1 {
 		}
 
 		// 2-2. ChatRoomDAO로 옮기기
-		ChatRoomDAO chatRoomDAO = ChatRoomDAO.builder()
+		ChatRoomResponse chatRoomResponse = ChatRoomResponse.builder()
 			.chatRoomId(chatRoom.getId())
 			//.issue(chatRoom.getIssue())
 			.title(chatRoom.getTitle())
@@ -171,11 +168,11 @@ public class ChatRoomServiceV1 {
 		// 3. 관련 채팅들 불러오기가 추가될지도? -> 향후 고려
 
 		// interest를 반환해야 한다.
-		return ApiResult.<ChatRoomDAO>builder()
+		return ApiResult.<ChatRoomResponse>builder()
 			.status(200)
 			.code(ErrorCode.SUCCESS)
 			.message("채팅방을 불러왔습니다.")
-			.data(chatRoomDAO)
+			.data(chatRoomResponse)
 			.build();
 
 	}
@@ -216,7 +213,7 @@ public class ChatRoomServiceV1 {
 
 		}
 
-		List<ChatRoomDAO> fetchedChatRoomList = chatRoomList.stream().map(
+		List<ChatRoomResponse> fetchedChatRoomList = chatRoomList.stream().map(
 			e->{
 				// AGREE, DISAGREE, chat_room_id, title, content, created_at 순으로 가져오기
 				Long agree = (Long)e[0];
@@ -233,7 +230,7 @@ public class ChatRoomServiceV1 {
 
 
 
-				return ChatRoomDAO.builder()
+				return ChatRoomResponse.builder()
 					.chatRoomId(chatRoomId)
 					.title(title)
 					.content(content)
@@ -245,14 +242,12 @@ public class ChatRoomServiceV1 {
 			}
 		).collect(Collectors.toList());
 
-		ApiResult<Object> response = ApiResult.builder()
+		return ApiResult.builder()
 			.status(200)
 			.code(ErrorCode.SUCCESS)
 			.message("채팅방을 불러왔습니다.")
 			.data(fetchedChatRoomList)
 			.build();
-
-		return response;
 
 	}
 

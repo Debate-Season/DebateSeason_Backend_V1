@@ -50,7 +50,15 @@ public enum ErrorCode implements CodeInterface {
 	MISSING_REFRESH_TOKEN(3003, HttpStatus.BAD_REQUEST, "Refresh Token은 필수입니다."),
 
 	// API 요청 에러
-	BAD_REQUEST(400, HttpStatus.BAD_REQUEST, "잘못된 요청입니다.");
+	BAD_REQUEST(400, HttpStatus.BAD_REQUEST, "잘못된 요청입니다."),
+	
+
+	// 기타
+	// Issue방 관련 에러
+	
+	// 400번대
+	NOT_FOUND_ISSUE(400, HttpStatus.NOT_FOUND, "주어진 id값에 해당하는 이슈방을 찾을 수 없습니다."),
+	NOT_FOUND_ISSUE_WITH_CATEGORY(400, HttpStatus.NOT_FOUND, "해당 category의 이슈방을 찾을 수 없습니다.");
 
 	private final Integer code;
 	private final HttpStatus httpStatus;

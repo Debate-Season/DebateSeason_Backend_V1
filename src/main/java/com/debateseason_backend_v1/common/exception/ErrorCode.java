@@ -49,6 +49,9 @@ public enum ErrorCode implements CodeInterface {
 	MISSING_REQUIRED_SOCIAL_TYPE(3002, HttpStatus.BAD_REQUEST, "소셜 타입은 필수입니다."),
 	MISSING_REFRESH_TOKEN(3003, HttpStatus.BAD_REQUEST, "Refresh Token은 필수입니다."),
 
+	//4000번대 Chat 관련 에러,
+	VALUE_OUT_OF_RANGE(3003, HttpStatus.BAD_REQUEST, "메시지 값을 확인해 주세요"),
+
 	// API 요청 에러
 	BAD_REQUEST(400, HttpStatus.BAD_REQUEST, "잘못된 요청입니다."),
 	

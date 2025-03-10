@@ -36,4 +36,10 @@ public interface ChatRepository extends JpaRepository<Chat,Long> {
             @Param("roomId") Long roomId,
             @Param("date") LocalDate date
     );
+
+    @Query("SELECT c FROM Chat c WHERE c.chatRoomId.id = :roomId AND c.id < :cursor ORDER BY c.id DESC")
+    List<Chat> findByRoomIdAndCursor(Long roomId, Long cursor, Pageable pageable);
+
+    @Query("SELECT COUNT(c) FROM Chat c WHERE c.chatRoomId.id = :roomId")
+    int countByRoomId(Long roomId);
 }

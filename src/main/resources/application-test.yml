@@ -40,4 +40,4 @@ jwt:
     expire-time: 86400000 # 24시간
 
 
-stomp-connect-url: "/test/ws-stomp"
+stomp-connect-url: "/ws-stomp"

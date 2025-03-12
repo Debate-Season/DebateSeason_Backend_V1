@@ -43,11 +43,18 @@ public enum ErrorCode implements CodeInterface {
 	MISSING_REQUIRED_GENDER_TYPE(2013, HttpStatus.BAD_REQUEST, "성별은 선택은 필수입니다."),
 	MISSING_REQUIRED_AGE_RANGE(2014, HttpStatus.BAD_REQUEST, "연령대는 선택은 필수입니다."),
 
-	// 3000번대 User 관련 에러
+	// 3000번대 User(인증) 관련 에러
 	NOT_FOUND_USER(3000, HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다."),
 	MISSING_REQUIRED_SOCIAL_ID(3001, HttpStatus.BAD_REQUEST, "소셜 고유 ID는 필수입니다."),
-	MISSING_REQUIRED_SOCIAL_TYPE(3002, HttpStatus.BAD_REQUEST, "소셜 타입은 필수입니다."),
-	MISSING_REFRESH_TOKEN(3003, HttpStatus.BAD_REQUEST, "Refresh Token은 필수입니다."),
+	MISSING_REQUIRED_ID_TOKEN(3002, HttpStatus.BAD_REQUEST, "ID Token은 필수입니다."),
+	MISSING_REQUIRED_SOCIAL_TYPE(3003, HttpStatus.BAD_REQUEST, "소셜 타입은 필수입니다."),
+	MISSING_REFRESH_TOKEN(3004, HttpStatus.BAD_REQUEST, "Refresh Token은 필수입니다."),
+	ID_TOKEN_SIGNATURE_VALIDATION_FAILED(3005, HttpStatus.UNAUTHORIZED, "ID Token 서명 검증에 실패했습니다."),
+	JWKS_RETRIEVAL_FAILED(3006, HttpStatus.SERVICE_UNAVAILABLE, "JWKS 조회에 실패했습니다."),
+	PUBLIC_KEY_EXTRACTION_FAILED(3007, HttpStatus.INTERNAL_SERVER_ERROR, "공개키 추출에 실패했습니다."),
+	INVALID_JWKS_URL(3008, HttpStatus.INTERNAL_SERVER_ERROR, "잘못된 JWKS URL 형식입니다."),
+	ID_TOKEN_DECODING_FAILED(3009, HttpStatus.BAD_REQUEST, "ID Token 디코딩에 실패했습니다."),
+	SOCIAL_TYPE_MISMATCH(3010, HttpStatus.BAD_REQUEST, "ID Token과 소셜 타입이 일치하지 않습니다."),
 
 	//4000번대 Chat 관련 에러,
 	VALUE_OUT_OF_RANGE(3003, HttpStatus.BAD_REQUEST, "메시지 값을 확인해 주세요"),

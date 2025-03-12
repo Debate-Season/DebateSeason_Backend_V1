@@ -24,18 +24,14 @@ management:
       show-details: never
       show-components: always
 
-social:
-  kakao:
-    audience: "your-kakao-client-id"
-    issuer: "https://kauth.kakao.com"
-    jwksUrl: "https://kauth.kakao.com/.well-known/jwks.json"
-  apple:
-    audience: "your-apple-client-id"
-    issuer: "https://appleid.apple.com"
-    jwksUrl: "https://appleid.apple.com/auth/keys"
-
 # 채팅(stomp) 설정
 chat:
   message: # 메시지 수 제한
     max-length: 500
     min-length: 1
+
+social:
+  kakao:
+    audience: "your-kakao-client-id"
+  apple:
+    audience: "your-apple-client-id"

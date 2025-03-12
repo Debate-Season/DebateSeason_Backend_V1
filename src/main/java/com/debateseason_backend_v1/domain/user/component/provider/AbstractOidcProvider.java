@@ -10,17 +10,10 @@ import com.auth0.jwk.Jwk;
 import com.auth0.jwk.JwkException;
 import com.auth0.jwk.JwkProvider;
 import com.auth0.jwk.JwkProviderBuilder;
-import com.auth0.jwk.NetworkException;
-import com.auth0.jwk.RateLimitReachedException;
-import com.auth0.jwk.SigningKeyNotFoundException;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
-import com.auth0.jwt.exceptions.JWTDecodeException;
-import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
-import com.debateseason_backend_v1.common.exception.CustomException;
-import com.debateseason_backend_v1.common.exception.ErrorCode;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -51,7 +44,7 @@ public abstract class AbstractOidcProvider implements OidcProvider {
 				.build();
 		} catch (MalformedURLException e) {
 			log.error("Invalid JWKS URL: {}", jwksUrl, e);
-			throw new CustomException(ErrorCode.INVALID_JWKS_URL);
+			throw new RuntimeException("Invalid JWKS URL: " + jwksUrl, e);
 		}
 	}
 
@@ -64,7 +57,6 @@ public abstract class AbstractOidcProvider implements OidcProvider {
 	 */
 	@Override
 	public String extractUserId(String idToken) {
-
 		DecodedJWT verifiedToken = verifyToken(idToken);
 		return verifiedToken.getSubject();
 	}
@@ -77,17 +69,12 @@ public abstract class AbstractOidcProvider implements OidcProvider {
 	 */
 	protected DecodedJWT verifyToken(String idToken) {
 
-		DecodedJWT decodedToken = decodeToken(idToken);
-		Jwk jwk = fetchJwk(decodedToken.getKeyId());
+		DecodedJWT decoded = decodeToken(idToken);
+		Jwk jwk = fetchJwk(decoded.getKeyId());
 		RSAPublicKey publicKey = extractPublicKey(jwk);
 		JWTVerifier verifier = createVerifier(publicKey);
 
-		try {
-			return verifier.verify(idToken);
-		} catch (JWTVerificationException e) {
-			log.error("ID token signature validation failed", e);
-			throw new CustomException(ErrorCode.ID_TOKEN_SIGNATURE_VALIDATION_FAILED);
-		}
+		return verifier.verify(idToken);
 	}
 
 	/**
@@ -100,9 +87,9 @@ public abstract class AbstractOidcProvider implements OidcProvider {
 
 		try {
 			return JWT.decode(idToken);
-		} catch (JWTDecodeException e) {
+		} catch (Exception e) {
 			log.error("Failed to decode ID token", e);
-			throw new CustomException(ErrorCode.ID_TOKEN_DECODING_FAILED);
+			throw new RuntimeException("Failed to decode ID token", e);
 		}
 	}
 
@@ -116,22 +103,9 @@ public abstract class AbstractOidcProvider implements OidcProvider {
 
 		try {
 			return jwkProvider.get(kid);
-		} catch (NetworkException e) {
-			// 네트워크 오류 발생 시
-			log.error("Network error while retrieving JWKS for kid: {}", kid, e);
-			throw new CustomException(ErrorCode.JWKS_NETWORK_ERROR);
-		} catch (SigningKeyNotFoundException e) {
-			// 키를 찾지 못했을 때
-			log.error("JWKS key not found for kid: {}", kid, e);
-			throw new CustomException(ErrorCode.NOT_FOUND_JWKS_KEY);
-		} catch (RateLimitReachedException e) {
-			// 요청 제한에 도달했을 때
-			log.error("Rate limit reached for JWKS provider", e);
-			throw new CustomException(ErrorCode.JWKS_RATE_LIMIT_REACHED);
 		} catch (JwkException e) {
-			// 그 외 모든 JWK 관련 예외
 			log.error("JWKS processing failed for kid: {}", kid, e);
-			throw new CustomException(ErrorCode.JWKS_RETRIEVAL_FAILED);
+			throw new RuntimeException("JWKS processing failed: " + e.getMessage(), e);
 		}
 	}
 
@@ -147,7 +121,7 @@ public abstract class AbstractOidcProvider implements OidcProvider {
 			return (RSAPublicKey)jwk.getPublicKey();
 		} catch (InvalidPublicKeyException e) {
 			log.error("Invalid public key for JWK with kid: {}", jwk.getId(), e);
-			throw new CustomException(ErrorCode.PUBLIC_KEY_EXTRACTION_FAILED);
+			throw new RuntimeException("유효하지 않은 공개키입니다.", e);
 		}
 	}
 

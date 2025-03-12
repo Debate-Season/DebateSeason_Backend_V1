@@ -6,7 +6,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.debateseason_backend_v1.common.response.ApiResult;
-import com.debateseason_backend_v1.domain.user.controller.docs.UserControllerV2Docs;
 import com.debateseason_backend_v1.domain.user.controller.request.OidcLoginRequest;
 import com.debateseason_backend_v1.domain.user.service.UserServiceV2;
 import com.debateseason_backend_v1.domain.user.service.response.LoginResponse;
@@ -18,12 +17,12 @@ import lombok.extern.slf4j.Slf4j;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v2/users")
-public class UserControllerV2 implements UserControllerV2Docs {
+public class UserControllerV2 {
 
 	private final UserServiceV2 userServiceV2;
 
 	@PostMapping("/login")
-	public ApiResult<LoginResponse> login(@RequestBody OidcLoginRequest request) {
+	public ApiResult<LoginResponse> socialLogin(@RequestBody OidcLoginRequest request) {
 
 		LoginResponse response = userServiceV2.socialLogin(request.toServiceRequest());
 

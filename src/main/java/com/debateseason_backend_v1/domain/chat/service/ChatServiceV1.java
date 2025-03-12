@@ -7,6 +7,7 @@ import com.debateseason_backend_v1.domain.chat.model.response.ChatMessageRespons
 import com.debateseason_backend_v1.domain.chat.model.response.ChatMessagesResponse;
 import com.debateseason_backend_v1.domain.chat.valide.ChatValidate;
 import com.debateseason_backend_v1.domain.chatroom.service.ChatRoomServiceV1;
+import com.debateseason_backend_v1.domain.repository.ChatReportRepository;
 import com.debateseason_backend_v1.domain.repository.ChatRepository;
 import com.debateseason_backend_v1.domain.repository.ChatReactionRepository;
 import com.debateseason_backend_v1.domain.repository.entity.Chat;
@@ -39,6 +40,7 @@ public class ChatServiceV1 {
 	private final ChatValidate chatValidate;
 	private final ApplicationEventPublisher eventPublisher;
 	private final ChatReactionRepository chatReactionRepository;
+	private final ChatReportRepository chatReportRepository;
 
 	// ---------- WebSocket 실시간 메시지 처리 ----------
 	
@@ -118,7 +120,7 @@ public class ChatServiceV1 {
 		
 		// 응답 생성
 		List<ChatMessageResponse> messageResponses = displayChats.stream()
-				.map(chat -> ChatMessageResponse.from(chat, userId, chatReactionRepository))
+				.map(chat -> ChatMessageResponse.from(chat, userId, chatReactionRepository, chatReportRepository))
 				.collect(Collectors.toList());
 		
 		String nextCursor = null;

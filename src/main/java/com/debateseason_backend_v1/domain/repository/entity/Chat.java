@@ -13,8 +13,8 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 
 import java.time.LocalDateTime;
 
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 @Getter
 @Builder
 @Entity
@@ -53,6 +53,20 @@ public class Chat {
 	@Column(name = "time_stamp")
 	private LocalDateTime timeStamp;
 
+	@Column(name = "is_reported", nullable = false)
+	private boolean isReported = false;
+
+	@Column(name = "report_status")
+	@Enumerated(EnumType.STRING)
+	@Builder.Default
+	private ReportStatus reportStatus = ReportStatus.NONE;
+
+	public enum ReportStatus {
+		NONE,       // 신고되지 않음
+		PENDING,    // 신고 접수됨
+		ACCEPTED,   // 신고 승인됨
+		REJECTED    // 신고 거부됨
+	}
 
 	public static Chat from(ChatMessageRequest request, ChatRoom chatRoom, Long userId) {
 		return Chat.builder()
@@ -67,4 +81,8 @@ public class Chat {
 				.build();
 	}
 
+	public void updateReportStatus(ReportStatus status) {
+		this.reportStatus = status;
+		this.isReported = status != ReportStatus.NONE;
+	}
 }

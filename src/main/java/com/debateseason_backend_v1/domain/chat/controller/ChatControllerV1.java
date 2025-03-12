@@ -3,8 +3,11 @@ package com.debateseason_backend_v1.domain.chat.controller;
 import com.debateseason_backend_v1.common.response.ApiResult;
 import com.debateseason_backend_v1.common.response.ErrorResponse;
 import com.debateseason_backend_v1.domain.chat.model.request.ChatReactionRequest;
+import com.debateseason_backend_v1.domain.chat.model.request.ChatReportRequest;
 import com.debateseason_backend_v1.domain.chat.model.response.ChatMessagesResponse;
+import com.debateseason_backend_v1.domain.chat.model.response.ChatReportResponse;
 import com.debateseason_backend_v1.domain.chat.service.ChatReactionServiceV1;
+import com.debateseason_backend_v1.domain.chat.service.ChatReportServiceV1;
 import com.debateseason_backend_v1.security.jwt.JwtUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
@@ -41,9 +44,8 @@ public class ChatControllerV1 {
 
 	private final ChatServiceV1 chatService;
 	private final ChatReactionServiceV1 chatReactionService;
+	private final ChatReportServiceV1 chatReportService;
 	private final JwtUtil jwtUtil;
-
-
 	/*
 	날짜당 최대 20개 메시지 조회
 	다음 페이지를 위한 커서 제공
@@ -108,7 +110,7 @@ public class ChatControllerV1 {
 			example = "1234"
 		)
 		@RequestParam(required = false) Long cursor,
-		
+
 		@Parameter(hidden = true)
 		@AuthenticationPrincipal Long userId,
 		HttpServletRequest httpRequest
@@ -125,7 +127,7 @@ public class ChatControllerV1 {
 							throw new CustomException(ErrorCode.INVALID_ACCESS_TOKEN, "인증 정보를 확인할 수 없습니다");
 						}
 					}
-					
+
 					if (userId == null) {
 						throw new CustomException(ErrorCode.NOT_FOUND_USER, "userId 가 null 입니다.");
 					}
@@ -191,6 +193,81 @@ public class ChatControllerV1 {
 		return chatReactionService.processReaction(messageId, request, userId);
 	}
 
+	//채팅 신고
+	@Operation(
+			summary = "채팅 메시지 신고",
+			description = "채팅 메시지를 신고합니다. 신고  100자 이하로 작성해야 합니다."
+	)
+	@ApiResponses({
+			@ApiResponse(
+					responseCode = "200",
+					description = "신고 접수 성공",
+					content = @Content(
+							mediaType = "application/json",
+							schema = @Schema(implementation = ApiResult.class)
+					)
+			),
+			@ApiResponse(
+					responseCode = "400",
+					description = "잘못된 요청 (신고 사유 길이 제한 등)",
+					content = @Content(
+							mediaType = "application/json",
+							schema = @Schema(implementation = ErrorResponse.class)
+					)
+			),
+			@ApiResponse(
+					responseCode = "404",
+					description = "메시지를 찾을 수 없음",
+					content = @Content(
+							mediaType = "application/json",
+							schema = @Schema(implementation = ErrorResponse.class)
+					)
+			),
+			@ApiResponse(
+					responseCode = "409",
+					description = "이미 신고한 메시지",
+					content = @Content(
+							mediaType = "application/json",
+							schema = @Schema(implementation = ErrorResponse.class)
+					)
+			)
+	})
+	@PostMapping("/messages/{messageId}/report")
+	public ApiResult<ChatReportResponse> reportMessage(
+			@Parameter(description = "메시지 ID", required = true, example = "1045")
+			@PathVariable Long messageId,
+
+			@Valid @RequestBody ChatReportRequest request,
+
+			@Parameter(hidden = true)
+			@AuthenticationPrincipal Long userId,
+
+			HttpServletRequest httpRequest
+	) {
+		log.info("메시지 신고 요청: messageId={}, reasonTypes={}, userId={}",
+				messageId, request.getReasonTypes(), userId);
+
+		// userId가 null인 경우 직접 토큰에서 추출
+		if (userId == null) {
+			String token = getJwtFromRequest(httpRequest);
+			if (token != null) {
+				try {
+					userId = jwtUtil.getUserId(token);
+					log.info("토큰에서 직접 추출한 userId: {}", userId);
+				} catch (Exception e) {
+					log.error("토큰에서 userId 추출 실패", e);
+					throw new CustomException(ErrorCode.INVALID_ACCESS_TOKEN, "인증 정보를 확인할 수 없습니다");
+				}
+			}
+
+			if (userId == null) {
+				throw new CustomException(ErrorCode.NOT_FOUND_USER, "userId 가 null 입니다.");
+			}
+		}
+
+		return chatReportService.reportChat(messageId, request, userId);
+	}
+
 	private String getJwtFromRequest(HttpServletRequest request) {
 		String bearerToken = request.getHeader("Authorization");
 		if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
@@ -198,5 +275,4 @@ public class ChatControllerV1 {
 		}
 		return null;
 	}
-
 }

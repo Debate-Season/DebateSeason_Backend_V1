@@ -60,7 +60,10 @@ public enum ErrorCode implements CodeInterface {
 	PUBLIC_KEY_EXTRACTION_FAILED(3013, HttpStatus.INTERNAL_SERVER_ERROR, "공개키 추출에 실패했습니다."),
 
 	//4000번대 Chat 관련 에러,
-	VALUE_OUT_OF_RANGE(3003, HttpStatus.BAD_REQUEST, "메시지 값을 확인해 주세요"),
+	VALUE_OUT_OF_RANGE(4001, HttpStatus.BAD_REQUEST, "메시지 값을 확인해 주세요"),
+	REPORT_REASON_TOO_LONG(4002, HttpStatus.BAD_REQUEST, "신고 사유는 최대 100자까지 입력 가능합니다."),
+	ALREADY_REPORTED(4003, HttpStatus.CONFLICT, "이미 신고한 메시지입니다."),
+	SELF_REPORT_NOT_ALLOWED(4004, HttpStatus.BAD_REQUEST, "자신의 메시지는 신고할 수 없습니다."),
 
 	// API 요청 에러
 	BAD_REQUEST(400, HttpStatus.BAD_REQUEST, "잘못된 요청입니다.");

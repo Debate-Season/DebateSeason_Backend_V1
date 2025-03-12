@@ -7,6 +7,7 @@ import com.debateseason_backend_v1.domain.chat.model.request.ChatReactionRequest
 import com.debateseason_backend_v1.domain.chat.model.response.ChatMessageResponse;
 import com.debateseason_backend_v1.domain.repository.ChatReactionRepository;
 import com.debateseason_backend_v1.domain.repository.ChatRepository;
+import com.debateseason_backend_v1.domain.repository.ChatReportRepository;
 import com.debateseason_backend_v1.domain.repository.entity.Chat;
 import com.debateseason_backend_v1.domain.repository.entity.ChatReaction;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +25,7 @@ public class ChatReactionServiceV1 {
 
     private final ChatRepository chatRepository;
     private final ChatReactionRepository chatReactionRepository;
+    private final ChatReportRepository chatReportRepository;
     private final SimpMessagingTemplate messagingTemplate;
 
     @Transactional
@@ -49,7 +51,8 @@ public class ChatReactionServiceV1 {
         }
         
         // 응답 생성
-        ChatMessageResponse response = ChatMessageResponse.from(chat, userId, chatReactionRepository);
+        ChatMessageResponse response = ChatMessageResponse.from(chat, userId, 
+            chatReactionRepository, chatReportRepository);
         
         // WebSocket을 통해 실시간 업데이트 전송
         messagingTemplate.convertAndSend(

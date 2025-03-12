@@ -3,6 +3,7 @@ package com.debateseason_backend_v1.domain.chat.model.response;
 import com.debateseason_backend_v1.common.enums.MessageType;
 import com.debateseason_backend_v1.common.enums.OpinionType;
 import com.debateseason_backend_v1.domain.chat.model.request.ChatMessageRequest;
+import com.debateseason_backend_v1.domain.repository.ChatReportRepository;
 import com.debateseason_backend_v1.domain.repository.entity.Chat;
 import com.debateseason_backend_v1.domain.repository.ChatReactionRepository;
 import com.debateseason_backend_v1.domain.chat.model.request.ChatReactionRequest;
@@ -47,6 +48,15 @@ public class ChatMessageResponse {
     @Schema(description = "이모티콘 반응 정보")
     private ChatReactionResponse reactions;
 
+    @Schema(description = "신고 상태", example = "PENDING")
+    private Chat.ReportStatus reportStatus;
+    
+    @Schema(description = "신고된 메시지 여부", example = "true")
+    private boolean isReported;
+    
+    @Schema(description = "사용자가 신고한 메시지 여부", example = "true")
+    private boolean isReportedByUser;
+
     public static ChatMessageResponse from(ChatMessageRequest request) {
         return ChatMessageResponse.builder()
                 .messageType(request.getMessageType())
@@ -58,7 +68,7 @@ public class ChatMessageResponse {
                 .build();
     }
 
-    public static ChatMessageResponse from(Chat chat, Long currentUserId, ChatReactionRepository chatReactionRepository) {
+    public static ChatMessageResponse from(Chat chat, Long currentUserId, ChatReactionRepository chatReactionRepository, ChatReportRepository chatReportRepository) {
         // 반응 수 조회
         int logicCount = chatReactionRepository.countByChatIdAndReactionType(
                 chat.getId(), ChatReactionRequest.ReactionType.LOGIC);
@@ -76,6 +86,11 @@ public class ChatMessageResponse {
                     chat.getId(), currentUserId, ChatReactionRequest.ReactionType.ATTITUDE).isPresent();
         }
         
+        boolean isReportedByUser = false;
+        if (currentUserId != null) {
+            isReportedByUser = chatReportRepository.existsByChatIdAndReporterId(chat.getId(), currentUserId);
+        }
+        
         return ChatMessageResponse.builder()
                 .id(chat.getId())
                 .roomId(chat.getChatRoomId().getId())
@@ -91,6 +106,9 @@ public class ChatMessageResponse {
                         .userReactedLogic(userReactedLogic)
                         .userReactedAttitude(userReactedAttitude)
                         .build())
+                .reportStatus(chat.getReportStatus())
+                .isReported(chat.isReported())
+                .isReportedByUser(isReportedByUser)
                 .build();
     }
 

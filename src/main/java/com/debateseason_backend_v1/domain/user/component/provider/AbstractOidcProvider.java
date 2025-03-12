@@ -10,6 +10,9 @@ import com.auth0.jwk.Jwk;
 import com.auth0.jwk.JwkException;
 import com.auth0.jwk.JwkProvider;
 import com.auth0.jwk.JwkProviderBuilder;
+import com.auth0.jwk.NetworkException;
+import com.auth0.jwk.RateLimitReachedException;
+import com.auth0.jwk.SigningKeyNotFoundException;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
@@ -113,7 +116,20 @@ public abstract class AbstractOidcProvider implements OidcProvider {
 
 		try {
 			return jwkProvider.get(kid);
+		} catch (NetworkException e) {
+			// 네트워크 오류 발생 시
+			log.error("Network error while retrieving JWKS for kid: {}", kid, e);
+			throw new CustomException(ErrorCode.JWKS_NETWORK_ERROR);
+		} catch (SigningKeyNotFoundException e) {
+			// 키를 찾지 못했을 때
+			log.error("JWKS key not found for kid: {}", kid, e);
+			throw new CustomException(ErrorCode.NOT_FOUND_JWKS_KEY);
+		} catch (RateLimitReachedException e) {
+			// 요청 제한에 도달했을 때
+			log.error("Rate limit reached for JWKS provider", e);
+			throw new CustomException(ErrorCode.JWKS_RATE_LIMIT_REACHED);
 		} catch (JwkException e) {
+			// 그 외 모든 JWK 관련 예외
 			log.error("JWKS processing failed for kid: {}", kid, e);
 			throw new CustomException(ErrorCode.JWKS_RETRIEVAL_FAILED);
 		}

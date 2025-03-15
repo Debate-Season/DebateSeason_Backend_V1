@@ -32,6 +32,6 @@ chat:
 
 social:
   kakao:
-    audience: "your-kakao-client-id"
+    audience: 18af8def9522316a9c30d75d997df2b1
   apple:
-    audience: "your-apple-client-id"
+    audience: com.rosyocean.debateseason

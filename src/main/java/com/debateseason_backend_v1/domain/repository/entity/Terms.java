@@ -45,7 +45,4 @@ public class Terms {
 	@Column(name = "created_at", updatable = false)
 	private LocalDateTime createdAt;
 
-	public boolean isRequired() {
-		return this.termsType.isRequired();
-	}
 }

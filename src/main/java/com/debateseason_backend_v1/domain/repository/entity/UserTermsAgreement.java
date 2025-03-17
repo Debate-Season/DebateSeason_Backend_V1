@@ -8,12 +8,9 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -35,22 +32,21 @@ public class UserTermsAgreement {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "user_id", nullable = false)
-	private User user;
+	private Long userId;
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "terms_id", nullable = false)
-	private Terms terms;
+	private Long termsId;
+
+	private Boolean agreed;
 
 	@CreatedDate
-	@Column(name = "agreed_at", updatable = false)
-	private LocalDateTime agreedAt;
+	@Column(name = "created_at", updatable = false)
+	private LocalDateTime createdAt;
 
-	public static UserTermsAgreement create(User user, Terms terms) {
+	public static UserTermsAgreement create(Long userId, Long termsId, Boolean agreed) {
 		return UserTermsAgreement.builder()
-			.user(user)
-			.terms(terms)
+			.userId(userId)
+			.termsId(termsId)
+			.agreed(agreed)
 			.build();
 	}
 

@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.debateseason_backend_v1.common.response.ApiResult;
 import com.debateseason_backend_v1.common.response.VoidApiResult;
+import com.debateseason_backend_v1.domain.terms.controller.docs.TermsControllerV1Docs;
 import com.debateseason_backend_v1.domain.terms.controller.request.TermsAgreementRequest;
 import com.debateseason_backend_v1.domain.terms.service.TermsServiceV1;
 import com.debateseason_backend_v1.domain.terms.service.response.LatestTermsResponse;
@@ -23,7 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/terms")
-public class TermsControllerV1 {
+public class TermsControllerV1 implements TermsControllerV1Docs {
 
 	private final TermsServiceV1 termsService;
 

@@ -32,7 +32,9 @@ public class WebSecurityConfig {
 		"/stomp/**",
 		"/topic/**",
 		"/api/v1/users/login",
+		"/api/v2/users/login",
 		"/api/v1/auth/reissue",
+		"/api/v1/terms"
 	};
 
 	@Bean

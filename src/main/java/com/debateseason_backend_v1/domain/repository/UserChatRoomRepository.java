@@ -44,12 +44,12 @@ public interface UserChatRoomRepository extends JpaRepository<UserChatRoom, Long
 	List<Object[]> findChatRoomByChatRoomIds(@Param("chatRoomIds") List<Long> chatRoomIds);
 
 	// 2-1 이슈방 issue-id로만 조회
-	@Query(value = "SELECT chat_room_id FROM chat_room WHERE issue_id = :issueId ORDER BY chat_room_id DESC LIMIT 2", nativeQuery = true)
-	List<Long> findTop2ChatRoomIdsByIssueId(@Param("issueId") Long issueId);
+	@Query(value = "SELECT chat_room_id FROM chat_room WHERE issue_id = :issueId ORDER BY chat_room_id DESC LIMIT 3", nativeQuery = true)
+	List<Long> findTop3ChatRoomIdsByIssueId(@Param("issueId") Long issueId);
 
 	// 2-2 이슈방 issue-id + 커서기반
-	@Query(value = "SELECT chat_room_id FROM chat_room WHERE issue_id = :issueId AND chat_room_id < :ChatRoomId ORDER BY chat_room_id DESC LIMIT 2", nativeQuery = true)
-	List<Long> findTop2ChatRoomIdsByIssueIdAndChatRoomId(
+	@Query(value = "SELECT chat_room_id FROM chat_room WHERE issue_id = :issueId AND chat_room_id < :ChatRoomId ORDER BY chat_room_id DESC LIMIT 3", nativeQuery = true)
+	List<Long> findTop3ChatRoomIdsByIssueIdAndChatRoomId(
 		@Param("issueId") Long issueId,
 		@Param("ChatRoomId") Long ChatRoomId
 	);

@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.debateseason_backend_v1.common.response.ApiResult;
 import com.debateseason_backend_v1.domain.chatroom.docs.ChatRoomControllerV1Docs;
-import com.debateseason_backend_v1.domain.chatroom.model.response.ChatRoomResponse;
+import com.debateseason_backend_v1.domain.chatroom.model.response.chatroom.ChatRoomResponse;
 import com.debateseason_backend_v1.domain.chatroom.model.request.ChatRoomRequest;
 import com.debateseason_backend_v1.domain.chatroom.service.ChatRoomServiceV1;
 import com.debateseason_backend_v1.security.CustomUserDetails;
@@ -40,7 +40,9 @@ public class ChatRoomControllerV1 implements ChatRoomControllerV1Docs {
 	@GetMapping("/room")
 	public ApiResult<ChatRoomResponse> getChatRoom(
 		@RequestParam(name = "chatroom-id") Long chatRoomId,
+		//@RequestParam(name = "type",required = false) String type,
 		@AuthenticationPrincipal CustomUserDetails principal) {
+		// type은 토론위키일 수도 있고, 하이라이트일 수도 있고, 아무것도 없을 수도 있다.
 
 		Long userId = principal.getUserId();
 		return chatRoomServiceV1.fetch(userId,chatRoomId);

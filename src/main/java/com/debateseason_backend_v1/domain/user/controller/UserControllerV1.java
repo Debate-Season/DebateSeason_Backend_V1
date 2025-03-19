@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.debateseason_backend_v1.common.response.ApiResult;
 import com.debateseason_backend_v1.common.response.VoidApiResult;
-import com.debateseason_backend_v1.domain.chatroom.model.response.OnlyHomeResponse;
 import com.debateseason_backend_v1.domain.chatroom.service.ChatRoomServiceV1;
 import com.debateseason_backend_v1.domain.issue.model.response.IssueBriefResponse;
 import com.debateseason_backend_v1.domain.issue.service.IssueServiceV1;
@@ -70,7 +69,7 @@ public class UserControllerV1 implements UserControllerV1Docs {
 		summary = "이슈방 전체를 불러옵니다(수정가능)  ",
 		description = " ")
 	@GetMapping("/home")
-	public ApiResult<OnlyHomeResponse> indexPage(
+	public ApiResult<List<IssueBriefResponse>> indexPage(
 		//@RequestParam(name = "page", required = false) Long page,
 		@AuthenticationPrincipal CustomUserDetails principal
 	) {

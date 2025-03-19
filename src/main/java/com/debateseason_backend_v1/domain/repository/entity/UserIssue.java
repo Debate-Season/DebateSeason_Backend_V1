@@ -32,4 +32,6 @@ public class UserIssue {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "issue_id", nullable = false)
 	private Issue issue;
+
+	private String bookmark;
 }

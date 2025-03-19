@@ -21,7 +21,6 @@ public class CommunityRecords { // 자주 들락날락할텐데 DB에 기록하�
 	private static HashMap<Long, Map<Long, Integer>> markUserIndexAboutUserWithIssue = new HashMap<>();
 	private static Map<String,String> communityUrlList = new HashMap<>();
 
-	//
 	private CommunityRecords() {}
 
 	// JVM에 로드될 경우 딱 한번만 실행이 된다.

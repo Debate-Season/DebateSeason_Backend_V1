@@ -14,8 +14,8 @@ import com.debateseason_backend_v1.domain.chatroom.model.response.chatroom.ChatR
 import com.debateseason_backend_v1.domain.chatroom.model.request.ChatRoomRequest;
 
 import com.debateseason_backend_v1.domain.chatroom.model.response.RealHomeResponse;
-import com.debateseason_backend_v1.domain.chatroom.model.response.TeamScore;
-import com.debateseason_backend_v1.domain.chatroom.model.response.Top5BestChatRoom;
+import com.debateseason_backend_v1.domain.chatroom.model.response.chatroom.messages.TeamScore;
+import com.debateseason_backend_v1.domain.chatroom.model.response.chatroom.messages.Top5BestChatRoom;
 import com.debateseason_backend_v1.domain.chatroom.model.response.chatroom.ChatRoomResponse2;
 import com.debateseason_backend_v1.domain.issue.model.response.IssueBriefResponse;
 import com.debateseason_backend_v1.domain.repository.ChatRoomRepository;

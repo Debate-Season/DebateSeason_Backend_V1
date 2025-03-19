@@ -20,7 +20,6 @@ import lombok.RequiredArgsConstructor;
 public class AdminIssueControllerV1 {
 
 	private final IssueServiceV1 issueServiceV1;
-
 	// 1. 이슈방 만들기
 	@Operation(
 		summary = "이슈방을 만듭니다(ADMIN)",

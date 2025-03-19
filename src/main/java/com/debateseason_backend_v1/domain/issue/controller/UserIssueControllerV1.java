@@ -30,7 +30,6 @@ public class UserIssueControllerV1 implements UserIssueControllerV1Docs {
 	private final IssueServiceV1 issueServiceV1;
 	private final ChatRoomServiceV1 chatRoomServiceV1;
 
-
 	@Override
 	@GetMapping("/home/refresh")
 	public ApiResult<RealHomeResponse> indexPage(
@@ -41,9 +40,6 @@ public class UserIssueControllerV1 implements UserIssueControllerV1Docs {
 		return chatRoomServiceV1.findVotedChatRoom(userId,page);
 
 	}
-
-
-
 
 
 	// 2. 이슈방 단건 불러오기(+ 채팅방도 같이 불러와야 함.)

@@ -17,5 +17,4 @@ public class HightlightResponse {
 	private int totalLogic;
 	private int totalAttitude;
 	private List<ChatForm> highlightChats;
-
 }

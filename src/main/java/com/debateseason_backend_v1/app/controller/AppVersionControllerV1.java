@@ -19,7 +19,7 @@ public class AppVersionControllerV1 implements AppVersionControllerV1Docs {
 
 	private final AppVersionServiceV1 appVersionServiceV1;
 
-	@GetMapping("/version/check")
+	@GetMapping("/versions/check")
 	public ApiResult<AppVersionCheckResponse> checkUpdate(
 		@RequestParam("versionCode") Integer versionCode
 	) {

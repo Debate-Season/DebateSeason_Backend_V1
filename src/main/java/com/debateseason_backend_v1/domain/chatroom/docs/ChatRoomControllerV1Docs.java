@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.debateseason_backend_v1.common.response.ApiResult;
-import com.debateseason_backend_v1.domain.chatroom.model.response.ChatRoomResponse;
+import com.debateseason_backend_v1.domain.chatroom.model.response.chatroom.ChatRoomResponse;
 import com.debateseason_backend_v1.domain.chatroom.model.request.ChatRoomRequest;
 import com.debateseason_backend_v1.security.CustomUserDetails;
 
@@ -54,12 +54,23 @@ public interface ChatRoomControllerV1Docs {
 		example = "1",
 		schema = @Schema(type = "string")
 	)
+	/*
+	@Parameter(
+		name = "type",
+		description = "토론위키(wiki)냐 하이라이트(highlight)냐 없어도 상관없음",
+		required = false,
+		example = "highlight",
+		schema = @Schema(type = "string")
+	)
+
+	 */
 	@ApiResponses({
 		@ApiResponse(responseCode = "200", description = "해당 채팅방을 성공적으로 불러왔습니다."),
 		@ApiResponse(responseCode = "400", description = "해당 채팅방을 불러오지 못했습니다.")
 	})
 	public ApiResult<ChatRoomResponse> getChatRoom(
 		@RequestParam(name = "chatroom-id") Long chatRoomId,
+		//@RequestParam(name = "type",required = false) String type,
 		@AuthenticationPrincipal CustomUserDetails principal);
 	//
 

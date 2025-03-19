@@ -3,7 +3,7 @@ package com.debateseason_backend_v1.domain.chatroom.model.response.chatroom;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import com.debateseason_backend_v1.domain.chatroom.model.response.chatroom.messages.TeamScore;
+import com.debateseason_backend_v1.domain.chatroom.model.response.TeamScore;
 import com.fasterxml.jackson.annotation.JsonFormat;
 
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -22,6 +22,8 @@ public class ChatRoomResponse{
 
 	@Schema(description = "채팅방 ID",example = "1")
 	private long chatRoomId;
+
+	//private Issue issue;
 
 	@Schema(description = "토론방 제목",example = "동덕여대는 폭력시위이다.")
 	private String title;

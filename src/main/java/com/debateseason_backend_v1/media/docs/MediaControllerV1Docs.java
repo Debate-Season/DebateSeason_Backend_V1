@@ -1,10 +1,8 @@
 package com.debateseason_backend_v1.media.docs;
 
-import org.springframework.lang.Nullable;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.debateseason_backend_v1.common.response.ApiResult;
-import com.debateseason_backend_v1.media.model.MediaType;
 import com.debateseason_backend_v1.media.model.response.MediaContainer;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -43,7 +41,7 @@ public interface MediaControllerV1Docs {
 		@ApiResponse(responseCode = "400", description = "해당 채팅방을 불러오지 못했습니다.")
 	})
 	public ApiResult<MediaContainer> getMedia(
-		@RequestParam(name = "type",required = false) @Nullable MediaType mediaType,
+		@RequestParam(name = "type",required = false)String type,
 		@RequestParam(name = "time",required = false)String time)
 ;
 

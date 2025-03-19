@@ -1,7 +1,9 @@
-package com.debateseason_backend_v1.domain.chatroom.model.response;
+package com.debateseason_backend_v1.domain.chatroom.model.response.chatroom;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
+import com.debateseason_backend_v1.domain.chatroom.model.response.TeamScore;
 import com.fasterxml.jackson.annotation.JsonFormat;
 
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -16,7 +18,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Builder
-public class ChatRoomResponse {
+public class ChatRoomResponse2 {
 
 	@Schema(description = "채팅방 ID",example = "1")
 	private long chatRoomId;
@@ -35,6 +37,10 @@ public class ChatRoomResponse {
 
 	@Schema(description = "반대 수",example = "10")
 	private int disagree;
+
+	//private List<TeamScore> teams;
+
+	//private HightlightResponse highlight;
 
 	// CreateDate 반환
 	@Schema(description = "반대 수",example = "2024-12-03T08:51:57")

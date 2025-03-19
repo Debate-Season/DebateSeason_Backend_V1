@@ -1,12 +1,13 @@
 package com.debateseason_backend_v1.domain.issue.docs;
 
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 
 import com.debateseason_backend_v1.common.response.ApiResult;
 
-
+import com.debateseason_backend_v1.domain.chatroom.model.response.RealHomeResponse;
 import com.debateseason_backend_v1.domain.issue.model.response.IssueDetailResponse;
 import com.debateseason_backend_v1.security.CustomUserDetails;
 
@@ -40,6 +41,28 @@ public interface UserIssueControllerV1Docs {
 		@RequestParam(name = "issue-id") Long issueId,
 		@AuthenticationPrincipal CustomUserDetails principal,
 		@RequestParam(name = "page",required = false)Long page
+	);
+
+
+	@Operation(
+		summary = "Renewal된 Home ",
+		description = "배포에 해당하는 Home",
+		security = @SecurityRequirement(name = "JWT")
+	)
+	@ApiResponses({
+		@ApiResponse(responseCode = "200", description = "해당 이슈방을 성공적으로 조회했습니다."),
+		@ApiResponse(responseCode = "400", description = "해당 이슈방은 존재하지 않습니다")
+	})
+
+	@Parameter(
+		name = "page",
+		description = "커서 페이지네이션 넘버. 입력 안해도 상관없음",
+		required = false,
+		example = "1"
+	)
+	public ApiResult<RealHomeResponse> indexPage(
+		@RequestParam(name = "page", required = false) Long page,
+		@AuthenticationPrincipal CustomUserDetails principal
 	);
 
 	//

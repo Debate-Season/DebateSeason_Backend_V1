@@ -1,5 +1,6 @@
 package com.debateseason_backend_v1.domain.terms.service;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -16,8 +17,11 @@ import com.debateseason_backend_v1.domain.repository.UserTermsAgreementRepositor
 import com.debateseason_backend_v1.domain.repository.entity.Terms;
 import com.debateseason_backend_v1.domain.repository.entity.UserTermsAgreement;
 import com.debateseason_backend_v1.domain.terms.controller.request.TermsAgreementItem;
+import com.debateseason_backend_v1.domain.terms.dto.UserTermsAgreementDto;
+import com.debateseason_backend_v1.domain.terms.enums.TermsType;
 import com.debateseason_backend_v1.domain.terms.service.request.TermsAgreementServiceRequest;
 import com.debateseason_backend_v1.domain.terms.service.response.LatestTermsResponse;
+import com.debateseason_backend_v1.domain.terms.service.response.UserTermsAgreementResponse;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,10 +37,11 @@ public class TermsServiceV1 {
 
 	public List<LatestTermsResponse> getLatestTerms() {
 
-		List<Terms> latestTermsForAllTypes = termsRepository.findLatestTermsForAllTypes().orElse(List.of());
+		List<Terms> latestTermsForAllTypes = termsRepository.findLatestTermsForAllTypes();
 
 		return latestTermsForAllTypes.stream()
 			.map(LatestTermsResponse::from)
+			.sorted(Comparator.comparingInt(response -> response.termsType().getDisplayOrder()))
 			.toList();
 	}
 
@@ -54,6 +59,34 @@ public class TermsServiceV1 {
 
 		// 5. 약관 동의 정보 저장
 		saveUserAgreements(request);
+	}
+
+	public List<UserTermsAgreementResponse> getUserTermsInfo(Long userId) {
+
+		// 1. 사용자의 약관 동의 정보 조회
+		List<UserTermsAgreementDto> userAgreements =
+			userTermsAgreementRepository.findLatestAgreementDatesByUserId(userId);
+
+		// 2. 모든 약관 타입에 대한 최신 버전 정보 조회
+		List<Terms> latestTerms = termsRepository.findLatestTermsForAllTypes();
+
+		// 3. 최신 약관 정보를 맵으로 변환
+		Map<TermsType, String> latestUrlMap = latestTerms.stream()
+			.collect(Collectors.toMap(
+				Terms::getTermsType,
+				Terms::getNotionUrl
+			));
+
+		return userAgreements.stream()
+			.map(agreement -> UserTermsAgreementResponse.of(
+				agreement.termsType(),
+				agreement.agreedAt(),
+				latestUrlMap.get(agreement.termsType())
+			))
+			.sorted(Comparator.comparingInt(response ->
+				response.termsType().getDisplayOrder()
+			))
+			.toList();
 	}
 
 	private List<Long> extractTermsIds(TermsAgreementServiceRequest request) {

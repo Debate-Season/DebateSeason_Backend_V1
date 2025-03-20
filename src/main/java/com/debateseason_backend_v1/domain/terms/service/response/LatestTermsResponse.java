@@ -1,6 +1,7 @@
 package com.debateseason_backend_v1.domain.terms.service.response;
 
 import com.debateseason_backend_v1.domain.repository.entity.Terms;
+import com.debateseason_backend_v1.domain.terms.enums.TermsType;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
@@ -12,7 +13,7 @@ public record LatestTermsResponse(
 	Long termsId,
 
 	@Schema(title = "이용약관 종류", example = "SERVICE")
-	String termsType,
+	TermsType termsType,
 
 	@Schema(title = "이용약관 버전", example = "1.0.0")
 	String version,
@@ -25,7 +26,7 @@ public record LatestTermsResponse(
 
 		return LatestTermsResponse.builder()
 			.termsId(terms.getId())
-			.termsType(terms.getTermsType().name())
+			.termsType(terms.getTermsType())
 			.version(terms.getVersion())
 			.notionUrl(terms.getNotionUrl())
 			.build();

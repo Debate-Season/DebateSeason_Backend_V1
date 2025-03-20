@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.debateseason_backend_v1.common.response.ApiResult;
 import com.debateseason_backend_v1.common.response.VoidApiResult;
-import com.debateseason_backend_v1.domain.chatroom.service.ChatRoomServiceV1;
 import com.debateseason_backend_v1.domain.issue.model.response.IssueBriefResponse;
 import com.debateseason_backend_v1.domain.issue.service.IssueServiceV1;
 import com.debateseason_backend_v1.domain.user.controller.docs.UserControllerV1Docs;
@@ -76,7 +75,6 @@ public class UserControllerV1 implements UserControllerV1Docs {
 		//return chatRoomServiceV1.findVotedChatRoom(userId,page);
 
 		// 활성도가 가장 높은 토론방 5개 표시
-
 
 		return issueServiceV1.fetchAll();
 	}

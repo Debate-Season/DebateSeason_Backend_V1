@@ -10,6 +10,7 @@ import com.debateseason_backend_v1.domain.repository.RefreshTokenRepository;
 import com.debateseason_backend_v1.domain.repository.UserRepository;
 import com.debateseason_backend_v1.domain.repository.entity.RefreshToken;
 import com.debateseason_backend_v1.domain.repository.entity.User;
+import com.debateseason_backend_v1.domain.terms.service.TermsServiceV1;
 import com.debateseason_backend_v1.domain.user.component.provider.OidcProviderFactory;
 import com.debateseason_backend_v1.domain.user.enums.SocialType;
 import com.debateseason_backend_v1.domain.user.service.request.OidcLoginServiceRequest;
@@ -23,10 +24,11 @@ import lombok.RequiredArgsConstructor;
 public class UserServiceV2 {
 
 	private final JwtUtil jwtUtil;
+	private final TermsServiceV1 termsService;
 	private final UserRepository userRepository;
 	private final ProfileRepository profileRepository;
-	private final RefreshTokenRepository refreshTokenRepository;
 	private final OidcProviderFactory oidcProviderFactory;
+	private final RefreshTokenRepository refreshTokenRepository;
 
 	@Transactional
 	public LoginResponse socialLogin(OidcLoginServiceRequest request) {
@@ -50,11 +52,14 @@ public class UserServiceV2 {
 
 		boolean profileStatus = profileRepository.existsByUserId(user.getId());
 
+		boolean termsStatus = termsService.hasAgreedToAllRequiredTerms(user.getId());
+
 		return LoginResponse.builder()
 			.accessToken(newAccessToken)
 			.refreshToken(newRefreshToken)
 			.socialType(request.socialType().getDescription())
 			.profileStatus(profileStatus)
+			.termsStatus(termsStatus)
 			.build();
 	}
 

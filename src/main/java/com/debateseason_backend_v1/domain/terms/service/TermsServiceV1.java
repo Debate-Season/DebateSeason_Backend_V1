@@ -3,6 +3,7 @@ package com.debateseason_backend_v1.domain.terms.service;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -53,6 +54,9 @@ public class TermsServiceV1 {
 
 		// 2. 약관 정보 조회 및 검증
 		Map<Long, Terms> termsMap = validateTermsExist(termsIds);
+
+		// 3. 중복 동의 방지 검증
+		validateNotDuplicateAgreement(request, termsMap);
 
 		// 4. 필수 약관 동의 여부 검증
 		validateRequiredTermsAgreement(request, termsMap);
@@ -126,6 +130,24 @@ public class TermsServiceV1 {
 		}
 
 		return termsMap;
+	}
+
+	private void validateNotDuplicateAgreement(
+		TermsAgreementServiceRequest request,
+		Map<Long, Terms> termsMap
+	) {
+		for (TermsAgreementItem item : request.agreements()) {
+			Optional<UserTermsAgreement> existingAgreement =
+				userTermsAgreementRepository.findByUserIdAndTermsId(
+					request.userId(),
+					item.termsId()
+				);
+
+			// 이미 동의한 약관에 대해 중복 동의 시 예외 발생
+			if (existingAgreement.isPresent()) {
+				throw new CustomException(ErrorCode.ALREADY_AGREED_TERMS);
+			}
+		}
 	}
 
 	private void validateRequiredTermsAgreement(TermsAgreementServiceRequest request, Map<Long, Terms> termsMap) {

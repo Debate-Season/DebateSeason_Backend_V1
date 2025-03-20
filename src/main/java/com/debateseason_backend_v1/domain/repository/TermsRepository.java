@@ -16,5 +16,6 @@ public interface TermsRepository extends JpaRepository<Terms, Long> {
 			WHERE (t.termsType, t.createdAt) IN 
 			(SELECT t2.termsType, MAX(t2.createdAt) FROM Terms t2 GROUP BY t2.termsType)
 		""")
-	List<Terms> findLatestTermsForAllTypes();
+	List<Terms> findAllLatestTerms();
+	
 }

@@ -15,6 +15,7 @@ import com.debateseason_backend_v1.domain.terms.controller.docs.TermsControllerV
 import com.debateseason_backend_v1.domain.terms.controller.request.TermsAgreementRequest;
 import com.debateseason_backend_v1.domain.terms.service.TermsServiceV1;
 import com.debateseason_backend_v1.domain.terms.service.response.LatestTermsResponse;
+import com.debateseason_backend_v1.domain.terms.service.response.UserTermsAgreementResponse;
 import com.debateseason_backend_v1.security.CustomUserDetails;
 
 import lombok.RequiredArgsConstructor;
@@ -39,20 +40,24 @@ public class TermsControllerV1 implements TermsControllerV1Docs {
 		);
 	}
 
-	// TODO: 내 약관 동의일자 조회 API
-
-	// TODO: 약관 동의 API
-
 	@PostMapping("/agree")
 	public VoidApiResult agree(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@RequestBody TermsAgreementRequest request
 	) {
 
-		log.info("request = {}", request.agreements().toString());
-
 		termsService.agree(request.toServiceRequest(userDetails.getUserId()));
 
 		return VoidApiResult.success("약관 동의에 성공했습니다.");
+	}
+	
+	@GetMapping("/agree")
+	public ApiResult<List<UserTermsAgreementResponse>> getUserTermsInfo(
+		@AuthenticationPrincipal CustomUserDetails userDetails
+	) {
+
+		List<UserTermsAgreementResponse> responses = termsService.getUserTermsInfo(userDetails.getUserId());
+
+		return ApiResult.success("이용약관 동의 목록 조회에 성공했습니다.", responses);
 	}
 }

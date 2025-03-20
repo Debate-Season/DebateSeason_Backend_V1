@@ -1,6 +1,7 @@
 package com.debateseason_backend_v1.domain.repository;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -30,4 +31,6 @@ public interface UserTermsAgreementRepository extends JpaRepository<UserTermsAgr
 		WHERE uta.userId = :userId AND uta.agreed = true
 		""")
 	Set<Long> findAgreedTermsIdsByUserId(@Param("userId") Long userId);
+
+	Optional<UserTermsAgreement> findByUserIdAndTermsId(Long userId, Long termsId);
 }

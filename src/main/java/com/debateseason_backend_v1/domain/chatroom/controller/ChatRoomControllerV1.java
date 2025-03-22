@@ -10,12 +10,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.debateseason_backend_v1.common.response.ApiResult;
 import com.debateseason_backend_v1.domain.chatroom.docs.ChatRoomControllerV1Docs;
+import com.debateseason_backend_v1.domain.chatroom.model.response.etc.Opinion;
 import com.debateseason_backend_v1.domain.chatroom.model.response.chatroom.ChatRoomResponse;
 import com.debateseason_backend_v1.domain.chatroom.model.request.ChatRoomRequest;
 import com.debateseason_backend_v1.domain.chatroom.service.ChatRoomServiceV1;
 import com.debateseason_backend_v1.security.CustomUserDetails;
 
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
@@ -26,10 +28,11 @@ public class ChatRoomControllerV1 implements ChatRoomControllerV1Docs {
 	private final ChatRoomServiceV1 chatRoomServiceV1;
 
 	// 4. 채팅방(=안건=토론방)생성하기, title,content -> JSON, issue_id = 쿼리스트링
+	// 에러처리 OK
 	@PostMapping("/room")
 	public ApiResult<Object> createChatRoom(
-		@RequestBody ChatRoomRequest chatRoomRequest,
-		@RequestParam(name = "issue-id") Long issue_id) {
+		@Valid @RequestBody ChatRoomRequest chatRoomRequest,
+		@Valid @RequestParam(name = "issue-id") Long issue_id) {
 		return chatRoomServiceV1.save(chatRoomRequest, issue_id);
 	}
 
@@ -54,12 +57,12 @@ public class ChatRoomControllerV1 implements ChatRoomControllerV1Docs {
 		description = "opinion, chatroomid = 쿼리스트링")
 	@PostMapping("/room/vote")
 	public ApiResult<String> voteChatRoom(
-		@RequestParam(name = "opinion") String opinion,
+		@RequestParam(name = "opinion") Opinion opinion,
 		@RequestParam(name = "chatroom-id") Long chatRoomId,
 		@AuthenticationPrincipal CustomUserDetails principal) {
 
 		Long userId = principal.getUserId();
-		return chatRoomServiceV1.vote(opinion, chatRoomId, userId);
+		return chatRoomServiceV1.vote(opinion.toString(), chatRoomId, userId);
 	}
 
 

@@ -10,7 +10,10 @@ import lombok.Setter;
 @AllArgsConstructor
 @Builder
 public class Top5BestChatRoom {
-	private Long chatRoomId;
-	private String title;
-	private String content;
+
+	private Long issueId;
+	private String issueTitle;
+	private Long debateId;
+	private String debateTitle;
+	private String time;
 }

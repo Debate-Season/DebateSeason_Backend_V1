@@ -1,7 +1,6 @@
 package com.debateseason_backend_v1.domain.issue.controller;
 
-import java.util.List;
-
+import org.springframework.lang.Nullable;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -10,12 +9,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.debateseason_backend_v1.common.response.ApiResult;
-import com.debateseason_backend_v1.domain.chatroom.model.response.RealHomeResponse;
+import com.debateseason_backend_v1.domain.chatroom.model.response.chatroom.ResponseOnlyHome;
 import com.debateseason_backend_v1.domain.chatroom.service.ChatRoomServiceV1;
 import com.debateseason_backend_v1.domain.issue.PaginationDTO;
 import com.debateseason_backend_v1.domain.issue.docs.UserIssueControllerV1Docs;
+import com.debateseason_backend_v1.domain.issue.model.Category;
 import com.debateseason_backend_v1.domain.issue.model.response.IssueDetailResponse;
-import com.debateseason_backend_v1.domain.issue.model.response.IssueBriefResponse;
 import com.debateseason_backend_v1.domain.issue.service.IssueServiceV1;
 import com.debateseason_backend_v1.security.CustomUserDetails;
 
@@ -32,7 +31,7 @@ public class UserIssueControllerV1 implements UserIssueControllerV1Docs {
 
 	@Override
 	@GetMapping("/home/refresh")
-	public ApiResult<RealHomeResponse> indexPage(
+	public ApiResult<ResponseOnlyHome> indexPage(
 		@RequestParam(name = "page", required = false) Long page,
 		@AuthenticationPrincipal CustomUserDetails principal
 	) {
@@ -75,10 +74,11 @@ public class UserIssueControllerV1 implements UserIssueControllerV1Docs {
 	@GetMapping("/issue-map")
 	public ApiResult<PaginationDTO> getIssueMap(
 		@RequestParam(name = "page",required = false) Long page,
-		@RequestParam(name = "majorcategory",required = false) String majorcategory) {
+		@RequestParam(name = "majorcategory",required = false) @Nullable Category majorcategory) {
 
+		String Stringcategory = ( majorcategory == null ? null : majorcategory.toString() );
 
-		return issueServiceV1.fetchIssueMap(page,majorcategory);
+		return issueServiceV1.fetchIssueMap(page,Stringcategory); // 수정
 	}
 
 }

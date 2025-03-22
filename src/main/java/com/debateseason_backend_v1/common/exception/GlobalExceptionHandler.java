@@ -1,6 +1,9 @@
 package com.debateseason_backend_v1.common.exception;
 
+import java.lang.annotation.Annotation;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.springframework.http.ResponseEntity;
@@ -9,6 +12,7 @@ import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import com.debateseason_backend_v1.common.response.ErrorResponse;
 
@@ -51,6 +55,43 @@ public class GlobalExceptionHandler {
 		String detailMessage = createDetailMessage(e.getBindingResult().getFieldErrors());
 
 		ErrorResponse errorResponse = ErrorResponse.of(ErrorCode.BAD_REQUEST, detailMessage);
+
+		return new ResponseEntity<>(errorResponse, ErrorCode.BAD_REQUEST.getHttpStatus());
+	}
+
+	@ExceptionHandler(MethodArgumentTypeMismatchException.class)
+	protected ResponseEntity<ErrorResponse> handleMethodArgumentTypeMismatch(MethodArgumentTypeMismatchException e){
+
+
+		log.error("Parameter mismatch",e);
+
+		// 잘못된 파라미터
+		Object invalidValue = e.getValue();
+
+		// 기댓값
+		Class<?> requiredType = e.getRequiredType();
+		String expectedValues = "Unknown";
+		if (requiredType != null && requiredType.isEnum()) {
+			expectedValues = Arrays.stream(requiredType.getEnumConstants())
+				.map(Object::toString)
+				.collect(Collectors.joining(", "));
+		}
+
+		// 파라미터
+		String parameter = e.getName();
+
+
+		String detailMessage = new StringBuilder()
+			.append("parameter : ")
+			.append(parameter)
+			.append(", expected : ")
+			.append(expectedValues)
+			.append(", but you typing ")
+			.append(invalidValue)
+			.toString()
+			;
+
+		ErrorResponse errorResponse = ErrorResponse.of(ErrorCode.BAD_REQUEST,detailMessage);
 
 		return new ResponseEntity<>(errorResponse, ErrorCode.BAD_REQUEST.getHttpStatus());
 	}

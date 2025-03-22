@@ -1,6 +1,8 @@
 package com.debateseason_backend_v1.domain.repository;
 
+import java.sql.Timestamp;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -19,6 +21,30 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
 	Long countByIssue(Issue issue);
 
 	// 인기 토론방 5개
+	@Query(value = """
+    SELECT iss.issue_id, iss.title,  
+           chatroom.chat_room_id, chatroom.title
+    FROM issue iss
+    INNER JOIN (
+        SELECT cr.chat_room_id, cr.title, cr.issue_id
+        FROM chat_room cr
+        INNER JOIN (
+            SELECT chat_room_id
+            FROM (
+                SELECT chat_room_id, COUNT(chat_room_id) AS chats 
+                FROM chat
+                WHERE time_stamp <= NOW()
+                GROUP BY chat_room_id
+            ) tmp
+            ORDER BY tmp.chats DESC
+            LIMIT 5
+        ) tmp2 ON cr.chat_room_id = tmp2.chat_room_id
+    ) chatroom ON iss.issue_id = chatroom.issue_id
+""", nativeQuery = true)
+	List<Object[]> findTop5ActiveChatRooms();
+
+
+	/*
 		@Query(value = """
         SELECT cr.chat_room_id, cr.title, cr.content 
         FROM chat_room cr,
@@ -36,6 +62,8 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
         WHERE cr.chat_room_id = tmp2.chat_room_id
         """, nativeQuery = true)
 		List<Object[]> findTop5ActiveChatRooms();
+
+	 */
 
 
 	// 1. 토론방에서 "합계,논리,태도" 부분

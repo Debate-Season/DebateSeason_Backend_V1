@@ -1,13 +1,12 @@
 package com.debateseason_backend_v1.domain.issue.docs;
 
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 
 import com.debateseason_backend_v1.common.response.ApiResult;
 
-import com.debateseason_backend_v1.domain.chatroom.model.response.RealHomeResponse;
+import com.debateseason_backend_v1.domain.chatroom.model.response.chatroom.ResponseOnlyHome;
 import com.debateseason_backend_v1.domain.issue.model.response.IssueDetailResponse;
 import com.debateseason_backend_v1.security.CustomUserDetails;
 
@@ -60,7 +59,7 @@ public interface UserIssueControllerV1Docs {
 		required = false,
 		example = "1"
 	)
-	public ApiResult<RealHomeResponse> indexPage(
+	public ApiResult<ResponseOnlyHome> indexPage(
 		@RequestParam(name = "page", required = false) Long page,
 		@AuthenticationPrincipal CustomUserDetails principal
 	);

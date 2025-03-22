@@ -1,4 +1,4 @@
-package com.debateseason_backend_v1.domain.chatroom.model.response.chatroom;
+package com.debateseason_backend_v1.domain.chatroom.model.response.chatroom.dummy;
 
 import java.time.LocalDateTime;
 

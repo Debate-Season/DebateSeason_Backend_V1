@@ -1,23 +1,28 @@
 package com.debateseason_backend_v1.domain.issue.service;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
-
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
+import com.debateseason_backend_v1.common.exception.CustomException;
 import com.debateseason_backend_v1.common.exception.ErrorCode;
 import com.debateseason_backend_v1.common.response.ApiResult;
 import com.debateseason_backend_v1.domain.chatroom.model.response.chatroom.ChatRoomResponse;
+import com.debateseason_backend_v1.domain.chatroom.model.response.chatroom.type.ResponseWithTimeAndOpinion;
 import com.debateseason_backend_v1.domain.issue.PaginationDTO;
 import com.debateseason_backend_v1.domain.issue.model.response.IssueDetailResponse;
 import com.debateseason_backend_v1.domain.issue.model.request.IssueRequest;
 import com.debateseason_backend_v1.domain.issue.model.CommunityRecords;
 import com.debateseason_backend_v1.domain.issue.model.response.IssueBriefResponse;
 import com.debateseason_backend_v1.domain.profile.enums.CommunityType;
+import com.debateseason_backend_v1.domain.repository.ChatRepository;
 import com.debateseason_backend_v1.domain.repository.ChatRoomRepository;
 import com.debateseason_backend_v1.domain.repository.IssueRepository;
 import com.debateseason_backend_v1.domain.repository.ProfileRepository;
@@ -45,6 +50,7 @@ public class IssueServiceV1 {
 	private final UserRepository userRepository;
 
 	private final ProfileRepository profileRepository;
+	private final ChatRepository chatRepository;
 
 	private final ChatRoomRepository chatRoomRepository;
 
@@ -90,12 +96,7 @@ public class IssueServiceV1 {
 
 		// 수정. issue없는 에러 조회
 		if(issueRepository.findById(issueId).isEmpty()){
-			return ApiResult.<IssueDetailResponse>builder()
-				.status(400)
-				.code(ErrorCode.BAD_REQUEST)
-				.message("선택하신 이슈방은 존재하지 않습니다.")
-				.build();
-
+			throw new CustomException(ErrorCode.NOT_FOUND_ISSUE);
 		}
 
 		String issueTitle = "this is error" ;
@@ -106,12 +107,12 @@ public class IssueServiceV1 {
 		}
 
 		Profile profile = profileRepository.findByUserId(userId).orElseThrow(
-			() -> new RuntimeException("There is no profile "+ userId)
+			() -> new CustomException(ErrorCode.NOT_FOUND_PROFILE)
 		);
 
 		CommunityType communityType = profile.getCommunityType();
 		if (communityType == null) {
-			throw new RuntimeException("No community assigned for profile: " + profile.getId());
+			throw new CustomException(ErrorCode.NOT_FOUND_COMMUNITY);
 		}
 
 
@@ -161,22 +162,22 @@ public class IssueServiceV1 {
 		// chat_room_id, title, content, created_at,
 		//            COUNT(CASE WHEN ucr.opinion = 'AGREE' THEN 1 END) AS AGREE,
 		//            COUNT(CASE WHEN ucr.opinion = 'DISAGREE' THEN 1 END) AS DISAGREE
-		List<ChatRoomResponse> chatRooms =  userChatRoomRepository.findChatRoomAggregates(chatRoomIds).stream().map(
+		List<ResponseWithTimeAndOpinion> chatRooms =  userChatRoomRepository.findChatRoomAggregates(chatRoomIds).stream().map(
 			e->{
 				Long chatRoomId = (Long)e[0];
 				String title = (String)e[1];
 				String content = (String)e[2];
 
-				String time = e[3].toString();
-				String result = time.split("\\.")[0];
+				String localDateTime= e[3].toString();
+				String result = localDateTime.split("\\.")[0];
 				LocalDateTime createdAt = LocalDateTime.parse(result, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
 
 				int agree = Math.toIntExact((Long)e[4]);
 				int disagree = Math.toIntExact((Long)e[5]);
 
-				System.out.println("id:" +chatRoomId);
+				String time = findLastestChatTime(chatRoomId);
 
-				return ChatRoomResponse.builder()
+				return ResponseWithTimeAndOpinion.builder()
 					.chatRoomId(chatRoomId)
 					.title(title)
 					.content(content)
@@ -184,11 +185,13 @@ public class IssueServiceV1 {
 					.opinion("NEUTRAL")
 					.agree(agree)
 					.disagree(disagree)
+					.time(time)
 					.build();
 
 
+
 			}
-		).toList()
+		).collect(Collectors.toList());
 			;
 
 		// chat_room_id, opinion AS opinion
@@ -201,7 +204,7 @@ public class IssueServiceV1 {
 					Long chatRoomId = (Long)obj[0];
 					String opinion = (String)obj[1];
 
-					for(ChatRoomResponse e: chatRooms){
+					for(ResponseWithTimeAndOpinion e: chatRooms){
 						if(e.getChatRoomId()==chatRoomId){
 							e.setOpinion(opinion);
 							break;
@@ -244,12 +247,12 @@ public class IssueServiceV1 {
 	public ApiResult<String> bookMark(Long issueId, Long userId){
 
 		User user = userRepository.findById(userId).orElseThrow(
-			() -> new RuntimeException("There is no UserNumber like " + userId)
+			()-> new CustomException(ErrorCode.NOT_FOUND_USER)
 		)
 		;
 
 		Issue issue = issueRepository.findById(issueId).orElseThrow(
-			() -> new RuntimeException("There is no IssueNumber like "+issueId)
+			() -> new CustomException(ErrorCode.NOT_FOUND_ISSUE)
 		);
 
 		UserIssue fetchUserIssue= userIssueRepository.findByIssueAndUser(issue,user);
@@ -279,6 +282,7 @@ public class IssueServiceV1 {
 
 		}
 
+		// 첫 북마크일 경우 새로 등록을 한다.
 		UserIssue userIssue = new UserIssue();
 		userIssue.setUser(user);
 		userIssue.setIssue(issue);
@@ -290,57 +294,6 @@ public class IssueServiceV1 {
 			.status(200)
 			.code(ErrorCode.SUCCESS)
 			.data("이슈방 "+issueId+"을 관심등록 했습니다.")
-			.build();
-
-	}
-	
-	// 3. issue를 커서 방식으로 가져오기
-	public ApiResult<Object> fetchAll(Long userId,Long page) {
-
-		// 일단 issueId 여러개를 가져온다.
-		List<Long> issueIds = issueRepository.findIssuesByPage(page*2).stream().toList();
-
-		if (issueIds.isEmpty()){
-			return ApiResult.builder()
-				.status(200)
-				.code(ErrorCode.SUCCESS)
-				.message("페이지를 불러올 수 없습니다.  페이지 번호: "+page)
-				.build();
-		}
-
-		// issue_id, title, created_at, chat_room_count, COUNT(ui2.issue_id) AS bookmarks
-		List<IssueBriefResponse> issueBriefRespons = issueRepository.findIssuesWithBookmarks(issueIds).stream().map(
-			e->{
-				Long issueId = (Long)e[0];
-				String title = (String)e[1];
-
-				String time = e[2].toString();
-				String result = time.split("\\.")[0];
-				LocalDateTime createdAt = LocalDateTime.parse(result, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-
-				Long chatRoomCount = (Long)e[3];
-				Long bookMarkCount = (Long)e[4];
-
-				return IssueBriefResponse.builder()
-					.issueId(issueId)
-					.title(title)
-					.createdAt(createdAt)
-					.countChatRoom(chatRoomCount)
-					.bookMarks(bookMarkCount)
-					.build()
-					;
-
-
-
-
-			}
-		).toList();
-
-		return ApiResult.builder()
-			.status(200)
-			.code(ErrorCode.SUCCESS)
-			.message("이슈방 불러왔습니다.")
-			.data(issueBriefRespons)
 			.build();
 
 	}
@@ -376,11 +329,8 @@ public class IssueServiceV1 {
 
 
 		if (issueIds.isEmpty()){
-			return ApiResult.<PaginationDTO>builder()
-				.status(400)
-				.code(ErrorCode.SUCCESS)
-				.message("페이지를 불러올 수 없습니다.  페이지 번호: "+page)
-				.build();
+			// 페이지네이션 오류
+			throw new CustomException(ErrorCode.PAGE_OUT_OF_RANGE);
 		}
 
 		// issue_id, title, created_at, chat_room_count, COUNT(ui2.issue_id) AS bookmarks
@@ -400,7 +350,7 @@ public class IssueServiceV1 {
 				return IssueBriefResponse.builder()
 					.issueId(issueId)
 					.title(title)
-					.createdAt(createdAt)
+					//.createdAt(createdAt)
 					.countChatRoom(chatRoomCount)
 					.bookMarks(bookMarkCount)
 					.build()
@@ -434,7 +384,7 @@ public class IssueServiceV1 {
 			IssueBriefResponse response = IssueBriefResponse.builder()
 				.issueId(id)
 				.title(issueList.get(i).getTitle())
-				.createdAt(issueList.get(i).getCreatedAt())
+				//.createdAt(issueList.get(i).getCreatedAt())
 				.countChatRoom(chatRoomRepository.countByIssue(issueList.get(i)))
 				.build();
 			responseList.add(response);
@@ -522,6 +472,24 @@ public class IssueServiceV1 {
 			.data(responseList)
 			.build();
 
+	}
+
+	private String findLastestChatTime(Long chatRoomId){
+		Optional<LocalDateTime> latestChat = chatRepository.findLatestTimeStampByChatRoomId(chatRoomId);
+
+		String time = null; // 대화가 아무것도 없는 상태는 항상 null이다.
+
+		if(latestChat.isPresent()){
+			// 몇 분이 지났는지.
+			Duration outdated = Duration.between(latestChat.get(), LocalDateTime.now());
+
+			time = new StringBuilder()
+				.append(outdated.toMinutes())
+				.append("분 전 대화")
+				.toString();
+
+		}
+		return time;
 	}
 
 }

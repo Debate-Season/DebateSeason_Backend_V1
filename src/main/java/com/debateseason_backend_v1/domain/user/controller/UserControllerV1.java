@@ -31,7 +31,6 @@ import lombok.RequiredArgsConstructor;
 public class UserControllerV1 implements UserControllerV1Docs {
 
 	private final UserServiceV1 userServiceV1;
-	private final ChatRoomServiceV1 chatRoomServiceV1;
 	private final IssueServiceV1 issueServiceV1;
 
 	@PostMapping("/login")

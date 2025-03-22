@@ -65,14 +65,14 @@ public enum ErrorCode implements CodeInterface {
 	// 5000번대 약관 관련 에러
 	NOT_FOUND_TERMS(5000, HttpStatus.NOT_FOUND, "존재하지 않는 약관입니다."),
 	REQUIRED_TERMS_NOT_AGREED(5001, HttpStatus.BAD_REQUEST, "필수 약관에 모두 동의해야 합니다."),
+	ALREADY_AGREED_TERMS(5002, HttpStatus.BAD_REQUEST, "이미 동의한 이용약관입니다."),
 
 	// API 요청 에러
 	BAD_REQUEST(400, HttpStatus.BAD_REQUEST, "잘못된 요청입니다."),
-	
 
 	// 기타
 	// Issue방 관련 에러
-	
+
 	// 400번대
 	NOT_FOUND_ISSUE(404, HttpStatus.NOT_FOUND, "주어진 id값에 해당하는 이슈방을 찾을 수 없습니다."),
 	NOT_FOUND_CHATROOM(404,HttpStatus.NOT_FOUND,"주어진 chatroomId로 해당하는 채팅방을 찾을 수 없습니다."),

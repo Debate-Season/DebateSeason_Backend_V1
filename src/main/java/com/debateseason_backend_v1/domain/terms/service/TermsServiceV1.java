@@ -3,6 +3,7 @@ package com.debateseason_backend_v1.domain.terms.service;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -37,7 +38,7 @@ public class TermsServiceV1 {
 
 	public List<LatestTermsResponse> getLatestTerms() {
 
-		List<Terms> latestTermsForAllTypes = termsRepository.findLatestTermsForAllTypes();
+		List<Terms> latestTermsForAllTypes = termsRepository.findAllLatestTerms();
 
 		return latestTermsForAllTypes.stream()
 			.map(LatestTermsResponse::from)
@@ -54,6 +55,9 @@ public class TermsServiceV1 {
 		// 2. 약관 정보 조회 및 검증
 		Map<Long, Terms> termsMap = validateTermsExist(termsIds);
 
+		// 3. 중복 동의 방지 검증
+		validateNotDuplicateAgreement(request, termsMap);
+
 		// 4. 필수 약관 동의 여부 검증
 		validateRequiredTermsAgreement(request, termsMap);
 
@@ -68,7 +72,7 @@ public class TermsServiceV1 {
 			userTermsAgreementRepository.findLatestAgreementDatesByUserId(userId);
 
 		// 2. 모든 약관 타입에 대한 최신 버전 정보 조회
-		List<Terms> latestTerms = termsRepository.findLatestTermsForAllTypes();
+		List<Terms> latestTerms = termsRepository.findAllLatestTerms();
 
 		// 3. 최신 약관 정보를 맵으로 변환
 		Map<TermsType, String> latestUrlMap = latestTerms.stream()
@@ -87,6 +91,22 @@ public class TermsServiceV1 {
 				response.termsType().getDisplayOrder()
 			))
 			.toList();
+	}
+
+	@Transactional(readOnly = true)
+	public boolean hasAgreedToAllRequiredTerms(Long userId) {
+
+		// 1. 최신 필수 약관 ID 조회
+		List<Terms> requiredTerms = termsRepository.findAllLatestTerms().stream()
+			.filter(Terms::isRequired)
+			.toList();
+
+		// 2. 사용자가 동의한 약관 ID 조회
+		Set<Long> userAgreedTermsIds = userTermsAgreementRepository
+			.findAgreedTermsIdsByUserId(userId);
+
+		return requiredTerms.stream()
+			.allMatch(term -> userAgreedTermsIds.contains(term.getId()));
 	}
 
 	private List<Long> extractTermsIds(TermsAgreementServiceRequest request) {
@@ -110,6 +130,24 @@ public class TermsServiceV1 {
 		}
 
 		return termsMap;
+	}
+
+	private void validateNotDuplicateAgreement(
+		TermsAgreementServiceRequest request,
+		Map<Long, Terms> termsMap
+	) {
+		for (TermsAgreementItem item : request.agreements()) {
+			Optional<UserTermsAgreement> existingAgreement =
+				userTermsAgreementRepository.findByUserIdAndTermsId(
+					request.userId(),
+					item.termsId()
+				);
+
+			// 이미 동의한 약관에 대해 중복 동의 시 예외 발생
+			if (existingAgreement.isPresent()) {
+				throw new CustomException(ErrorCode.ALREADY_AGREED_TERMS);
+			}
+		}
 	}
 
 	private void validateRequiredTermsAgreement(TermsAgreementServiceRequest request, Map<Long, Terms> termsMap) {

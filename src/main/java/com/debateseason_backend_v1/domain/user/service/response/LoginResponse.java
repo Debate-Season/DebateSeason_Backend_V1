@@ -18,6 +18,9 @@ public record LoginResponse(
 	String socialType,
 
 	@Schema(description = "프로필 생성 여부", example = "false")
-	boolean profileStatus
+	boolean profileStatus,
+
+	@Schema(description = "이용약관 동의 여부", example = "false")
+	boolean termsStatus
 ) {
 }

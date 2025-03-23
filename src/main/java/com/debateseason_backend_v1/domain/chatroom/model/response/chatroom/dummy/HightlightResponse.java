@@ -1,4 +1,4 @@
-package com.debateseason_backend_v1.domain.chatroom.model.response;
+package com.debateseason_backend_v1.domain.chatroom.model.response.chatroom.dummy;
 
 import java.util.List;
 

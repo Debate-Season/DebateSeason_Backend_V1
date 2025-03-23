@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.debateseason_backend_v1.common.response.ApiResult;
+import com.debateseason_backend_v1.domain.chatroom.model.response.etc.Opinion;
 import com.debateseason_backend_v1.domain.chatroom.model.response.chatroom.ChatRoomResponse;
 import com.debateseason_backend_v1.domain.chatroom.model.request.ChatRoomRequest;
 import com.debateseason_backend_v1.security.CustomUserDetails;
@@ -98,7 +99,7 @@ public interface ChatRoomControllerV1Docs {
 
 	})
 	public ApiResult<String> voteChatRoom(
-		@RequestParam(name = "opinion") String opinion,
+		@RequestParam(name = "opinion") Opinion opinion,
 		@RequestParam(name = "chatroom-id") Long chatRoomId,
 		@AuthenticationPrincipal CustomUserDetails principal)
 		;

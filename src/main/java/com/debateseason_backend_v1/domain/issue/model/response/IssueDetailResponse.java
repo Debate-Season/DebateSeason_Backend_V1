@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.debateseason_backend_v1.domain.chatroom.model.response.chatroom.ChatRoomResponse;
+import com.debateseason_backend_v1.domain.chatroom.model.response.chatroom.type.ResponseWithTimeAndOpinion;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
@@ -35,7 +36,7 @@ public class IssueDetailResponse {
 	private Map<String, Integer> map;
 
 	@Schema(description = "채팅방 목록", example = "")
-	private List<ChatRoomResponse> chatRoomMap;
+	private List<ResponseWithTimeAndOpinion> chatRoomMap;
 
 
 }

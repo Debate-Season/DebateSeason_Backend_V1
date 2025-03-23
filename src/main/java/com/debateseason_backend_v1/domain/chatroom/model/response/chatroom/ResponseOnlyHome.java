@@ -1,9 +1,10 @@
-package com.debateseason_backend_v1.domain.chatroom.model.response;
+package com.debateseason_backend_v1.domain.chatroom.model.response.chatroom;
 
 import java.util.List;
 
-import com.debateseason_backend_v1.domain.chatroom.model.response.chatroom.ChatRoomResponse2;
+
 import com.debateseason_backend_v1.domain.chatroom.model.response.chatroom.messages.Top5BestChatRoom;
+import com.debateseason_backend_v1.domain.chatroom.model.response.chatroom.type.ResponseWithTime;
 import com.debateseason_backend_v1.domain.issue.model.response.IssueBriefResponse;
 
 import lombok.AllArgsConstructor;
@@ -15,9 +16,9 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @Builder
-public class RealHomeResponse {
+public class ResponseOnlyHome {
 	private List<Top5BestChatRoom> top5BestChatRooms;
 	private List<IssueBriefResponse> top5BestIssueRooms;
 
-	private List<ChatRoomResponse2> chatRoomResponse;
+	private List<ResponseWithTime> chatRoomResponse;
 }

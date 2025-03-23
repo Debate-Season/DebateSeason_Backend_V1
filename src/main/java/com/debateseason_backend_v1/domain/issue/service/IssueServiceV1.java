@@ -350,7 +350,7 @@ public class IssueServiceV1 {
 				return IssueBriefResponse.builder()
 					.issueId(issueId)
 					.title(title)
-					//.createdAt(createdAt)
+					.createdAt(createdAt)
 					.countChatRoom(chatRoomCount)
 					.bookMarks(bookMarkCount)
 					.build()
@@ -384,7 +384,7 @@ public class IssueServiceV1 {
 			IssueBriefResponse response = IssueBriefResponse.builder()
 				.issueId(id)
 				.title(issueList.get(i).getTitle())
-				//.createdAt(issueList.get(i).getCreatedAt())
+				.createdAt(issueList.get(i).getCreatedAt())
 				.countChatRoom(chatRoomRepository.countByIssue(issueList.get(i)))
 				.build();
 			responseList.add(response);

@@ -81,4 +81,15 @@ public class UserIssueControllerV1 implements UserIssueControllerV1Docs {
 		return issueServiceV1.fetchIssueMap(page,Stringcategory); // 수정
 	}
 
+	// 4. 추천 게시글 가져오기
+	@GetMapping("/home/recommend")
+	public ApiResult<ResponseOnlyHome> getRecommend(
+		@RequestParam(name = "page", required = false) Long page,
+		@AuthenticationPrincipal CustomUserDetails principal
+	) {
+		Long userId = principal.getUserId();
+		return chatRoomServiceV1.findVotedChatRoom(userId,page);
+
+	}
+
 }

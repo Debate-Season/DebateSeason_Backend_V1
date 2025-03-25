@@ -33,6 +33,7 @@ public class Issue {
 
 	private String title;
 
+	@Column(name = "major_category")
 	private String majorCategory;
 
 	private String middleCategory;

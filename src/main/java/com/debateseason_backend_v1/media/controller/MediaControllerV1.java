@@ -21,7 +21,7 @@ public class MediaControllerV1 implements MediaControllerV1Docs {
 
 	private final MediaService mediaService;
 
-	@GetMapping("/media")
+	@GetMapping("/home/media")
 	public ApiResult<MediaContainer> getMedia(
 		@RequestParam(name = "type",required = false) @Nullable MediaType mediaType,
 		@RequestParam(name = "time",required = false)String time){

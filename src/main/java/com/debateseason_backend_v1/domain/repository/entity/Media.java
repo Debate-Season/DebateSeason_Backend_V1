@@ -32,9 +32,13 @@ public class Media {
 
 	private String url;
 
+	private String src;//
+
 	private String category;
 
 	private String media;
+
+	private String type;// news, community, youtube
 
 	@CreatedDate
 	@Column(name = "created_at", updatable = false)

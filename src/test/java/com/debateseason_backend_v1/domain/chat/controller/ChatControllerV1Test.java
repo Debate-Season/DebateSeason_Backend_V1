@@ -26,11 +26,11 @@ class ChatControllerV1Test {
 	@MockBean
 	private ChatServiceV1 chatServiceV1;
 
-	@Test
+/*	@Test
 	@DisplayName("채팅 목록 조회 성공 테스트")
 	void chatListTest() throws Exception {
 
-	}
+	}*/
 
 /*	@Test
 	@DisplayName("필수 파라미터 누락 시 실패 테스트")

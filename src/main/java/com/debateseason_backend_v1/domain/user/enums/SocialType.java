@@ -14,10 +14,12 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum SocialType {
 
-	KAKAO("kakao"),
-	APPLE("apple");
+	KAKAO("kakao", "https://kauth.kakao.com", "https://kauth.kakao.com/.well-known/jwks.json"),
+	APPLE("apple", "https://appleid.apple.com", "https://appleid.apple.com/auth/keys");
 
 	private final String description;
+	private final String issuer;
+	private final String jwksUrl;
 
 	@JsonValue
 	public String getDescription() {

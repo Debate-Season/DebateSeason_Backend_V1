@@ -20,7 +20,7 @@ public class VoidApiResult {
 	@Schema(description = "응답 코드", example = "SUCCESS")
 	private ErrorCode code;
 
-	@Schema(description = "응답 메시지", example = "정상적으로 처리되었습니다")
+	@Schema(description = "응답 메시지", example = "정상적으로 처리되었습니다.")
 	private String message;
 
 	public static VoidApiResult success(String message) {

@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 
 @Builder
-@Schema(description = "토큰 재발급 응답")
+@Schema(title = "토큰 재발급 응답 DTO", description = "토큰 재발급 응답")
 public record TokenReissueResponse(
 	@Schema(
 		description = "Access Token",
@@ -14,7 +14,7 @@ public record TokenReissueResponse(
 
 	@Schema(
 		description = "Refresh Token",
-		example = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwiaWF0IjoxNzM2Njc1NDQyLCJleHAiOjE3M...M"
+		example = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwiaWF0IjoxNzM2Njc1NDQyLCJleHAiOjE3M..."
 	)
 	String refreshToken
 ) {

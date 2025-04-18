@@ -13,6 +13,7 @@ import com.debateseason_backend_v1.domain.repository.RefreshTokenRepository;
 import com.debateseason_backend_v1.domain.repository.UserRepository;
 import com.debateseason_backend_v1.domain.repository.entity.RefreshToken;
 import com.debateseason_backend_v1.domain.repository.entity.User;
+import com.debateseason_backend_v1.domain.terms.service.TermsServiceV1;
 import com.debateseason_backend_v1.domain.user.service.request.LogoutServiceRequest;
 import com.debateseason_backend_v1.domain.user.service.request.SocialLoginServiceRequest;
 import com.debateseason_backend_v1.domain.user.service.response.LoginResponse;
@@ -28,6 +29,7 @@ import lombok.extern.slf4j.Slf4j;
 public class UserServiceV1 {
 
 	private final JwtUtil jwtUtil;
+	private final TermsServiceV1 termsService;
 	private final UserRepository userRepository;
 	private final ProfileRepository profileRepository;
 	private final RefreshTokenRepository refreshTokenRepository;
@@ -52,11 +54,14 @@ public class UserServiceV1 {
 
 		boolean profileStatus = profileRepository.existsByUserId(user.getId());
 
+		boolean termsStatus = termsService.hasAgreedToAllRequiredTerms(user.getId());
+
 		return LoginResponse.builder()
 			.accessToken(newAccessToken)
 			.refreshToken(newRefreshToken)
 			.socialType(request.socialType().getDescription())
 			.profileStatus(profileStatus)
+			.termsStatus(termsStatus)
 			.build();
 	}
 
@@ -82,7 +87,7 @@ public class UserServiceV1 {
 	public void withdraw(Long userId) {
 
 		User user = userRepository.findById(userId)
-			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+			.orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_USER));
 
 		user.withdraw();
 

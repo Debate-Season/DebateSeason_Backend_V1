@@ -3,7 +3,7 @@ package com.debateseason_backend_v1.domain.user.service.response;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 
-@Schema(description = "로그인 응답")
+@Schema(title = "로그인 응답 DTO", description = "로그인 응답")
 @Builder
 public record LoginResponse(
 	@Schema(description = "액세스 토큰",
@@ -18,6 +18,9 @@ public record LoginResponse(
 	String socialType,
 
 	@Schema(description = "프로필 생성 여부", example = "false")
-	boolean profileStatus
+	boolean profileStatus,
+
+	@Schema(description = "이용약관 동의 여부", example = "false")
+	boolean termsStatus
 ) {
 }

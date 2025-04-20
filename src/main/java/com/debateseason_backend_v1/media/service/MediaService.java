@@ -6,13 +6,16 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import com.debateseason_backend_v1.common.exception.CustomException;
 import com.debateseason_backend_v1.common.exception.ErrorCode;
 import com.debateseason_backend_v1.common.response.ApiResult;
 import com.debateseason_backend_v1.domain.repository.entity.Media;
 import com.debateseason_backend_v1.domain.repository.MediaRepository;
+import com.debateseason_backend_v1.media.model.response.BreakingNewsResponse;
 import com.debateseason_backend_v1.media.model.response.MediaContainer;
 import com.debateseason_backend_v1.media.model.response.MediaResponse;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
@@ -22,6 +25,39 @@ public class MediaService {
 	private final MediaRepository mediaRepository;
 
 	public ApiResult<MediaContainer> fetch(String type, String time){
+
+		// 속보 가져오기
+
+		List<BreakingNewsResponse> breakingNews = mediaRepository.findTop10BreakingNews().stream()
+			.map(
+				e->
+					BreakingNewsResponse.builder()
+						.title(e.getTitle())
+						.url(e.getUrl())
+						.build()
+			).toList()
+			;
+
+		// 최신 미디어 1건 가져오기
+
+		// 필요한 필드 변수들
+		// src -> 썸네일
+		// url -> 링크
+		// title -> 제목
+		// media -> 공급업체
+		// created_at -> 기사 시간
+		Media findLatestMedia = mediaRepository.findLatestNews();
+
+		MediaResponse mostRecentMedia = MediaResponse.builder()
+			.id(findLatestMedia.getId())
+			.src(findLatestMedia.getSrc())
+			.url(findLatestMedia.getUrl())
+			.title(findLatestMedia.getTitle())
+			.supplier(findLatestMedia.getMedia())
+			.outdated(findLatestMedia.getCreatedAt())
+			.build()
+			;
+
 
 		List<Media> mediaList = null;
 
@@ -43,14 +79,15 @@ public class MediaService {
 			mediaList = mediaRepository.getMediaByType(time,type);
 		}
 
-		MediaContainer mediaContainer = new MediaContainer();
+
 
 		List<MediaResponse> mediaResponses = new ArrayList<>();
 
 		for(Media m:mediaList){
 			MediaResponse mediaResponse = MediaResponse.builder()
 				.id(m.getId())
-				.url(m.getUrl())
+				.url(m.getUrl())// href
+				.src(m.getSrc())// 이미지 url
 				.title(m.getTitle())
 				.supplier(m.getMedia())
 				.outdated(m.getCreatedAt())
@@ -59,7 +96,12 @@ public class MediaService {
 			mediaResponses.add(mediaResponse);
 		}
 
-		mediaContainer.setItems(mediaResponses);
+		MediaContainer mediaContainer = MediaContainer.builder()
+				.breakingNews(breakingNews)
+			 	.mostRecentMedia(mostRecentMedia)
+			    .items(mediaResponses)
+				.build()
+			;
 
 
 		return ApiResult.<MediaContainer>builder()
@@ -69,12 +111,28 @@ public class MediaService {
 			.data(mediaContainer)
 			.build();
 
-
-
-
-
-
 	}
+
+	// Dirty-checking
+	@Transactional
+	public ApiResult<Object> updateMediaViewCount(Long id){
+		Media media = mediaRepository.findById(id)
+			.orElseThrow(
+				()-> new CustomException(ErrorCode.MEDIA_NOT_FOUND)
+			);
+
+		int count = media.getCount()+1;
+
+		media.setCount(count);
+
+		return ApiResult.builder()
+			.status(200)
+			.code(ErrorCode.SUCCESS)
+			.message("미디어 조회수를 업데이트 했습니다.")
+			.build();
+	}
+
+
 
 
 }

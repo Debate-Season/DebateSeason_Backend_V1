@@ -40,6 +40,8 @@ public class Media {
 
 	private String type;// news, community, youtube
 
+	private int count;// 조회수
+
 	@CreatedDate
 	@Column(name = "created_at", updatable = false)
 	private LocalDateTime createdAt;

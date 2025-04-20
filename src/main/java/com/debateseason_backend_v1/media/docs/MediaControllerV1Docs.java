@@ -35,7 +35,7 @@ public interface MediaControllerV1Docs {
 		name = "time",
 		description = "날짜 기반으로 커서 페이지네이션 진행",
 		required = false,
-		example = "youtube",
+		example = "2025-03-29T19:42:50",
 		schema = @Schema(type = "string")
 	)
 	@ApiResponses({

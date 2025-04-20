@@ -2,6 +2,7 @@ package com.debateseason_backend_v1.media.controller;
 
 import org.springframework.lang.Nullable;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -31,6 +32,13 @@ public class MediaControllerV1 implements MediaControllerV1Docs {
 		// all, 또는 type null -> 모두 가져오기
 		// news, youtube, community
 		return mediaService.fetch(type,time);
+	}
 
+	// 조회수 증가.
+	@PostMapping("/media/incrementViewCount")
+	public ApiResult<Object> updateMediaViewCount(
+		@RequestParam(name = "id") Long id
+		){
+		return mediaService.updateMediaViewCount(id);
 	}
 }

@@ -79,7 +79,10 @@ public enum ErrorCode implements CodeInterface {
 	NOT_FOUND_ISSUE_WITH_CATEGORY(400, HttpStatus.NOT_FOUND, "해당 category의 이슈방을 찾을 수 없습니다."),
 
 	// 페이지네이션 오류
-	PAGE_OUT_OF_RANGE(404,HttpStatus.NOT_FOUND,"검색범위를 넘어섰습니다. 내용을 불러올 수 없습니다.");
+	PAGE_OUT_OF_RANGE(404,HttpStatus.NOT_FOUND,"검색범위를 넘어섰습니다. 내용을 불러올 수 없습니다."),
+
+	// Media 관련 오류
+	MEDIA_NOT_FOUND(404,HttpStatus.NOT_FOUND,"요청하신 미디어는 존재하지 않습니다.");
 
 	private final Integer code;
 	private final HttpStatus httpStatus;

@@ -26,12 +26,15 @@ import com.debateseason_backend_v1.domain.issue.model.response.IssueBriefRespons
 import com.debateseason_backend_v1.domain.repository.ChatRepository;
 import com.debateseason_backend_v1.domain.repository.ChatRoomRepository;
 import com.debateseason_backend_v1.domain.repository.IssueRepository;
+import com.debateseason_backend_v1.domain.repository.MediaRepository;
 import com.debateseason_backend_v1.domain.repository.UserChatRoomRepository;
 import com.debateseason_backend_v1.domain.repository.UserRepository;
 import com.debateseason_backend_v1.domain.repository.entity.ChatRoom;
 import com.debateseason_backend_v1.domain.repository.entity.Issue;
+import com.debateseason_backend_v1.domain.repository.entity.Media;
 import com.debateseason_backend_v1.domain.repository.entity.User;
 import com.debateseason_backend_v1.domain.repository.entity.UserChatRoom;
+import com.debateseason_backend_v1.media.model.response.BreakingNewsResponse;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -47,6 +50,7 @@ public class ChatRoomServiceV1 {
 	private final IssueRepository issueRepository; // 혹시나 Service쓰면, 나중에 순환참조 발생할 것 같아서 Repository로 함.
 	private final UserChatRoomRepository userChatRoomRepository;
 	private final ChatRepository chatRepository;
+	private final MediaRepository mediaRepository;
 
 	// 1. 채팅방 저장하기
 	public ApiResult<Object> save(ChatRoomRequest chatRoomRequest, long issueId) {
@@ -327,6 +331,18 @@ public class ChatRoomServiceV1 {
 	// 4. 투표한 여러 채팅방 가져오기
 	public ApiResult<ResponseOnlyHome> findVotedChatRoom(Long userId,Long pageChatRoomId){
 
+		// 0. 속보 가져오기
+		List<BreakingNewsResponse> breakingNews = mediaRepository.findTop10BreakingNews().stream()
+			.map(
+				e->
+					BreakingNewsResponse.builder()
+					.title(e.getTitle())
+					.url(e.getUrl())
+					.build()
+			).toList()
+			;
+
+
 		// issue_id, issue.title, chatroom.chat_room_id, chatroom.title
 		// 1. 활성화된 최상위 5개 토론방을 보여준다.
 		List<Top5BestChatRoom> top5BestChatRooms = chatRoomRepository.findTop5ActiveChatRooms().stream().map(
@@ -417,6 +433,7 @@ public class ChatRoomServiceV1 {
 		if (chatRoomList.isEmpty()){
 
 			ResponseOnlyHome responseOnlyHome = ResponseOnlyHome.builder()
+				.breakingNews(breakingNews)
 				//.chatRoomResponse(fetchedChatRoomList)
 				.top5BestChatRooms(top5BestChatRooms)
 				.top5BestIssueRooms(top5BestIssueRooms)
@@ -431,7 +448,6 @@ public class ChatRoomServiceV1 {
 				.build();
 
 		}
-
 
 		// 원래는 ChatRoomResponse2
 		List<ResponseWithTime> fetchedChatRoomList = chatRoomList.stream().map(
@@ -464,13 +480,14 @@ public class ChatRoomServiceV1 {
 			}
 		).collect(Collectors.toList());
 
-
 		ResponseOnlyHome responseOnlyHome = ResponseOnlyHome.builder()
-			.chatRoomResponse(fetchedChatRoomList)
+			.breakingNews(breakingNews)
 			.top5BestChatRooms(top5BestChatRooms)
 			.top5BestIssueRooms(top5BestIssueRooms)
+			.chatRoomResponse(fetchedChatRoomList)
 			.build()
 			;
+
 
 		return ApiResult.<ResponseOnlyHome>builder()
 			.status(200)

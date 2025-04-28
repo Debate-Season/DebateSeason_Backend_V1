@@ -15,9 +15,11 @@ import lombok.Setter;
 @Builder
 public class MediaContainer {
 
-	private List<BreakingNewsResponse> breakingNews;
+	//private List<BreakingNewsResponse> breakingNews;
+	private List<Object> breakingNews;
 
 	private MediaResponse mostRecentMedia;
 
-	private List<MediaResponse> items;
+	//private List<MediaResponse> items;
+	private List<Object> items;
 }

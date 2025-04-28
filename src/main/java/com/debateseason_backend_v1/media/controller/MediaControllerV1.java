@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.debateseason_backend_v1.common.response.ApiResult;
 import com.debateseason_backend_v1.media.docs.MediaControllerV1Docs;
-import com.debateseason_backend_v1.media.model.MediaType;
+import com.debateseason_backend_v1.media.type.MediaContentType;
 import com.debateseason_backend_v1.media.model.response.MediaContainer;
 import com.debateseason_backend_v1.media.service.MediaService;
 
@@ -24,10 +24,10 @@ public class MediaControllerV1 implements MediaControllerV1Docs {
 
 	@GetMapping("/home/media")
 	public ApiResult<MediaContainer> getMedia(
-		@RequestParam(name = "type",required = false) @Nullable MediaType mediaType,
+		@RequestParam(name = "type",required = false) @Nullable MediaContentType mediaContentType,
 		@RequestParam(name = "time",required = false)String time){
 
-		String type = mediaType == null ? null : mediaType.toString();
+		String type = mediaContentType == null ? null : mediaContentType.toString();
 		// type
 		// all, 또는 type null -> 모두 가져오기
 		// news, youtube, community

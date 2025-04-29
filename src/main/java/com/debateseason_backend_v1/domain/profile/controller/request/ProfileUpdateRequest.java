@@ -32,19 +32,19 @@ public record ProfileUpdateRequest(
 	AgeRangeType ageRange,
 
 	@Schema(description = "거주 시도 코드", example = "11")
-	@NotBlank(message = "거주 시도 선택은 필수입니다.")
+	@NotNull(message = "거주 시도 선택은 필수입니다.")
 	ProvinceType residenceProvince,
 
 	@Schema(description = "거주 시·군·구 코드", example = "11030")
-	@NotBlank(message = "거주 시군구 선택은 필수입니다.")
+	@NotNull(message = "거주 시군구 선택은 필수입니다.")
 	DistrictType residenceDistrict,
 
 	@Schema(description = "출신 시도 코드", example = "21")
-	@NotBlank(message = "출신 시도 선택은 필수입니다.")
+	@NotNull(message = "출신 시도 선택은 필수입니다.")
 	ProvinceType hometownProvince,
 
 	@Schema(description = "출신 시·군·구 코드", example = "21010")
-	@NotBlank(message = "출신 시군구 선택은 필수입니다.")
+	@NotNull(message = "출신 시군구 선택은 필수입니다.")
 	DistrictType hometownDistrict
 ) {
 

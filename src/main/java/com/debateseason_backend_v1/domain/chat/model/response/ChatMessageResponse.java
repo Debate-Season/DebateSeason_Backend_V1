@@ -12,15 +12,20 @@ import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import lombok.NoArgsConstructor;
 
 @Getter
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class ChatMessageResponse {
+
 
     @Schema(description = "채팅 ID",example = "1L")
     private Long id;
@@ -43,7 +48,7 @@ public class ChatMessageResponse {
     @Schema(description = "메시지 받은 날짜 시간")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss.SSSSSS")
     private LocalDateTime timeStamp;
-    
+
     @Schema(description = "이모티콘 반응 정보")
     private ChatReactionResponse reactions;
 
@@ -64,18 +69,18 @@ public class ChatMessageResponse {
                 chat.getId(), ChatReactionRequest.ReactionType.LOGIC);
         int attitudeCount = chatReactionRepository.countByChatIdAndReactionType(
                 chat.getId(), ChatReactionRequest.ReactionType.ATTITUDE);
-        
+
         // 현재 사용자의 반응 여부 조회
         boolean userReactedLogic = false;
         boolean userReactedAttitude = false;
-        
+
         if (currentUserId != null) {
             userReactedLogic = chatReactionRepository.findByChatIdAndUserIdAndReactionType(
                     chat.getId(), currentUserId, ChatReactionRequest.ReactionType.LOGIC).isPresent();
             userReactedAttitude = chatReactionRepository.findByChatIdAndUserIdAndReactionType(
                     chat.getId(), currentUserId, ChatReactionRequest.ReactionType.ATTITUDE).isPresent();
         }
-        
+
         return ChatMessageResponse.builder()
                 .id(chat.getId())
                 .roomId(chat.getChatRoomId().getId())
@@ -97,22 +102,24 @@ public class ChatMessageResponse {
     public static ChatMessageResponse from(Chat chat) {
         // 빈 ReactionResponse 객체 생성
         ChatReactionResponse emptyReaction = ChatReactionResponse.builder()
-            .logicCount(0)
-            .attitudeCount(0)
-            .userReactedLogic(false)
-            .userReactedAttitude(false)
-            .build();
-        
+                .logicCount(0)
+                .attitudeCount(0)
+                .userReactedLogic(false)
+                .userReactedAttitude(false)
+                .build();
+
         return ChatMessageResponse.builder()
-            .id(chat.getId())
-            .roomId(chat.getChatRoomId().getId())
-            .messageType(chat.getMessageType())
-            .content(chat.getContent())
-            .sender(chat.getSender())
-            .opinionType(chat.getOpinionType())
-            .userCommunity(chat.getUserCommunity())
-            .timeStamp(chat.getTimeStamp())
-            .reactions(emptyReaction)
-            .build();
+                .id(chat.getId())
+                .roomId(chat.getChatRoomId().getId())
+                .messageType(chat.getMessageType())
+                .content(chat.getContent())
+                .sender(chat.getSender())
+                .opinionType(chat.getOpinionType())
+                .userCommunity(chat.getUserCommunity())
+                .timeStamp(chat.getTimeStamp())
+                .reactions(emptyReaction)
+                .build();
     }
 }
+
+

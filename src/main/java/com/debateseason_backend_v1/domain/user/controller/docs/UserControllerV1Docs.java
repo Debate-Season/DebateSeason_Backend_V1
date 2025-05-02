@@ -9,7 +9,7 @@ import com.debateseason_backend_v1.common.response.VoidApiResult;
 import com.debateseason_backend_v1.common.swagger.ApiErrorCode;
 import com.debateseason_backend_v1.domain.user.controller.request.LogoutRequest;
 import com.debateseason_backend_v1.domain.user.controller.request.SocialLoginRequest;
-import com.debateseason_backend_v1.domain.user.service.response.LoginResponse;
+import com.debateseason_backend_v1.domain.user.controller.response.LoginResponse;
 import com.debateseason_backend_v1.security.CustomUserDetails;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -17,7 +17,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
-@Tag(name = "User API", description = "계정 관리 API")
+@Tag(name = "UserEntity API", description = "계정 관리 API")
 public interface UserControllerV1Docs {
 
 	@Operation(

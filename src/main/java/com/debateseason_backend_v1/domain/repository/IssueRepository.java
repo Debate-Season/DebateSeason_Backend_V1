@@ -2,10 +2,7 @@ package com.debateseason_backend_v1.domain.repository;
 
 import java.util.List;
 
-import com.debateseason_backend_v1.domain.issue.model.response.IssueDetailResponse;
 import com.debateseason_backend_v1.domain.repository.entity.Issue;
-import com.debateseason_backend_v1.domain.repository.entity.User;
-import com.debateseason_backend_v1.domain.repository.entity.UserIssue;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

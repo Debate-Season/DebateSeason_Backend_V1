@@ -43,7 +43,7 @@ public enum ErrorCode implements CodeInterface {
 	MISSING_REQUIRED_GENDER_TYPE(2013, HttpStatus.BAD_REQUEST, "성별은 선택은 필수입니다."),
 	MISSING_REQUIRED_AGE_RANGE(2014, HttpStatus.BAD_REQUEST, "연령대는 선택은 필수입니다."),
 
-	// 3000번대 User(인증) 관련 에러
+	// 3000번대 UserEntity(인증) 관련 에러
 	NOT_FOUND_USER(3000, HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다."),
 	MISSING_REQUIRED_SOCIAL_ID(3001, HttpStatus.BAD_REQUEST, "소셜 고유 ID는 필수입니다."),
 	MISSING_REQUIRED_SOCIAL_TYPE(3002, HttpStatus.BAD_REQUEST, "소셜 타입은 필수입니다."),

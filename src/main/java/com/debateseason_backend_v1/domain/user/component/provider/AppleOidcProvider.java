@@ -17,4 +17,8 @@ public class AppleOidcProvider extends AbstractOidcProvider {
 		super(SocialType.APPLE.getJwksUrl(), SocialType.APPLE.getIssuer(), audience);
 	}
 
+	@Override
+	protected SocialType getSocialType() {
+		return SocialType.APPLE;
+	}
 }

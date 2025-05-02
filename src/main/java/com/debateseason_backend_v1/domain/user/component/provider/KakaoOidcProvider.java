@@ -17,4 +17,8 @@ public class KakaoOidcProvider extends AbstractOidcProvider {
 		super(SocialType.KAKAO.getJwksUrl(), SocialType.KAKAO.getIssuer(), audience);
 	}
 
+	@Override
+	protected SocialType getSocialType() {
+		return SocialType.KAKAO;
+	}
 }

@@ -8,8 +8,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.debateseason_backend_v1.common.response.ApiResult;
 import com.debateseason_backend_v1.domain.user.controller.docs.UserControllerV2Docs;
 import com.debateseason_backend_v1.domain.user.controller.request.OidcLoginRequest;
+import com.debateseason_backend_v1.domain.user.controller.response.LoginResponse;
 import com.debateseason_backend_v1.domain.user.service.UserServiceV2;
-import com.debateseason_backend_v1.domain.user.service.response.LoginResponse;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

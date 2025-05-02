@@ -42,7 +42,7 @@
 
 ## 🏗 아키텍처
 
-<img width="1196" alt="Image" src="https://github.com/user-attachments/assets/7d779d6c-6128-4232-bd5c-ed6a6cebb033" />
+<img width="1196" alt="Image" src="https://github.com/userEntity-attachments/assets/7d779d6c-6128-4232-bd5c-ed6a6cebb033" />
 
 ## 📑 프로젝트 구조
 
@@ -55,7 +55,7 @@ src/main/java/com/debateseason_backend_v1/
 │   ├── chatroom/       # 토론방 관련
 │   ├── issue/          # 이슈 관련
 │   ├── profile/        # 사용자 프로필 관련
-│   └── user/           # 사용자 인증 관련
+│   └── userEntity/           # 사용자 인증 관련
 ├── security/           # 보안 관련 (JWT 등)
 └── DebateSeasonBackendV1Application.java
 ```

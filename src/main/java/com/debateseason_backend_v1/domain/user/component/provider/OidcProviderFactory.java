@@ -10,6 +10,7 @@ import com.auth0.jwt.exceptions.JWTDecodeException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.debateseason_backend_v1.common.exception.CustomException;
 import com.debateseason_backend_v1.common.exception.ErrorCode;
+import com.debateseason_backend_v1.domain.user.domain.OidcUserInfo;
 import com.debateseason_backend_v1.domain.user.enums.SocialType;
 
 @Component
@@ -35,7 +36,7 @@ public class OidcProviderFactory {
 		authProviderMap.put(SocialType.KAKAO, kakaoOidcProvider);
 	}
 
-	public String extractUserId(SocialType socialType, String idToken) {
+	public OidcUserInfo extractUserId(SocialType socialType, String idToken) {
 
 		DecodedJWT decodedToken;
 		try {
@@ -51,7 +52,7 @@ public class OidcProviderFactory {
 			throw new CustomException(ErrorCode.SOCIAL_TYPE_MISMATCH);
 		}
 
-		return getIdTokenHandler(socialType).extractUserId(idToken);
+		return getIdTokenHandler(socialType).extractUserInfo(idToken);
 	}
 
 	private OidcProvider getIdTokenHandler(final SocialType socialType) {

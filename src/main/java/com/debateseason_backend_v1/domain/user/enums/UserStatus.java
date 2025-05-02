@@ -1,0 +1,11 @@
+package com.debateseason_backend_v1.domain.user.enums;
+
+public enum UserStatus {
+
+	PENDING,
+	ACTIVE,
+	BLOCKED,
+	PENDING_WITHDRAWAL,
+	WITHDRAWN
+
+}

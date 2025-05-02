@@ -1,15 +1,15 @@
-package com.debateseason_backend_v1.domain.chat.service;
+package com.debateseason_backend_v1.domain.chat.application.service;
 
 import com.debateseason_backend_v1.common.enums.MessageType;
 import com.debateseason_backend_v1.common.response.ApiResult;
+import com.debateseason_backend_v1.domain.chat.application.ChatReactionRepository;
+import com.debateseason_backend_v1.domain.chat.application.ChatRepository;
+import com.debateseason_backend_v1.domain.chat.infrastructure.chat.Chat;
 import com.debateseason_backend_v1.domain.chat.model.request.ChatMessageRequest;
 import com.debateseason_backend_v1.domain.chat.model.response.ChatMessageResponse;
 import com.debateseason_backend_v1.domain.chat.model.response.ChatMessagesResponse;
 import com.debateseason_backend_v1.domain.chat.valide.ChatValidate;
 import com.debateseason_backend_v1.domain.chatroom.service.ChatRoomServiceV1;
-import com.debateseason_backend_v1.domain.repository.ChatRepository;
-import com.debateseason_backend_v1.domain.repository.ChatReactionRepository;
-import com.debateseason_backend_v1.domain.repository.entity.Chat;
 import com.debateseason_backend_v1.domain.repository.entity.ChatRoom;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,12 +17,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.context.ApplicationEventPublisher;
 
 import java.security.Principal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -35,9 +32,7 @@ public class ChatServiceV1 {
 	
 	private final ChatRepository chatRepository;
 	private final ChatRoomServiceV1 chatRoomService;
-	private final SimpMessagingTemplate messagingTemplate;
 	private final ChatValidate chatValidate;
-	private final ApplicationEventPublisher eventPublisher;
 	private final ChatReactionRepository chatReactionRepository;
 
 	// ---------- WebSocket 실시간 메시지 처리 ----------

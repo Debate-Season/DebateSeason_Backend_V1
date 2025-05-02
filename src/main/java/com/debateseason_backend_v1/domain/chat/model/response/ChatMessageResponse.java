@@ -2,10 +2,11 @@ package com.debateseason_backend_v1.domain.chat.model.response;
 
 import com.debateseason_backend_v1.common.enums.MessageType;
 import com.debateseason_backend_v1.common.enums.OpinionType;
+import com.debateseason_backend_v1.domain.chat.application.ChatReactionRepository;
+import com.debateseason_backend_v1.domain.chat.infrastructure.chat.Chat;
 import com.debateseason_backend_v1.domain.chat.model.request.ChatMessageRequest;
-import com.debateseason_backend_v1.domain.repository.entity.Chat;
-import com.debateseason_backend_v1.domain.repository.ChatReactionRepository;
 import com.debateseason_backend_v1.domain.chat.model.request.ChatReactionRequest;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
@@ -15,10 +16,9 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
-import com.fasterxml.jackson.annotation.JsonFormat;
-import lombok.NoArgsConstructor;
 
 @Getter
 @Builder

@@ -4,16 +4,13 @@ import com.debateseason_backend_v1.common.response.ApiResult;
 import com.debateseason_backend_v1.common.response.ErrorResponse;
 import com.debateseason_backend_v1.domain.chat.model.request.ChatReactionRequest;
 import com.debateseason_backend_v1.domain.chat.model.response.ChatMessagesResponse;
-import com.debateseason_backend_v1.domain.chat.service.ChatReactionServiceV1;
+import com.debateseason_backend_v1.domain.chat.application.service.ChatReactionServiceV1;
 import com.debateseason_backend_v1.security.jwt.JwtUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.format.annotation.DateTimeFormat;
-import java.time.LocalDate;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 
-import com.debateseason_backend_v1.domain.chat.service.ChatServiceV1;
+import com.debateseason_backend_v1.domain.chat.application.service.ChatServiceV1;
 import com.debateseason_backend_v1.domain.chat.model.response.ChatMessageResponse;
 
 import io.swagger.v3.oas.annotations.Operation;

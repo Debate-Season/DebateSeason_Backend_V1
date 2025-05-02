@@ -1,7 +1,6 @@
-package com.debateseason_backend_v1.domain.repository;
+package com.debateseason_backend_v1.domain.chat.infrastructure.chat_reaction;
 
 import com.debateseason_backend_v1.domain.chat.model.request.ChatReactionRequest;
-import com.debateseason_backend_v1.domain.repository.entity.ChatReaction;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -9,7 +8,7 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 import java.util.Optional;
 
-public interface ChatReactionRepository extends JpaRepository<ChatReaction, Long> {
+public interface ChatReactionJpaRepository extends JpaRepository<ChatReaction, Long> {
 
     // 특정 채팅에 사용자의 특정 타입 반응 조회
     Optional<ChatReaction> findByChatIdAndUserIdAndReactionType(Long chatId, Long userId, ChatReactionRequest.ReactionType reactionType);

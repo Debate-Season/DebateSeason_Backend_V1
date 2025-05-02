@@ -1,13 +1,11 @@
 package com.debateseason_backend_v1.domain.chat.controller;
 
-import java.security.Principal;
 import java.time.LocalDateTime;
 
 import com.debateseason_backend_v1.common.exception.CustomException;
-import com.debateseason_backend_v1.common.response.ApiResult;
 import com.debateseason_backend_v1.domain.chat.model.response.ChatMessageErrorResponse;
 import com.debateseason_backend_v1.domain.chat.model.response.ChatMessageResponse;
-import com.debateseason_backend_v1.domain.chat.service.ChatServiceV1;
+import com.debateseason_backend_v1.domain.chat.application.service.ChatServiceV1;
 import com.debateseason_backend_v1.domain.chat.valide.ChatValidate;
 import jakarta.validation.Valid;
 import org.springframework.context.ApplicationEventPublisher;

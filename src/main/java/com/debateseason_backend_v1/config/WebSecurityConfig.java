@@ -40,7 +40,6 @@ public class WebSecurityConfig {
 	};
 
 	@Bean
-	@Profile("!test")
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
 		return http
@@ -57,22 +56,4 @@ public class WebSecurityConfig {
 			)
 			.build();
 	}
-	@Bean
-	@Profile("test")
-	public SecurityFilterChain testFilterChain(HttpSecurity http) throws Exception {
-		return http
-				.csrf(AbstractHttpConfigurer::disable)
-				.authorizeHttpRequests(auth -> auth
-						.requestMatchers("/**").permitAll()
-				)
-				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-				.securityMatcher("/**")
-				.anonymous(AbstractHttpConfigurer::disable)
-				.httpBasic(AbstractHttpConfigurer::disable)
-				.formLogin(AbstractHttpConfigurer::disable)
-				.build();
-
-
-	}
-
 }

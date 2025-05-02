@@ -5,8 +5,8 @@ import com.debateseason_backend_v1.common.enums.MessageType;
 import com.debateseason_backend_v1.common.enums.OpinionType;
 import com.debateseason_backend_v1.common.response.ApiResult;
 import com.debateseason_backend_v1.domain.chat.model.response.ChatMessagesResponse;
-import com.debateseason_backend_v1.domain.repository.ChatRepository;
-import com.debateseason_backend_v1.domain.repository.entity.Chat;
+import com.debateseason_backend_v1.domain.chat.infrastructure.chat.ChatJpaRepository;
+import com.debateseason_backend_v1.domain.chat.infrastructure.chat.Chat;
 import com.debateseason_backend_v1.domain.repository.entity.ChatRoom;
 import com.debateseason_backend_v1.security.jwt.JwtUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -18,13 +18,11 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.*;
-import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.ActiveProfiles;
 import com.fasterxml.jackson.core.type.TypeReference;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -43,7 +41,7 @@ public class ChatApiTest {
     private ObjectMapper objectMapper;
 
     @Autowired
-    private ChatRepository chatRepository;
+    private ChatJpaRepository chatRepository;
 
     private String baseUrl;
 
@@ -53,16 +51,6 @@ public class ChatApiTest {
         this.baseUrl = "http://localhost:" + port + "/api/v1/chat";
 
     }
-
-    @Test
-    void 보안설정_확인() {
-        String[] profiles = context.getEnvironment().getActiveProfiles();
-        System.out.println("활성 프로필: " + Arrays.toString(profiles));
-
-        SecurityFilterChain filterChain = context.getBean(SecurityFilterChain.class);
-        System.out.println("보안 필터체인: " + filterChain);
-    }
-
 
 
     /// 채팅방 메시지 조회 API_URL = /api/v1/chat/rooms/{room식별자}/messages

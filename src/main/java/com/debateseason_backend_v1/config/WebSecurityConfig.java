@@ -2,9 +2,11 @@ package com.debateseason_backend_v1.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
@@ -38,6 +40,7 @@ public class WebSecurityConfig {
 	};
 
 	@Bean
+	@Profile("!test")
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
 		return http
@@ -53,6 +56,23 @@ public class WebSecurityConfig {
 				UsernamePasswordAuthenticationFilter.class
 			)
 			.build();
+	}
+	@Bean
+	@Profile("test")
+	public SecurityFilterChain testFilterChain(HttpSecurity http) throws Exception {
+		return http
+				.csrf(AbstractHttpConfigurer::disable)
+				.authorizeHttpRequests(auth -> auth
+						.requestMatchers("/**").permitAll()
+				)
+				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+				.securityMatcher("/**")
+				.anonymous(AbstractHttpConfigurer::disable)
+				.httpBasic(AbstractHttpConfigurer::disable)
+				.formLogin(AbstractHttpConfigurer::disable)
+				.build();
+
+
 	}
 
 }

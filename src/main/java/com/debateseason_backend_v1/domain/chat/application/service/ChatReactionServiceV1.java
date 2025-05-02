@@ -1,14 +1,14 @@
-package com.debateseason_backend_v1.domain.chat.service;
+package com.debateseason_backend_v1.domain.chat.application.service;
 
 import com.debateseason_backend_v1.common.exception.CustomException;
 import com.debateseason_backend_v1.common.exception.ErrorCode;
 import com.debateseason_backend_v1.common.response.ApiResult;
+import com.debateseason_backend_v1.domain.chat.application.ChatReactionRepository;
+import com.debateseason_backend_v1.domain.chat.infrastructure.chat.Chat;
+import com.debateseason_backend_v1.domain.chat.infrastructure.chat.ChatJpaRepository;
+import com.debateseason_backend_v1.domain.chat.infrastructure.chat_reaction.ChatReaction;
 import com.debateseason_backend_v1.domain.chat.model.request.ChatReactionRequest;
 import com.debateseason_backend_v1.domain.chat.model.response.ChatMessageResponse;
-import com.debateseason_backend_v1.domain.repository.ChatReactionRepository;
-import com.debateseason_backend_v1.domain.repository.ChatRepository;
-import com.debateseason_backend_v1.domain.repository.entity.Chat;
-import com.debateseason_backend_v1.domain.repository.entity.ChatReaction;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -22,7 +22,7 @@ import java.util.Optional;
 @Service
 public class ChatReactionServiceV1 {
 
-    private final ChatRepository chatRepository;
+    private final ChatJpaRepository chatRepository;
     private final ChatReactionRepository chatReactionRepository;
     private final SimpMessagingTemplate messagingTemplate;
 

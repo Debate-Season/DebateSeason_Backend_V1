@@ -1,6 +1,7 @@
-package com.debateseason_backend_v1.domain.repository.entity;
+package com.debateseason_backend_v1.domain.chat.infrastructure.chat_reaction;
 
 
+import com.debateseason_backend_v1.domain.chat.infrastructure.chat.Chat;
 import com.debateseason_backend_v1.domain.chat.model.request.ChatReactionRequest;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;

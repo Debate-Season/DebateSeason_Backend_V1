@@ -36,11 +36,14 @@ public class TermsServiceV1 {
 	private final TermsRepository termsRepository;
 	private final UserTermsAgreementRepository userTermsAgreementRepository;
 
-	public List<LatestTermsResponse> getLatestTerms() {
+	public List<LatestTermsResponse> getLatestTerms(Long userId) {
 
 		List<Terms> latestTermsForAllTypes = termsRepository.findAllLatestTerms();
 
+		Set<Long> agreedTermsIdsByUserId = userTermsAgreementRepository.findAgreedTermsIdsByUserId(userId);
+
 		return latestTermsForAllTypes.stream()
+			.filter(terms -> !agreedTermsIdsByUserId.contains(terms.getId()))
 			.map(LatestTermsResponse::from)
 			.sorted(Comparator.comparingInt(response -> response.termsType().getDisplayOrder()))
 			.toList();

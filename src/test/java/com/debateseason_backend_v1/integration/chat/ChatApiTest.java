@@ -4,9 +4,9 @@ package com.debateseason_backend_v1.integration.chat;
 import com.debateseason_backend_v1.common.enums.MessageType;
 import com.debateseason_backend_v1.common.enums.OpinionType;
 import com.debateseason_backend_v1.common.response.ApiResult;
-import com.debateseason_backend_v1.domain.chat.model.response.ChatMessagesResponse;
+import com.debateseason_backend_v1.domain.chat.presentation.dto.response.ChatMessagesResponse;
 import com.debateseason_backend_v1.domain.chat.infrastructure.chat.ChatJpaRepository;
-import com.debateseason_backend_v1.domain.chat.infrastructure.chat.Chat;
+import com.debateseason_backend_v1.domain.chat.infrastructure.chat.ChatEntity;
 import com.debateseason_backend_v1.domain.repository.entity.ChatRoom;
 import com.debateseason_backend_v1.security.jwt.JwtUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -61,7 +61,7 @@ public class ChatApiTest {
         Long userId = 99L;
 
         int messageCount = 50;
-        List<Chat> chats = prepareTestChatMessages(roomId, messageCount);
+        List<ChatEntity> chats = prepareTestChatMessages(roomId, messageCount);
         String apiUrl = baseUrl + "/rooms/" + roomId + "/messages";
         System.out.println("@@@ apiUrl: " + apiUrl);
         //when
@@ -105,13 +105,13 @@ public class ChatApiTest {
      * @param count count만큼 채팅메시지가 생성 된다.
      * @param roomId 채팅 메시지를 생성할 roomId
      */
-    private List<Chat> prepareTestChatMessages(Long roomId, int count) {
+    private List<ChatEntity> prepareTestChatMessages(Long roomId, int count) {
         ChatRoom chatRoom = new ChatRoom();
         chatRoom.setId(roomId);
 
-        List<Chat> savedChats = new ArrayList<>();
+        List<ChatEntity> savedChats = new ArrayList<>();
         for (int i = 1; i <= count; i++) {
-            Chat chat = Chat.builder()
+            ChatEntity chat = ChatEntity.builder()
                     .chatRoomId(chatRoom)
                     .content("테스트 메시지 " + i)
                     .sender("테스트 사용자")

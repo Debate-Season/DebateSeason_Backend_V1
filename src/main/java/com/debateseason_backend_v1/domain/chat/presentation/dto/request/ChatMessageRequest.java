@@ -1,4 +1,4 @@
-package com.debateseason_backend_v1.domain.chat.model.request;
+package com.debateseason_backend_v1.domain.chat.presentation.dto.request;
 
 import java.time.LocalDateTime;
 
@@ -11,8 +11,6 @@ import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;

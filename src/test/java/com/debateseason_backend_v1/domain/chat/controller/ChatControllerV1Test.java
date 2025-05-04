@@ -1,5 +1,6 @@
 package com.debateseason_backend_v1.domain.chat.controller;
 
+import com.debateseason_backend_v1.domain.chat.presentation.controller.ChatControllerV1;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;

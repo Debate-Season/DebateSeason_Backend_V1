@@ -2,13 +2,13 @@ package com.debateseason_backend_v1.domain.chat.application.service;
 
 import com.debateseason_backend_v1.common.enums.MessageType;
 import com.debateseason_backend_v1.common.response.ApiResult;
-import com.debateseason_backend_v1.domain.chat.application.ChatReactionRepository;
-import com.debateseason_backend_v1.domain.chat.application.ChatRepository;
-import com.debateseason_backend_v1.domain.chat.infrastructure.chat.Chat;
-import com.debateseason_backend_v1.domain.chat.model.request.ChatMessageRequest;
-import com.debateseason_backend_v1.domain.chat.model.response.ChatMessageResponse;
-import com.debateseason_backend_v1.domain.chat.model.response.ChatMessagesResponse;
-import com.debateseason_backend_v1.domain.chat.valide.ChatValidate;
+import com.debateseason_backend_v1.domain.chat.application.repository.ChatReactionRepository;
+import com.debateseason_backend_v1.domain.chat.application.repository.ChatRepository;
+import com.debateseason_backend_v1.domain.chat.infrastructure.chat.ChatEntity;
+import com.debateseason_backend_v1.domain.chat.presentation.dto.request.ChatMessageRequest;
+import com.debateseason_backend_v1.domain.chat.presentation.dto.response.ChatMessageResponse;
+import com.debateseason_backend_v1.domain.chat.presentation.dto.response.ChatMessagesResponse;
+import com.debateseason_backend_v1.domain.chat.validation.ChatValidate;
 import com.debateseason_backend_v1.domain.chatroom.service.ChatRoomServiceV1;
 import com.debateseason_backend_v1.domain.repository.entity.ChatRoom;
 import lombok.RequiredArgsConstructor;
@@ -52,8 +52,8 @@ public class ChatServiceV1 {
 		}
 
 		// 메시지 저장
-		Chat chat = Chat.from(message, chatRoom, userId);
-		Chat savedchat = chatRepository.save(chat);
+		ChatEntity chat = ChatEntity.from(message, chatRoom, userId);
+		ChatEntity savedchat = chatRepository.save(chat);
 		log.debug("채팅 메시지 저장 완료: roomId={}, sender={}", roomId, message.getSender());
 
 		// 빈 반응 정보를 포함한 응답 생성
@@ -76,15 +76,15 @@ public class ChatServiceV1 {
 	@Transactional
 	public void saveMessage(ChatMessageRequest chatMessage) {
 		ChatRoom chatRoom = chatRoomService.findChatRoomById(chatMessage.getRoomId());
-		Chat chat = convertToEntity(chatMessage, chatRoom);
+		ChatEntity chat = convertToEntity(chatMessage, chatRoom);
 		
 		chatRepository.save(chat);
 		log.debug("채팅 메시지 저장 완료: roomId={}, sender={}", 
 				chatMessage.getRoomId(), chatMessage.getSender());
 	}
 
-	private Chat convertToEntity(ChatMessageRequest message, ChatRoom chatRoom) {
-		return Chat.builder()
+	private ChatEntity convertToEntity(ChatMessageRequest message, ChatRoom chatRoom) {
+		return ChatEntity.builder()
 				.chatRoomId(chatRoom)
 				.sender(message.getSender())
 				.content(message.getContent())
@@ -105,11 +105,11 @@ public class ChatServiceV1 {
 		chatRoomService.findChatRoomById(roomId);
 		
 		// 메시지 조회 (최대 20개 + 1개 더 조회하여 hasMore 확인)
-		List<Chat> chats = chatRepository.findByRoomIdAndCursor(
+		List<ChatEntity> chats = chatRepository.findByRoomIdAndCursor(
 				roomId, cursor, PageRequest.of(0, PAGE_SIZE + 1));
 		
 		boolean hasMore = chats.size() > PAGE_SIZE;
-		List<Chat> displayChats = hasMore ? chats.subList(0, PAGE_SIZE) : chats;
+		List<ChatEntity> displayChats = hasMore ? chats.subList(0, PAGE_SIZE) : chats;
 		
 		// 응답 생성
 		List<ChatMessageResponse> messageResponses = displayChats.stream()

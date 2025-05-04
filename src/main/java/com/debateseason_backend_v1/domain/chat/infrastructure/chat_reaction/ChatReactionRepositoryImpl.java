@@ -1,15 +1,10 @@
 package com.debateseason_backend_v1.domain.chat.infrastructure.chat_reaction;
 
-import com.debateseason_backend_v1.domain.chat.application.ChatReactionRepository;
-import com.debateseason_backend_v1.domain.chat.application.ChatRepository;
-import com.debateseason_backend_v1.domain.chat.infrastructure.chat.Chat;
-import com.debateseason_backend_v1.domain.chat.model.request.ChatReactionRequest;
+import com.debateseason_backend_v1.domain.chat.application.repository.ChatReactionRepository;
+import com.debateseason_backend_v1.domain.chat.presentation.dto.request.ChatReactionRequest;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 

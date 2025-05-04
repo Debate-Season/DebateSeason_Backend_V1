@@ -12,16 +12,16 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface ChatJpaRepository extends JpaRepository<Chat,Long> {
+public interface ChatJpaRepository extends JpaRepository<ChatEntity,Long> {
 
     @Query("""
-           SELECT c FROM Chat c
+           SELECT c FROM ChatEntity c
            WHERE c.chatRoomId.id = :roomId
            AND c.id < :cursor
            AND DATE(c.timeStamp) = :date
            ORDER BY c.id DESC
            """)
-    List<Chat> findByRoomIdAndCursorAndDate(
+    List<ChatEntity> findByRoomIdAndCursorAndDate(
             @Param("roomId") Long roomId,
             @Param("cursor") Long cursor,
             @Param("date") LocalDate date,
@@ -30,7 +30,7 @@ public interface ChatJpaRepository extends JpaRepository<Chat,Long> {
 
 
     @Query("""
-           SELECT COUNT(c) FROM Chat c
+           SELECT COUNT(c) FROM ChatEntity c
            WHERE c.chatRoomId.id = :roomId
            AND DATE(c.timeStamp) = :date
            """)
@@ -38,17 +38,17 @@ public interface ChatJpaRepository extends JpaRepository<Chat,Long> {
 
 
     @Query("""
-           SELECT c FROM Chat c
+           SELECT c FROM ChatEntity c
            WHERE c.chatRoomId.id = :roomId AND c.id < :cursor
            ORDER BY c.id
            DESC
            """)
-    List<Chat> findByRoomIdAndCursor(Long roomId, Long cursor, Pageable pageable);
+    List<ChatEntity> findByRoomIdAndCursor(Long roomId, Long cursor, Pageable pageable);
 
 
     @Query("""
            SELECT COUNT(c)
-           FROM Chat c
+           FROM ChatEntity c
            WHERE c.chatRoomId.id = :roomId
            """)
     int countByRoomId(Long roomId);
@@ -56,7 +56,7 @@ public interface ChatJpaRepository extends JpaRepository<Chat,Long> {
 
     // 가장 최근대화 불러오기.
     @Query("""
-            SELECT c.timeStamp FROM Chat c
+            SELECT c.timeStamp FROM ChatEntity c
             WHERE c.chatRoomId.id = :chatRoomId
             ORDER BY c.timeStamp
             DESC

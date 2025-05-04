@@ -1,8 +1,8 @@
 package com.debateseason_backend_v1.domain.chat.infrastructure.chat_reaction;
 
 
-import com.debateseason_backend_v1.domain.chat.infrastructure.chat.Chat;
-import com.debateseason_backend_v1.domain.chat.model.request.ChatReactionRequest;
+import com.debateseason_backend_v1.domain.chat.infrastructure.chat.ChatEntity;
+import com.debateseason_backend_v1.domain.chat.presentation.dto.request.ChatReactionRequest;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -29,7 +29,7 @@ public class ChatReaction {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "chat_id")
-    private Chat chat;
+    private ChatEntity chat;
 
     @Column(name = "user_id", nullable = false)
     private Long userId;

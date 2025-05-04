@@ -1,6 +1,6 @@
 package com.debateseason_backend_v1.domain.chat.infrastructure.chat;
 
-import com.debateseason_backend_v1.domain.chat.application.ChatRepository;
+import com.debateseason_backend_v1.domain.chat.application.repository.ChatRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
@@ -19,12 +19,12 @@ public class ChatRepositoryImpl implements ChatRepository {
 
 
     @Override
-    public Chat save(Chat chat) {
+    public ChatEntity save(ChatEntity chat) {
         return chatJpaRepository.save(chat);
     }
 
     @Override
-    public List<Chat> findByRoomIdAndCursorAndDate(Long roomId, Long cursor, LocalDate date, Pageable pageable) {
+    public List<ChatEntity> findByRoomIdAndCursorAndDate(Long roomId, Long cursor, LocalDate date, Pageable pageable) {
         return chatJpaRepository.findByRoomIdAndCursorAndDate(roomId,cursor,date,pageable);
     }
 
@@ -34,7 +34,7 @@ public class ChatRepositoryImpl implements ChatRepository {
     }
 
     @Override
-    public List<Chat> findByRoomIdAndCursor(Long roomId, Long cursor, Pageable pageable) {
+    public List<ChatEntity> findByRoomIdAndCursor(Long roomId, Long cursor, Pageable pageable) {
         return chatJpaRepository.findByRoomIdAndCursor(roomId,cursor,pageable);
     }
 

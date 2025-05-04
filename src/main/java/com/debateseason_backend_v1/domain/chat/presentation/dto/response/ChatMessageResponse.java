@@ -1,11 +1,11 @@
-package com.debateseason_backend_v1.domain.chat.model.response;
+package com.debateseason_backend_v1.domain.chat.presentation.dto.response;
 
 import com.debateseason_backend_v1.common.enums.MessageType;
 import com.debateseason_backend_v1.common.enums.OpinionType;
-import com.debateseason_backend_v1.domain.chat.application.ChatReactionRepository;
+import com.debateseason_backend_v1.domain.chat.application.repository.ChatReactionRepository;
 import com.debateseason_backend_v1.domain.chat.infrastructure.chat.ChatEntity;
-import com.debateseason_backend_v1.domain.chat.model.request.ChatMessageRequest;
-import com.debateseason_backend_v1.domain.chat.model.request.ChatReactionRequest;
+import com.debateseason_backend_v1.domain.chat.presentation.dto.request.ChatMessageRequest;
+import com.debateseason_backend_v1.domain.chat.presentation.dto.request.ChatReactionRequest;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;

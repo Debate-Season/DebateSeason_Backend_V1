@@ -1,6 +1,6 @@
 package com.debateseason_backend_v1.domain.chat.application;
 
-import com.debateseason_backend_v1.domain.chat.infrastructure.chat.Chat;
+import com.debateseason_backend_v1.domain.chat.infrastructure.chat.ChatEntity;
 import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDate;
@@ -10,13 +10,13 @@ import java.util.Optional;
 
 public interface ChatRepository {
 
-    Chat save(Chat chat);
+    ChatEntity save(ChatEntity chat);
 
-    List<Chat> findByRoomIdAndCursorAndDate(Long roomId, Long cursor, LocalDate date, Pageable pageable);
+    List<ChatEntity> findByRoomIdAndCursorAndDate(Long roomId, Long cursor, LocalDate date, Pageable pageable);
 
     long countByRoomIdAndDate(Long roomId,LocalDate date);
 
-    List<Chat> findByRoomIdAndCursor(Long roomId, Long cursor, Pageable pageable);
+    List<ChatEntity> findByRoomIdAndCursor(Long roomId, Long cursor, Pageable pageable);
 
     int countByRoomId(Long roomId);
 

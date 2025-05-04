@@ -1,4 +1,4 @@
-package com.debateseason_backend_v1.domain.chat.application;
+package com.debateseason_backend_v1.domain.chat.application.repository;
 
 import com.debateseason_backend_v1.domain.chat.infrastructure.chat.ChatEntity;
 import org.springframework.data.domain.Pageable;

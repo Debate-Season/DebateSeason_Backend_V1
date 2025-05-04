@@ -1,7 +1,7 @@
-package com.debateseason_backend_v1.domain.chat.application;
+package com.debateseason_backend_v1.domain.chat.application.repository;
 
 import com.debateseason_backend_v1.domain.chat.infrastructure.chat_reaction.ChatReaction;
-import com.debateseason_backend_v1.domain.chat.model.request.ChatReactionRequest;
+import com.debateseason_backend_v1.domain.chat.presentation.dto.request.ChatReactionRequest;
 
 import java.util.List;
 import java.util.Optional;

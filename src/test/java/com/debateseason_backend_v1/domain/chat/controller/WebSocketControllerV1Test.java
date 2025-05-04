@@ -27,7 +27,7 @@ import org.springframework.web.socket.sockjs.client.SockJsClient;
 import org.springframework.web.socket.sockjs.client.Transport;
 import org.springframework.web.socket.sockjs.client.WebSocketTransport;
 
-import com.debateseason_backend_v1.domain.chat.model.request.ChatMessageRequest;
+import com.debateseason_backend_v1.domain.chat.presentation.dto.request.ChatMessageRequest;
 
 import lombok.extern.slf4j.Slf4j;
 

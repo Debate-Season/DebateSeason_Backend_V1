@@ -3,12 +3,12 @@ package com.debateseason_backend_v1.domain.chat.application.service;
 import com.debateseason_backend_v1.common.exception.CustomException;
 import com.debateseason_backend_v1.common.exception.ErrorCode;
 import com.debateseason_backend_v1.common.response.ApiResult;
-import com.debateseason_backend_v1.domain.chat.application.ChatReactionRepository;
-import com.debateseason_backend_v1.domain.chat.infrastructure.chat.Chat;
+import com.debateseason_backend_v1.domain.chat.application.repository.ChatReactionRepository;
+import com.debateseason_backend_v1.domain.chat.infrastructure.chat.ChatEntity;
 import com.debateseason_backend_v1.domain.chat.infrastructure.chat.ChatJpaRepository;
 import com.debateseason_backend_v1.domain.chat.infrastructure.chat_reaction.ChatReaction;
-import com.debateseason_backend_v1.domain.chat.model.request.ChatReactionRequest;
-import com.debateseason_backend_v1.domain.chat.model.response.ChatMessageResponse;
+import com.debateseason_backend_v1.domain.chat.presentation.dto.request.ChatReactionRequest;
+import com.debateseason_backend_v1.domain.chat.presentation.dto.response.ChatMessageResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -37,7 +37,7 @@ public class ChatReactionServiceV1 {
         }
         
         // 채팅 메시지 존재 여부 확인
-        Chat chat = chatRepository.findById(chatId)
+        ChatEntity chat = chatRepository.findById(chatId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND, "메시지를 찾을 수 없습니다"));
 
         ChatReactionRequest.ReactionType reactionType = request.getReactionType();
@@ -59,7 +59,7 @@ public class ChatReactionServiceV1 {
         return ApiResult.success("이모티콘 반응이 처리되었습니다", response);
     }
 
-    private void addReaction(Chat chat, Long userId, ChatReactionRequest.ReactionType reactionType) {
+    private void addReaction(ChatEntity chat, Long userId, ChatReactionRequest.ReactionType reactionType) {
         log.info("반응 추가: chatId={}, userId={}, reactionType={}", chat.getId(), userId, reactionType);
         
         // userId가 null인지 다시 확인
@@ -90,7 +90,7 @@ public class ChatReactionServiceV1 {
         }
     }
 
-    private void removeReaction(Chat chat, Long userId, ChatReactionRequest.ReactionType reactionType) {
+    private void removeReaction(ChatEntity chat, Long userId, ChatReactionRequest.ReactionType reactionType) {
         // 반응 삭제
         chatReactionRepository.deleteByChatIdAndUserIdAndReactionType(chat.getId(), userId, reactionType);
         log.debug("사용자 id {}가 메시지 id {}에서 {} 반응을 제거했습니다", userId, chat.getId(), reactionType);

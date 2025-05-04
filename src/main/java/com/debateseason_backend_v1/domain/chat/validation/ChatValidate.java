@@ -1,8 +1,8 @@
-package com.debateseason_backend_v1.domain.chat.valide;
+package com.debateseason_backend_v1.domain.chat.validation;
 
 import com.debateseason_backend_v1.common.exception.CustomException;
 import com.debateseason_backend_v1.common.exception.ErrorCode;
-import com.debateseason_backend_v1.domain.chat.model.request.ChatMessageRequest;
+import com.debateseason_backend_v1.domain.chat.presentation.dto.request.ChatMessageRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;

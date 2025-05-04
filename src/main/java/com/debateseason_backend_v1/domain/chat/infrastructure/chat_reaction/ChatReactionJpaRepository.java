@@ -1,6 +1,6 @@
 package com.debateseason_backend_v1.domain.chat.infrastructure.chat_reaction;
 
-import com.debateseason_backend_v1.domain.chat.model.request.ChatReactionRequest;
+import com.debateseason_backend_v1.domain.chat.presentation.dto.request.ChatReactionRequest;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

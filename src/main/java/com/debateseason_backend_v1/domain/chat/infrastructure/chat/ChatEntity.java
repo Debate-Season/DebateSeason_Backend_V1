@@ -2,7 +2,7 @@ package com.debateseason_backend_v1.domain.chat.infrastructure.chat;
 
 import com.debateseason_backend_v1.common.enums.MessageType;
 import com.debateseason_backend_v1.common.enums.OpinionType;
-import com.debateseason_backend_v1.domain.chat.model.request.ChatMessageRequest;
+import com.debateseason_backend_v1.domain.chat.presentation.dto.request.ChatMessageRequest;
 import com.debateseason_backend_v1.domain.repository.entity.ChatRoom;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

@@ -3,7 +3,7 @@ package com.debateseason_backend_v1.domain.chat.model.response;
 import com.debateseason_backend_v1.common.enums.MessageType;
 import com.debateseason_backend_v1.common.enums.OpinionType;
 import com.debateseason_backend_v1.domain.chat.application.ChatReactionRepository;
-import com.debateseason_backend_v1.domain.chat.infrastructure.chat.Chat;
+import com.debateseason_backend_v1.domain.chat.infrastructure.chat.ChatEntity;
 import com.debateseason_backend_v1.domain.chat.model.request.ChatMessageRequest;
 import com.debateseason_backend_v1.domain.chat.model.request.ChatReactionRequest;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -63,7 +63,7 @@ public class ChatMessageResponse {
                 .build();
     }
 
-    public static ChatMessageResponse from(Chat chat, Long currentUserId, ChatReactionRepository chatReactionRepository) {
+    public static ChatMessageResponse from(ChatEntity chat, Long currentUserId, ChatReactionRepository chatReactionRepository) {
         // 반응 수 조회
         int logicCount = chatReactionRepository.countByChatIdAndReactionType(
                 chat.getId(), ChatReactionRequest.ReactionType.LOGIC);
@@ -99,7 +99,7 @@ public class ChatMessageResponse {
                 .build();
     }
 
-    public static ChatMessageResponse from(Chat chat) {
+    public static ChatMessageResponse from(ChatEntity chat) {
         // 빈 ReactionResponse 객체 생성
         ChatReactionResponse emptyReaction = ChatReactionResponse.builder()
                 .logicCount(0)

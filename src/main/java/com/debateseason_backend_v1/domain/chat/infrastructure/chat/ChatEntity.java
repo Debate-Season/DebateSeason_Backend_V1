@@ -2,7 +2,7 @@ package com.debateseason_backend_v1.domain.chat.infrastructure.chat;
 
 import com.debateseason_backend_v1.common.enums.MessageType;
 import com.debateseason_backend_v1.common.enums.OpinionType;
-import com.debateseason_backend_v1.domain.chat.presentation.dto.request.ChatMessageRequest;
+import com.debateseason_backend_v1.domain.chat.presentation.dto.chat.request.ChatMessageRequest;
 import com.debateseason_backend_v1.domain.repository.entity.ChatRoom;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -17,7 +17,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Getter
 @Builder
-@Entity
+@Entity(name = "chat")
 public class ChatEntity {
 
 	@Id
@@ -54,6 +54,7 @@ public class ChatEntity {
 	private LocalDateTime timeStamp;
 
 
+	//TODO: 챗 맵퍼 클래스를 만들었으나 삭제하지 못함,  ChatServiceV1 (트랜잭션 스크립트) 에서 사용중으로 나중에 리팩토링 예정
 	public static ChatEntity from(ChatMessageRequest request, ChatRoom chatRoom, Long userId) {
 		return ChatEntity.builder()
 				.chatRoomId(chatRoom)
@@ -66,5 +67,6 @@ public class ChatEntity {
 				.timeStamp(LocalDateTime.now())
 				.build();
 	}
+
 
 }

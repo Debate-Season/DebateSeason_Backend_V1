@@ -1,5 +1,7 @@
 package com.debateseason_backend_v1.domain.chat.infrastructure.chat;
 
+import com.debateseason_backend_v1.common.exception.CustomException;
+import com.debateseason_backend_v1.common.exception.ErrorCode;
 import com.debateseason_backend_v1.domain.chat.application.repository.ChatRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -41,6 +43,11 @@ public class ChatRepositoryImpl implements ChatRepository {
     @Override
     public int countByRoomId(Long roomId) {
         return chatJpaRepository.countByRoomId(roomId);
+    }
+
+    @Override
+    public ChatEntity findById(Long id) {
+        return chatJpaRepository.findById(id).orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_MESSAGE));
     }
 
     @Override

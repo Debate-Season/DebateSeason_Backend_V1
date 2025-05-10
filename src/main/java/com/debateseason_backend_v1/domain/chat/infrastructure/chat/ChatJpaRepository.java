@@ -15,7 +15,7 @@ import java.util.Optional;
 public interface ChatJpaRepository extends JpaRepository<ChatEntity,Long> {
 
     @Query("""
-           SELECT c FROM ChatEntity c
+           SELECT c FROM chat c
            WHERE c.chatRoomId.id = :roomId
            AND c.id < :cursor
            AND DATE(c.timeStamp) = :date
@@ -30,7 +30,7 @@ public interface ChatJpaRepository extends JpaRepository<ChatEntity,Long> {
 
 
     @Query("""
-           SELECT COUNT(c) FROM ChatEntity c
+           SELECT COUNT(c) FROM chat c
            WHERE c.chatRoomId.id = :roomId
            AND DATE(c.timeStamp) = :date
            """)
@@ -38,7 +38,7 @@ public interface ChatJpaRepository extends JpaRepository<ChatEntity,Long> {
 
 
     @Query("""
-           SELECT c FROM ChatEntity c
+           SELECT c FROM chat c
            WHERE c.chatRoomId.id = :roomId AND c.id < :cursor
            ORDER BY c.id
            DESC
@@ -48,7 +48,7 @@ public interface ChatJpaRepository extends JpaRepository<ChatEntity,Long> {
 
     @Query("""
            SELECT COUNT(c)
-           FROM ChatEntity c
+           FROM chat c
            WHERE c.chatRoomId.id = :roomId
            """)
     int countByRoomId(Long roomId);
@@ -56,7 +56,7 @@ public interface ChatJpaRepository extends JpaRepository<ChatEntity,Long> {
 
     // 가장 최근대화 불러오기.
     @Query("""
-            SELECT c.timeStamp FROM ChatEntity c
+            SELECT c.timeStamp FROM chat c
             WHERE c.chatRoomId.id = :chatRoomId
             ORDER BY c.timeStamp
             DESC

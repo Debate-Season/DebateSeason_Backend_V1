@@ -1,4 +1,4 @@
-package com.debateseason_backend_v1.domain.chat.presentation.dto.response;
+package com.debateseason_backend_v1.domain.chat.presentation.dto.chat.response;
 
 
 import io.swagger.v3.oas.annotations.media.Schema;

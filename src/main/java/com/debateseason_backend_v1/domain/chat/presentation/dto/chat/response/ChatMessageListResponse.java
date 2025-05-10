@@ -1,6 +1,6 @@
-package com.debateseason_backend_v1.domain.chat.presentation.dto.response;
+package com.debateseason_backend_v1.domain.chat.presentation.dto.chat.response;
 
-import com.debateseason_backend_v1.domain.chat.presentation.dto.request.ChatMessageRequest;
+import com.debateseason_backend_v1.domain.chat.presentation.dto.chat.request.ChatMessageRequest;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 

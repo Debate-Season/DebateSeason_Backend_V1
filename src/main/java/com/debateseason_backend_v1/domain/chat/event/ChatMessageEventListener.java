@@ -1,6 +1,6 @@
 package com.debateseason_backend_v1.domain.chat.event;
 
-import com.debateseason_backend_v1.domain.chat.presentation.dto.request.ChatMessageRequest;
+import com.debateseason_backend_v1.domain.chat.presentation.dto.chat.request.ChatMessageRequest;
 import com.debateseason_backend_v1.domain.chat.application.service.ChatServiceV1;
 import com.debateseason_backend_v1.domain.chat.validation.ChatValidate;
 import lombok.RequiredArgsConstructor;

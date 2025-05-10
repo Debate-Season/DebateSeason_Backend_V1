@@ -7,8 +7,8 @@ import com.debateseason_backend_v1.domain.chat.application.repository.ChatReacti
 import com.debateseason_backend_v1.domain.chat.infrastructure.chat.ChatEntity;
 import com.debateseason_backend_v1.domain.chat.infrastructure.chat.ChatJpaRepository;
 import com.debateseason_backend_v1.domain.chat.infrastructure.chat_reaction.ChatReaction;
-import com.debateseason_backend_v1.domain.chat.presentation.dto.request.ChatReactionRequest;
-import com.debateseason_backend_v1.domain.chat.presentation.dto.response.ChatMessageResponse;
+import com.debateseason_backend_v1.domain.chat.presentation.dto.chat.request.ChatReactionRequest;
+import com.debateseason_backend_v1.domain.chat.presentation.dto.chat.response.ChatMessageResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.SimpMessagingTemplate;

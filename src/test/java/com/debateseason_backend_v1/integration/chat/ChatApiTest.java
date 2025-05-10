@@ -4,7 +4,7 @@ package com.debateseason_backend_v1.integration.chat;
 import com.debateseason_backend_v1.common.enums.MessageType;
 import com.debateseason_backend_v1.common.enums.OpinionType;
 import com.debateseason_backend_v1.common.response.ApiResult;
-import com.debateseason_backend_v1.domain.chat.presentation.dto.response.ChatMessagesResponse;
+import com.debateseason_backend_v1.domain.chat.presentation.dto.chat.response.ChatMessagesResponse;
 import com.debateseason_backend_v1.domain.chat.infrastructure.chat.ChatJpaRepository;
 import com.debateseason_backend_v1.domain.chat.infrastructure.chat.ChatEntity;
 import com.debateseason_backend_v1.domain.repository.entity.ChatRoom;

@@ -1,7 +1,7 @@
 package com.debateseason_backend_v1.domain.chat.infrastructure.chat_reaction;
 
 import com.debateseason_backend_v1.domain.chat.application.repository.ChatReactionRepository;
-import com.debateseason_backend_v1.domain.chat.presentation.dto.request.ChatReactionRequest;
+import com.debateseason_backend_v1.domain.chat.presentation.dto.chat.request.ChatReactionRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 

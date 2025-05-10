@@ -1,4 +1,4 @@
-package com.debateseason_backend_v1.domain.chat.presentation.dto.request;
+package com.debateseason_backend_v1.domain.chat.presentation.dto.chat.request;
 
 import java.time.LocalDateTime;
 

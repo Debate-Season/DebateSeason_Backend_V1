@@ -1,5 +1,7 @@
 package com.debateseason_backend_v1.domain.auth.service;
 
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,6 +44,14 @@ public class AuthServiceV1 {
 			.accessToken(newAccessToken)
 			.refreshToken(newRefreshToken)
 			.build();
+	}
+
+	public Long getCurrentUserId() {
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		if (authentication != null && authentication.isAuthenticated()) {
+			return Long.valueOf(authentication.getName());
+		}
+		return null;
 	}
 
 }

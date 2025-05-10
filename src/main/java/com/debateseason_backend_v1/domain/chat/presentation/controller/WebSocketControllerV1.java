@@ -3,8 +3,8 @@ package com.debateseason_backend_v1.domain.chat.presentation.controller;
 import java.time.LocalDateTime;
 
 import com.debateseason_backend_v1.common.exception.CustomException;
-import com.debateseason_backend_v1.domain.chat.presentation.dto.response.ChatMessageErrorResponse;
-import com.debateseason_backend_v1.domain.chat.presentation.dto.response.ChatMessageResponse;
+import com.debateseason_backend_v1.domain.chat.presentation.dto.chat.response.ChatMessageErrorResponse;
+import com.debateseason_backend_v1.domain.chat.presentation.dto.chat.response.ChatMessageResponse;
 import com.debateseason_backend_v1.domain.chat.application.service.ChatServiceV1;
 import com.debateseason_backend_v1.domain.chat.validation.ChatValidate;
 import jakarta.validation.Valid;
@@ -17,7 +17,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 
 import com.debateseason_backend_v1.common.enums.MessageType;
-import com.debateseason_backend_v1.domain.chat.presentation.dto.request.ChatMessageRequest;
+import com.debateseason_backend_v1.domain.chat.presentation.dto.chat.request.ChatMessageRequest;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;

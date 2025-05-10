@@ -5,12 +5,16 @@ import com.debateseason_backend_v1.common.response.ApiResult;
 import com.debateseason_backend_v1.domain.chat.application.repository.ChatReactionRepository;
 import com.debateseason_backend_v1.domain.chat.application.repository.ChatRepository;
 import com.debateseason_backend_v1.domain.chat.infrastructure.chat.ChatEntity;
-import com.debateseason_backend_v1.domain.chat.presentation.dto.request.ChatMessageRequest;
-import com.debateseason_backend_v1.domain.chat.presentation.dto.response.ChatMessageResponse;
-import com.debateseason_backend_v1.domain.chat.presentation.dto.response.ChatMessagesResponse;
+import com.debateseason_backend_v1.domain.chat.presentation.dto.chat.request.ChatMessageRequest;
+import com.debateseason_backend_v1.domain.chat.presentation.dto.chat.response.ChatMessageResponse;
+import com.debateseason_backend_v1.domain.chat.presentation.dto.chat.response.ChatMessagesResponse;
 import com.debateseason_backend_v1.domain.chat.validation.ChatValidate;
 import com.debateseason_backend_v1.domain.chatroom.service.ChatRoomServiceV1;
 import com.debateseason_backend_v1.domain.repository.entity.ChatRoom;
+import com.debateseason_backend_v1.domain.chat.application.repository.ReportRepository;
+import com.debateseason_backend_v1.domain.chat.domain.model.report.Report;
+import com.debateseason_backend_v1.domain.chat.domain.model.report.ReportStatus;
+import com.debateseason_backend_v1.domain.chat.domain.model.report.ReportTargetType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
@@ -21,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -34,6 +39,7 @@ public class ChatServiceV1 {
 	private final ChatRoomServiceV1 chatRoomService;
 	private final ChatValidate chatValidate;
 	private final ChatReactionRepository chatReactionRepository;
+	private final ReportRepository reportRepository;
 
 	// ---------- WebSocket 실시간 메시지 처리 ----------
 	
@@ -111,11 +117,40 @@ public class ChatServiceV1 {
 		boolean hasMore = chats.size() > PAGE_SIZE;
 		List<ChatEntity> displayChats = hasMore ? chats.subList(0, PAGE_SIZE) : chats;
 		
-		// 응답 생성
+		// 신고된 메시지 목록 조회
+		Set<Long> acceptedReportChatIds = reportRepository.findByTargetTypeAndStatus(
+				ReportTargetType.CHAT, ReportStatus.ACCEPTED)
+				.stream()
+				.map(entity -> entity.getTargetId())
+				.collect(Collectors.toSet());
+
+		// 디버깅 로그 추가
+		log.info("승인된 신고 메시지 ID 목록: {}", acceptedReportChatIds);
+
+		// 응답 생성 - 신고된 메시지 마스킹 적용
 		List<ChatMessageResponse> messageResponses = displayChats.stream()
-				.map(chat -> ChatMessageResponse.from(chat, userId, chatReactionRepository))
+				.map(chatEntity -> {
+					// 신고 처리된 메시지인지 확인
+					if (acceptedReportChatIds.contains(chatEntity.getId())) {
+						// 마스킹된 엔티티 생성
+						ChatEntity maskedEntity = ChatEntity.builder()
+								.id(chatEntity.getId())
+								.chatRoomId(chatEntity.getChatRoomId())
+								.userId(chatEntity.getUserId())
+								.messageType(chatEntity.getMessageType())
+								.content("신고된 메시지 입니다.")
+								.sender(chatEntity.getSender())
+								.opinionType(chatEntity.getOpinionType())
+								.userCommunity(chatEntity.getUserCommunity())
+								.timeStamp(chatEntity.getTimeStamp())
+								.build();
+						return ChatMessageResponse.from(maskedEntity, userId, chatReactionRepository);
+					}
+					return ChatMessageResponse.from(chatEntity, userId, chatReactionRepository);
+				})
 				.collect(Collectors.toList());
 		
+		// 기존 페이지네이션 코드 유지
 		String nextCursor = null;
 		if (!displayChats.isEmpty()) {
 			nextCursor = String.valueOf(displayChats.get(displayChats.size() - 1).getId());

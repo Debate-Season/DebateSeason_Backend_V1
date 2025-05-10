@@ -2,8 +2,8 @@ package com.debateseason_backend_v1.integration.chat;
 
 import com.debateseason_backend_v1.common.enums.MessageType;
 import com.debateseason_backend_v1.common.enums.OpinionType;
-import com.debateseason_backend_v1.domain.chat.presentation.dto.request.ChatMessageRequest;
-import com.debateseason_backend_v1.domain.chat.presentation.dto.response.ChatMessageResponse;
+import com.debateseason_backend_v1.domain.chat.presentation.dto.chat.request.ChatMessageRequest;
+import com.debateseason_backend_v1.domain.chat.presentation.dto.chat.response.ChatMessageResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

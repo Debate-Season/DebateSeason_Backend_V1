@@ -117,3 +117,27 @@ CREATE TABLE refresh_tokens
     PRIMARY KEY (refresh_token_id),
     CONSTRAINT fk_refreshtoken_users FOREIGN KEY (user_id) REFERENCES users (user_id)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+
+-- Create report table
+CREATE TABLE report
+(
+    id             BIGINT       NOT NULL AUTO_INCREMENT,
+    target_id      BIGINT       NOT NULL,
+    target_type    VARCHAR(50)  NOT NULL,
+    reporter_id    BIGINT       NOT NULL,
+    status         VARCHAR(50)  NOT NULL,
+    description    VARCHAR(500),
+    created_at     TIMESTAMP    NOT NULL,
+    processed_at   TIMESTAMP,
+    admin_comment  VARCHAR(500),
+    processed_by_id BIGINT,
+    PRIMARY KEY (id)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+
+-- Create chat_report_reasons table
+CREATE TABLE chat_report_reasons
+(
+    report_id            BIGINT      NOT NULL,
+    report_reason_types  VARCHAR(50) NOT NULL,
+    CONSTRAINT fk_chat_report_reasons_report FOREIGN KEY (report_id) REFERENCES report (id)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;

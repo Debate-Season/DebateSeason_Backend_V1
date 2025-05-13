@@ -9,9 +9,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import com.debateseason_backend_v1.domain.repository.entity.MediaJpaEntity;
+import com.debateseason_backend_v1.domain.repository.entity.Media;
 
-public interface MediaJpaRepository extends JpaRepository<MediaJpaEntity,Long> {
+public interface MediaJpaRepository extends JpaRepository<Media,Long> {
 
 	// 1. 최신 news, youtube, community 커서 기반 5개 가져오기
 	@Query(value = "SELECT * FROM media " +
@@ -19,7 +19,7 @@ public interface MediaJpaRepository extends JpaRepository<MediaJpaEntity,Long> {
 		"ORDER BY created_at DESC " +
 		"LIMIT :size",
 		nativeQuery = true)
-	List<MediaJpaEntity> getMediaByType(
+	List<Media> getMediaByType(
 		@Param("time") String time,
 		@Param("type") String type,
 		@Param("size")int size
@@ -31,17 +31,17 @@ public interface MediaJpaRepository extends JpaRepository<MediaJpaEntity,Long> {
 		"ORDER BY created_at DESC " +
 		"LIMIT :size",
 		nativeQuery = true)
-	List<MediaJpaEntity> getAllMedia(
+	List<Media> getAllMedia(
 		@Param("time") String time,
 		@Param("size")int size
 	);
 
 	// 3. 속보 가져오기
 	@Query(value = "SELECT * FROM media ORDER BY created_at DESC, count DESC LIMIT :size", nativeQuery = true)
-	List<MediaJpaEntity> findBreakingNews(@Param("size")int size);
+	List<Media> findBreakingNews(@Param("size")int size);
 
 	// 4. 가장 최신글 1개 조회를 한다.
 	@Query(value = "SELECT * FROM media WHERE type = 'youtube' ORDER BY created_at DESC LIMIT 1", nativeQuery = true)
-	MediaJpaEntity findLatestNews();
+	Media findLatestNews();
 
 }

@@ -3,7 +3,7 @@ package com.debateseason_backend_v1.domain.user.service;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import com.debateseason_backend_v1.domain.repository.IssueRepository;
+import com.debateseason_backend_v1.domain.repository.IssueJpaRepository;
 import com.debateseason_backend_v1.domain.repository.UserIssueRepository;
 import com.debateseason_backend_v1.domain.repository.UserRepository;
 import com.debateseason_backend_v1.domain.repository.entity.Issue;
@@ -22,7 +22,7 @@ public class UserIssueServiceV1 {
 
 	//
 	private final UserRepository userRepository;
-	private final IssueRepository issueRepository;
+	private final IssueJpaRepository issueJpaRepository;
 	//
 	private final UserIssueRepository userIssueRepository;
 
@@ -36,7 +36,7 @@ public class UserIssueServiceV1 {
 		User user = userRepository.findById(userId).orElseThrow(
 			() -> new RuntimeException("There is no user : " + userId)
 		);
-		Issue issue = issueRepository.findById(issueId).orElseThrow(
+		Issue issue = issueJpaRepository.findById(issueId).orElseThrow(
 			() -> new RuntimeException("There is no relevant issue : " + issueId)
 		);
 

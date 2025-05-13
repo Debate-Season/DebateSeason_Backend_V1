@@ -43,12 +43,12 @@ public class ChatRoomControllerV1 implements ChatRoomControllerV1Docs {
 	@GetMapping("/room")
 	public ApiResult<ChatRoomResponse> getChatRoom(
 		@RequestParam(name = "chatroom-id") Long chatRoomId,
-		//@RequestParam(name = "type",required = false) String type,
+		@RequestParam(name = "type",required = false) String type,
 		@AuthenticationPrincipal CustomUserDetails principal) {
 		// type은 토론위키일 수도 있고, 하이라이트일 수도 있고, 아무것도 없을 수도 있다.
 
 		Long userId = principal.getUserId();
-		return chatRoomServiceV1.fetch(userId,chatRoomId);
+		return chatRoomServiceV1.fetch(userId,chatRoomId,type);
 	}
 
 	// 5. 채팅방 찬성/반대 투표하기, opinion, chatroomid = 쿼리스트링

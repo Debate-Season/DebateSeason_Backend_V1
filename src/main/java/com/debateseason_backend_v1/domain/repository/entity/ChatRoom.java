@@ -5,6 +5,8 @@ import java.time.LocalDateTime;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import com.debateseason_backend_v1.domain.chatroom.model.request.ChatRoomRequest;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
@@ -44,5 +46,15 @@ public class ChatRoom {
 	@CreatedDate
 	@Column(name = "created_at", updatable = false)
 	private LocalDateTime createdAt;
+
+	public static ChatRoom toJpaEntity(Issue issue, ChatRoomRequest chatRoomRequest){
+
+		return ChatRoom.builder()
+			.issue(issue)
+			.title(chatRoomRequest.getTitle())
+			.content(chatRoomRequest.getContent())
+			.build();
+
+	}
 
 }

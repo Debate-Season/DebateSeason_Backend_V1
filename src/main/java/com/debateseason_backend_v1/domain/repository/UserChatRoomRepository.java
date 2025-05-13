@@ -13,19 +13,31 @@ import com.debateseason_backend_v1.domain.repository.entity.UserChatRoom;
 
 @Repository
 public interface UserChatRoomRepository extends JpaRepository<UserChatRoom, Long> {
-	List<UserChatRoom> findByChatRoom(ChatRoom chatRoom);
-	UserChatRoom findByUserAndChatRoom(User user, ChatRoom chatRoom);
-	UserChatRoom findByUserIdAndChatRoomId(Long userId,Long chatroomId);
+	List<UserChatRoom> findByChatRoom(
+		ChatRoom chatRoom
+	);
+	UserChatRoom findByUserAndChatRoom(
+		User user,
+		ChatRoom chatRoom
+	);
+	UserChatRoom findByUserIdAndChatRoomId(
+		Long userId,Long
+		chatroomId
+	);
 
 	// 1-1 Paramter가 없는 경우
-	@Query(value = "SELECT chat_room_id FROM user_chat_room WHERE user_id = :userId ORDER BY chat_room_id DESC LIMIT 2", nativeQuery = true)
-	List<Long> findTop2ChatRoomIdsByUserId(@Param("userId") Long userId);
+	@Query(value = "SELECT chat_room_id FROM user_chat_room WHERE user_id = :userId ORDER BY chat_room_id DESC LIMIT :size", nativeQuery = true)
+	List<Long> findTopChatRoomIdsByUserId(
+		@Param("userId") Long userId,
+		@Param("size") int size
+	);
 
 	// 1-2. Parameter가 있는 경우
-	@Query(value = "SELECT chat_room_id FROM user_chat_room WHERE user_id = :userId AND chat_room_id < :ChatRoomId ORDER BY chat_room_id DESC LIMIT 2", nativeQuery = true)
-	List<Long> findTop2ChatRoomIdsByUserIdAndChatRoomId(
+	@Query(value = "SELECT chat_room_id FROM user_chat_room WHERE user_id = :userId AND chat_room_id < :ChatRoomId ORDER BY chat_room_id DESC LIMIT :size", nativeQuery = true)
+	List<Long> findTopChatRoomIdsByUserIdAndChatRoomId(
 		@Param("userId") Long userId,
-		@Param("ChatRoomId") Long ChatRoomId
+		@Param("ChatRoomId") Long ChatRoomId,
+		@Param("size") int size
 	);
 
 	// 1-3. 1.에서 가져온 토론방의 id값들로 해당 user가 투표한 토론방 여러개 조회하기.
@@ -41,17 +53,26 @@ public interface UserChatRoomRepository extends JpaRepository<UserChatRoom, Long
         GROUP BY ucr.chat_room_id
         ORDER BY ucr.chat_room_id DESC
         """, nativeQuery = true)
-	List<Object[]> findChatRoomByChatRoomIds(@Param("chatRoomIds") List<Long> chatRoomIds);
+	List<Object[]> findChatRoomByChatRoomIds(
+		@Param("chatRoomIds") List<Long> chatRoomIds
+	);
 
 	// 2-1 이슈방 issue-id로만 조회
-	@Query(value = "SELECT chat_room_id FROM chat_room WHERE issue_id = :issueId ORDER BY chat_room_id DESC LIMIT 3", nativeQuery = true)
-	List<Long> findTop3ChatRoomIdsByIssueId(@Param("issueId") Long issueId);
+	@Query(value = "SELECT chat_room_id FROM chat_room WHERE issue_id = :issueId ORDER BY chat_room_id DESC LIMIT :size", nativeQuery = true)
+	List<Long> findTopChatRoomIdsByIssueIdWithSize(
+		@Param("issueId") Long issueId,
+		@Param("size") int size
+	);
 
 	// 2-2 이슈방 issue-id + 커서기반
-	@Query(value = "SELECT chat_room_id FROM chat_room WHERE issue_id = :issueId AND chat_room_id < :ChatRoomId ORDER BY chat_room_id DESC LIMIT 3", nativeQuery = true)
-	List<Long> findTop3ChatRoomIdsByIssueIdAndChatRoomId(
+	@Query(value = "SELECT chat_room_id FROM chat_room "
+		+ "WHERE issue_id = :issueId AND chat_room_id < :ChatRoomId "
+		+ "ORDER BY chat_room_id "
+		+ "DESC LIMIT :size", nativeQuery = true)
+	List<Long> findTopChatRoomIdsByIssueIdAndChatRoomIdWithSize(
 		@Param("issueId") Long issueId,
-		@Param("ChatRoomId") Long ChatRoomId
+		@Param("ChatRoomId") Long ChatRoomId,
+		@Param("size") int size
 	);
 	@Query(value = """
     SELECT ch.chat_room_id, ch.title, ch.content, ch.created_at,
@@ -63,7 +84,9 @@ public interface UserChatRoomRepository extends JpaRepository<UserChatRoom, Long
     GROUP BY ch.chat_room_id, ch.title, ch.content, ch.created_at
     ORDER BY ch.chat_room_id DESC
     """, nativeQuery = true)
-	List<Object[]> findChatRoomAggregates(@Param("chatRoomIds") List<Long> chatRoomIds);
+	List<Object[]> findChatRoomAggregates(
+		@Param("chatRoomIds") List<Long> chatRoomIds
+	);
 
 	@Query(value = """
     SELECT chat_room_id, opinion AS opinion
@@ -71,5 +94,8 @@ public interface UserChatRoomRepository extends JpaRepository<UserChatRoom, Long
     WHERE user_id = :userId AND chat_room_id IN (:chatRoomIds)
     ORDER BY chat_room_id DESC
     """, nativeQuery = true)
-	List<Object[]> findUserChatRoomOpinions(@Param("userId") Long userId, @Param("chatRoomIds") List<Long> chatRoomIds);
+	List<Object[]> findUserChatRoomOpinions(
+		@Param("userId") Long userId,
+		@Param("chatRoomIds") List<Long> chatRoomIds
+	);
 }

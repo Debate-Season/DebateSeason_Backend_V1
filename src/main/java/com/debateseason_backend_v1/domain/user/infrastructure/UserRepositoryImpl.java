@@ -28,8 +28,8 @@ public class UserRepositoryImpl implements UserRepository {
 	}
 
 	@Override
-	public Optional<UserEntity> findBySocialTypeAndIdentifier(SocialType socialType, String identifier) {
-		return userJpaRepository.findBySocialTypeAndIdentifier(socialType, identifier);
+	public Optional<UserEntity> findBySocialTypeAndIdentifier(SocialType socialType, String socialId) {
+		return userJpaRepository.findBySocialTypeAndSocialId(socialType, socialId);
 	}
 
 	@Override

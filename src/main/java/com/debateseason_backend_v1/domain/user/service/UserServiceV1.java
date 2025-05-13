@@ -10,10 +10,9 @@ import com.debateseason_backend_v1.common.exception.CustomException;
 import com.debateseason_backend_v1.common.exception.ErrorCode;
 import com.debateseason_backend_v1.domain.repository.ProfileRepository;
 import com.debateseason_backend_v1.domain.repository.RefreshTokenRepository;
-import com.debateseason_backend_v1.domain.user.infrastructure.UserJpaRepository;
 import com.debateseason_backend_v1.domain.repository.entity.RefreshToken;
-import com.debateseason_backend_v1.domain.user.infrastructure.UserEntity;
 import com.debateseason_backend_v1.domain.terms.service.TermsServiceV1;
+import com.debateseason_backend_v1.domain.user.infrastructure.UserEntity;
 import com.debateseason_backend_v1.domain.user.service.request.LogoutServiceRequest;
 import com.debateseason_backend_v1.domain.user.service.request.SocialLoginServiceRequest;
 import com.debateseason_backend_v1.domain.user.service.response.LoginResponse;
@@ -98,7 +97,7 @@ public class UserServiceV1 {
 
 		UserEntity user = UserEntity.builder()
 			.socialType(request.socialType())
-			.externalId(request.identifier())
+			.socialId(request.identifier())
 			.build();
 
 		return userRepository.save(user);

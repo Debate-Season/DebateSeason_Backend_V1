@@ -12,7 +12,7 @@ import com.debateseason_backend_v1.domain.user.enums.SocialType;
 @Repository
 public interface UserJpaRepository extends JpaRepository<UserEntity, Long> {
 
-	Optional<UserEntity> findBySocialTypeAndIdentifier(SocialType socialType, String identifier);
+	Optional<UserEntity> findBySocialTypeAndSocialId(SocialType socialType, String socialId);
 
 	List<UserEntity> findByIsDeletedTrueAndUpdatedAtBefore(LocalDateTime cutoffDate);
 }

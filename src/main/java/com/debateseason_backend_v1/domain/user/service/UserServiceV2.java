@@ -7,12 +7,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.debateseason_backend_v1.domain.repository.ProfileRepository;
 import com.debateseason_backend_v1.domain.repository.RefreshTokenRepository;
-import com.debateseason_backend_v1.domain.user.infrastructure.UserJpaRepository;
 import com.debateseason_backend_v1.domain.repository.entity.RefreshToken;
-import com.debateseason_backend_v1.domain.user.infrastructure.UserEntity;
 import com.debateseason_backend_v1.domain.terms.service.TermsServiceV1;
 import com.debateseason_backend_v1.domain.user.component.provider.OidcProviderFactory;
 import com.debateseason_backend_v1.domain.user.enums.SocialType;
+import com.debateseason_backend_v1.domain.user.infrastructure.UserEntity;
 import com.debateseason_backend_v1.domain.user.service.request.OidcLoginServiceRequest;
 import com.debateseason_backend_v1.domain.user.service.response.LoginResponse;
 import com.debateseason_backend_v1.security.jwt.JwtUtil;
@@ -67,7 +66,7 @@ public class UserServiceV2 {
 
 		UserEntity user = UserEntity.builder()
 			.socialType(socialType)
-			.externalId(userIdentifier)
+			.socialId(userIdentifier)
 			.build();
 
 		return userRepository.save(user);

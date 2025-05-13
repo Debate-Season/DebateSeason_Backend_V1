@@ -6,7 +6,10 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import com.debateseason_backend_v1.domain.user.domain.User;
+import com.debateseason_backend_v1.domain.user.domain.UserPersistenceData;
 import com.debateseason_backend_v1.domain.user.enums.SocialType;
+import com.debateseason_backend_v1.domain.user.enums.UserStatus;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -38,8 +41,10 @@ public class UserEntity {
 	@Column(name = "social_type")
 	private SocialType socialType;
 
-	@Column(name = "identifier")
-	private String identifier;
+	@Column(name = "social_id")
+	private String socialId;
+
+	private UserStatus status;
 
 	@Column(name = "is_deleted")
 	private boolean isDeleted = false;
@@ -53,10 +58,10 @@ public class UserEntity {
 	private LocalDateTime updatedAt;
 
 	@Builder
-	private UserEntity(SocialType socialType, String externalId) {
+	private UserEntity(SocialType socialType, String socialId, UserStatus status) {
 
 		this.socialType = socialType;
-		this.identifier = externalId;
+		this.socialId = socialId;
 	}
 
 	public void withdraw() {
@@ -71,7 +76,20 @@ public class UserEntity {
 
 	public void anonymize(String uuid) {
 
-		this.identifier = uuid;
+		this.socialId = uuid;
 	}
 
+	public static UserEntity from(User user) {
+		UserPersistenceData data = user.mapToPersistenceData();
+
+		return UserEntity.builder()
+			.socialType(data.socialAuthInfo().socialType())
+			.socialId(data.socialAuthInfo().socialId())
+			.status(data.status())
+			.build();
+	}
+
+	public User toModel() {
+		return new User(this.id, this.socialId, this.socialType, this.status);
+	}
 }

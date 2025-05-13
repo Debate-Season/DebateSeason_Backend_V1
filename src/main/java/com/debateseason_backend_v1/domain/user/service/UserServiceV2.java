@@ -25,7 +25,7 @@ public class UserServiceV2 {
 
 	private final JwtUtil jwtUtil;
 	private final TermsServiceV1 termsService;
-	private final UserJpaRepository userRepository;
+	private final UserRepository userRepository;
 	private final ProfileRepository profileRepository;
 	private final OidcProviderFactory oidcProviderFactory;
 	private final RefreshTokenRepository refreshTokenRepository;

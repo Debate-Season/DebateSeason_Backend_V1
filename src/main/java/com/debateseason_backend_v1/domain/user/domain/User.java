@@ -9,7 +9,7 @@ import lombok.Getter;
 @Getter
 public class User {
 
-	public static final User EMPTY = new User(null, null, null, null);
+	public static final User EMPTY = new User(null, null, null, UserStatus.NULL);
 
 	private UserId id;
 	private SocialAuthInfo socialAuthInfo;
@@ -28,7 +28,7 @@ public class User {
 
 		this.socialAuthInfo = new SocialAuthInfo(socialId, socialType);
 		this.status = UserStatus.PENDING;
-		
+
 		return this;
 	}
 

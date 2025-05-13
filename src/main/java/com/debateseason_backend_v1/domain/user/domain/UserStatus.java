@@ -1,6 +1,27 @@
 package com.debateseason_backend_v1.domain.user.domain;
 
 public enum UserStatus {
+	NULL {
+		@Override
+		public boolean isNotRegistrable() {
+			return false;
+		}
+
+		@Override
+		public boolean isNotLoginable() {
+			return true;
+		}
+
+		@Override
+		public boolean isNotWithdrawable() {
+			return true;
+		}
+
+		@Override
+		public boolean isNotAnonymizable() {
+			return true;
+		}
+	},
 	PENDING {
 		@Override
 		public boolean isNotRegistrable() {

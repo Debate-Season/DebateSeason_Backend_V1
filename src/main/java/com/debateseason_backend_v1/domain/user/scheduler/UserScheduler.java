@@ -34,7 +34,7 @@ public class UserScheduler {
 		LocalDateTime cutoffDate = LocalDateTime.now().minusDays(5);
 
 		List<User> expiredUsers = userRepository.findWithdrawnPendingUsers(
-			UserStatus.WITHDRAWN_PENDING, cutoffDate
+			UserStatus.WITHDRAW_PENDING, cutoffDate
 		);
 
 		for (User user : expiredUsers) {

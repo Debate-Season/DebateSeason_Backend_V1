@@ -17,7 +17,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
-@Tag(name = "User API", description = "계정 관리 API")
+@Tag(name = "UserEntity API", description = "계정 관리 API")
 public interface UserControllerV1Docs {
 
 	@Operation(

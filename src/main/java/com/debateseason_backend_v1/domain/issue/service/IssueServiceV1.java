@@ -27,10 +27,10 @@ import com.debateseason_backend_v1.domain.repository.IssueRepository;
 import com.debateseason_backend_v1.domain.repository.ProfileRepository;
 import com.debateseason_backend_v1.domain.repository.UserChatRoomRepository;
 import com.debateseason_backend_v1.domain.repository.UserIssueRepository;
-import com.debateseason_backend_v1.domain.repository.UserRepository;
+import com.debateseason_backend_v1.domain.user.infrastructure.UserJpaRepository;
 import com.debateseason_backend_v1.domain.repository.entity.Issue;
 import com.debateseason_backend_v1.domain.repository.entity.Profile;
-import com.debateseason_backend_v1.domain.repository.entity.User;
+import com.debateseason_backend_v1.domain.user.infrastructure.UserEntity;
 import com.debateseason_backend_v1.domain.repository.entity.UserIssue;
 import com.debateseason_backend_v1.domain.user.dto.UserDTO;
 
@@ -46,7 +46,7 @@ public class IssueServiceV1 {
 	private final IssueRepository issueRepository;
 	private final UserIssueRepository userIssueRepository;
 	private final UserChatRoomRepository userChatRoomRepository;
-	private final UserRepository userRepository;
+	private final UserJpaRepository userRepository;
 
 	private final ProfileRepository profileRepository;
 	private final ChatJpaRepository chatRepository;
@@ -245,7 +245,7 @@ public class IssueServiceV1 {
 	@Transactional // 만약에 하나로 문제가 생기면 바로 Rollback
 	public ApiResult<String> bookMark(Long issueId, Long userId){
 
-		User user = userRepository.findById(userId).orElseThrow(
+		UserEntity user = userRepository.findById(userId).orElseThrow(
 			()-> new CustomException(ErrorCode.NOT_FOUND_USER)
 		)
 		;

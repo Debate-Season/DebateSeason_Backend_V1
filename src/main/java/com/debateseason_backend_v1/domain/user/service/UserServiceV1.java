@@ -10,9 +10,9 @@ import com.debateseason_backend_v1.common.exception.CustomException;
 import com.debateseason_backend_v1.common.exception.ErrorCode;
 import com.debateseason_backend_v1.domain.repository.ProfileRepository;
 import com.debateseason_backend_v1.domain.repository.RefreshTokenRepository;
-import com.debateseason_backend_v1.domain.repository.UserRepository;
+import com.debateseason_backend_v1.domain.user.infrastructure.UserJpaRepository;
 import com.debateseason_backend_v1.domain.repository.entity.RefreshToken;
-import com.debateseason_backend_v1.domain.repository.entity.User;
+import com.debateseason_backend_v1.domain.user.infrastructure.UserEntity;
 import com.debateseason_backend_v1.domain.terms.service.TermsServiceV1;
 import com.debateseason_backend_v1.domain.user.service.request.LogoutServiceRequest;
 import com.debateseason_backend_v1.domain.user.service.request.SocialLoginServiceRequest;
@@ -30,14 +30,14 @@ public class UserServiceV1 {
 
 	private final JwtUtil jwtUtil;
 	private final TermsServiceV1 termsService;
-	private final UserRepository userRepository;
+	private final UserJpaRepository userRepository;
 	private final ProfileRepository profileRepository;
 	private final RefreshTokenRepository refreshTokenRepository;
 
 	@Transactional
 	public LoginResponse socialLogin(SocialLoginServiceRequest request) {
 
-		User user = userRepository.findBySocialTypeAndIdentifier(
+		UserEntity user = userRepository.findBySocialTypeAndIdentifier(
 				request.socialType(),
 				request.identifier()
 			)
@@ -86,7 +86,7 @@ public class UserServiceV1 {
 	@Transactional
 	public void withdraw(Long userId) {
 
-		User user = userRepository.findById(userId)
+		UserEntity user = userRepository.findById(userId)
 			.orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_USER));
 
 		user.withdraw();
@@ -94,9 +94,9 @@ public class UserServiceV1 {
 		refreshTokenRepository.deleteAllByUserId(user.getId());
 	}
 
-	private User createNewUser(SocialLoginServiceRequest request) {
+	private UserEntity createNewUser(SocialLoginServiceRequest request) {
 
-		User user = User.builder()
+		UserEntity user = UserEntity.builder()
 			.socialType(request.socialType())
 			.externalId(request.identifier())
 			.build();
@@ -104,7 +104,7 @@ public class UserServiceV1 {
 		return userRepository.save(user);
 	}
 
-	private void saveRefreshToken(User user, String refresh, Long expiredMs) {
+	private void saveRefreshToken(UserEntity user, String refresh, Long expiredMs) {
 
 		LocalDateTime expiration = LocalDateTime.now().plusSeconds(expiredMs / 1000);
 

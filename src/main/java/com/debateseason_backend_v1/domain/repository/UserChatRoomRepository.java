@@ -8,13 +8,13 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.debateseason_backend_v1.domain.repository.entity.ChatRoom;
-import com.debateseason_backend_v1.domain.repository.entity.User;
+import com.debateseason_backend_v1.domain.user.infrastructure.UserEntity;
 import com.debateseason_backend_v1.domain.repository.entity.UserChatRoom;
 
 @Repository
 public interface UserChatRoomRepository extends JpaRepository<UserChatRoom, Long> {
 	List<UserChatRoom> findByChatRoom(ChatRoom chatRoom);
-	UserChatRoom findByUserAndChatRoom(User user, ChatRoom chatRoom);
+	UserChatRoom findByUserAndChatRoom(UserEntity user, ChatRoom chatRoom);
 	UserChatRoom findByUserIdAndChatRoomId(Long userId,Long chatroomId);
 
 	// 1-1 Paramter가 없는 경우

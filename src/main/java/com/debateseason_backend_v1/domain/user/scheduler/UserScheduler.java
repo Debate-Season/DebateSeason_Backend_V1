@@ -9,9 +9,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.debateseason_backend_v1.common.component.UuidShortener;
 import com.debateseason_backend_v1.domain.repository.ProfileRepository;
-import com.debateseason_backend_v1.domain.repository.UserRepository;
+import com.debateseason_backend_v1.domain.user.infrastructure.UserJpaRepository;
 import com.debateseason_backend_v1.domain.repository.entity.Profile;
-import com.debateseason_backend_v1.domain.repository.entity.User;
+import com.debateseason_backend_v1.domain.user.infrastructure.UserEntity;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,7 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 public class UserScheduler {
 
 	private final UuidShortener uuidShortener;
-	private final UserRepository userRepository;
+	private final UserJpaRepository userRepository;
 	private final ProfileRepository profileRepository;
 
 	@Scheduled(cron = "0 0 0 * * *") // 매일 자정 실행
@@ -32,9 +32,9 @@ public class UserScheduler {
 
 		LocalDateTime cutoffDate = LocalDateTime.now().minusDays(5);
 
-		List<User> expiredUsers = userRepository.findByIsDeletedTrueAndUpdatedAtBefore(cutoffDate);
+		List<UserEntity> expiredUsers = userRepository.findByIsDeletedTrueAndUpdatedAtBefore(cutoffDate);
 
-		for (User user : expiredUsers) {
+		for (UserEntity user : expiredUsers) {
 			String uuid = uuidShortener.shortenUuid();
 			log.info("회원 ID: {} 익명화 처리 중", user.getId());
 

@@ -14,7 +14,7 @@ public interface ReportTarget {
      * @param description 신고 상세 이유
      * @return Report
      */
-    //TODO User 도메인 모델은 아직 리팩토링 진행중으로 도메인모델 설계 되면 기존 유저 엔티티 결합 해제 하고 User 도메인 모델과 결합
+    //TODO UserEntity 도메인 모델은 아직 리팩토링 진행중으로 도메인모델 설계 되면 기존 유저 엔티티 결합 해제 하고 UserEntity 도메인 모델과 결합
     Report reportBy(Long targetId, Long reporterId, Set<ReportReasonType> reportReasonTypes, String description);
 
     /**

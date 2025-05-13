@@ -54,7 +54,7 @@ public class CommunityRecords { // 자주 들락날락할텐데 DB에 기록하�
 	// synchronized를 통해서 Race condition 문제 해결
 	public static synchronized void record(UserDTO userDTO, Long issueId) {
 
-		// 이슈방 첫 조회시 -> 첫 방문자에 의해서 cashUsers와 markIndex(User 위치)에 표시
+		// 이슈방 첫 조회시 -> 첫 방문자에 의해서 cashUsers와 markIndex(UserEntity 위치)에 표시
 		// (markIndex를 하지 않은 경우, cashUsers에서 UserDTO를 찾을 수 없음.)
 		// 그래서 Index를 통해서 빠르게 찾기 위한 목적임.
 		if (markUserWithIssue.get(issueId) == null) {

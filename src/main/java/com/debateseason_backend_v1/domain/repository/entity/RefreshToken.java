@@ -5,6 +5,8 @@ import java.time.LocalDateTime;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import com.debateseason_backend_v1.domain.user.infrastructure.UserEntity;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
@@ -34,7 +36,7 @@ public class RefreshToken {
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "user_id", nullable = false)
-	private User user;
+	private UserEntity user;
 
 	@Column(name = "token")
 	private String token;
@@ -47,7 +49,7 @@ public class RefreshToken {
 	private LocalDateTime createdAt;
 
 	@Builder
-	protected RefreshToken(User user, String token, LocalDateTime expirationAt) {
+	protected RefreshToken(UserEntity user, String token, LocalDateTime expirationAt) {
 
 		this.user = user;
 		this.token = token;

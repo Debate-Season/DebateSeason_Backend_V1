@@ -12,7 +12,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
-@Tag(name = "User API V2", description = "계정 관리 API V2")
+@Tag(name = "UserEntity API V2", description = "계정 관리 API V2")
 public interface UserControllerV2Docs {
 
 	@Operation(

@@ -7,9 +7,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.debateseason_backend_v1.domain.repository.ProfileRepository;
 import com.debateseason_backend_v1.domain.repository.RefreshTokenRepository;
-import com.debateseason_backend_v1.domain.repository.UserRepository;
+import com.debateseason_backend_v1.domain.user.infrastructure.UserJpaRepository;
 import com.debateseason_backend_v1.domain.repository.entity.RefreshToken;
-import com.debateseason_backend_v1.domain.repository.entity.User;
+import com.debateseason_backend_v1.domain.user.infrastructure.UserEntity;
 import com.debateseason_backend_v1.domain.terms.service.TermsServiceV1;
 import com.debateseason_backend_v1.domain.user.component.provider.OidcProviderFactory;
 import com.debateseason_backend_v1.domain.user.enums.SocialType;
@@ -25,7 +25,7 @@ public class UserServiceV2 {
 
 	private final JwtUtil jwtUtil;
 	private final TermsServiceV1 termsService;
-	private final UserRepository userRepository;
+	private final UserJpaRepository userRepository;
 	private final ProfileRepository profileRepository;
 	private final OidcProviderFactory oidcProviderFactory;
 	private final RefreshTokenRepository refreshTokenRepository;
@@ -35,7 +35,7 @@ public class UserServiceV2 {
 
 		String userIdentifier = oidcProviderFactory.extractUserId(request.socialType(), request.idToken());
 
-		User user = userRepository.findBySocialTypeAndIdentifier(
+		UserEntity user = userRepository.findBySocialTypeAndIdentifier(
 				request.socialType(),
 				userIdentifier
 			)
@@ -63,9 +63,9 @@ public class UserServiceV2 {
 			.build();
 	}
 
-	private User createNewUser(SocialType socialType, String userIdentifier) {
+	private UserEntity createNewUser(SocialType socialType, String userIdentifier) {
 
-		User user = User.builder()
+		UserEntity user = UserEntity.builder()
 			.socialType(socialType)
 			.externalId(userIdentifier)
 			.build();
@@ -73,7 +73,7 @@ public class UserServiceV2 {
 		return userRepository.save(user);
 	}
 
-	private void saveRefreshToken(User user, String refresh, Long expiredMs) {
+	private void saveRefreshToken(UserEntity user, String refresh, Long expiredMs) {
 
 		LocalDateTime expiration = LocalDateTime.now().plusSeconds(expiredMs / 1000);
 

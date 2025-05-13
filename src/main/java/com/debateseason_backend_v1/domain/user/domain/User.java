@@ -22,31 +22,39 @@ public class User {
 	}
 
 	public User register(String socialId, SocialType socialType) {
+		if (this.status.isNotRegistrable()) {
+			throw new CustomException(ErrorCode.USER_ALREADY_REGISTERED);
+		}
+
 		this.socialAuthInfo = new SocialAuthInfo(socialId, socialType);
 		this.status = UserStatus.PENDING;
+		
 		return this;
 	}
 
-	public User login() {
-		if (!this.status.isAccessible()) {
-			throw new CustomException(ErrorCode.UNAUTHORIZED_USER);
+	public void login() {
+		if (this.status.isNotLoginable()) {
+			throw new CustomException(ErrorCode.NOT_LOGINABLE);
 		}
 
-		if (this.status == UserStatus.WITHDRAWN_PENDING) {
+		if (this.status == UserStatus.WITHDRAW_PENDING) {
 			this.status = UserStatus.ACTIVE;
 		}
-
-		return this;
 	}
 
-	public User withdraw() {
-		this.status = UserStatus.WITHDRAWN_PENDING;
-		return this;
+	public void withdraw() {
+		if (this.status.isNotWithdrawable()) {
+			throw new CustomException(ErrorCode.NOT_WITHDRAWABLE);
+		}
+
+		this.status = UserStatus.WITHDRAW_PENDING;
 	}
 
 	public User anonymize(String uuid) {
-		this.socialAuthInfo = new SocialAuthInfo(uuid, SocialType.UNDEFINED);
-		this.status = UserStatus.WITHDRAWN;
+		if (this.status.isNotAnonymizable()) {
+			throw new CustomException(ErrorCode.NOT_ANONYMIZABLE);
+		}
+
 		return this;
 	}
 

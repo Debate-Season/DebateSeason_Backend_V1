@@ -3,34 +3,116 @@ package com.debateseason_backend_v1.domain.user.domain;
 public enum UserStatus {
 	PENDING {
 		@Override
-		public boolean isAccessible() {
+		public boolean isNotRegistrable() {
+			return true;
+		}
+
+		@Override
+		public boolean isNotLoginable() {
+			return false;
+		}
+
+		@Override
+		public boolean isNotWithdrawable() {
+			return false;
+		}
+
+		@Override
+		public boolean isNotAnonymizable() {
 			return true;
 		}
 	},
 	ACTIVE {
 		@Override
-		public boolean isAccessible() {
+		public boolean isNotRegistrable() {
+			return true;
+		}
+
+		@Override
+		public boolean isNotLoginable() {
+			return false;
+		}
+
+		@Override
+		public boolean isNotWithdrawable() {
+			return false;
+		}
+
+		@Override
+		public boolean isNotAnonymizable() {
 			return true;
 		}
 	},
 	BLOCKED {
 		@Override
-		public boolean isAccessible() {
-			return false;
+		public boolean isNotRegistrable() {
+			return true;
 		}
-	},
-	WITHDRAWN_PENDING {
+
 		@Override
-		public boolean isAccessible() {
+		public boolean isNotLoginable() {
+			return true;
+		}
+
+		@Override
+		public boolean isNotWithdrawable() {
+			return true;
+		}
+
+		@Override
+		public boolean isNotAnonymizable() {
 			return true;
 		}
 	},
-	WITHDRAWN {
+	WITHDRAW_PENDING {
 		@Override
-		public boolean isAccessible() {
+		public boolean isNotRegistrable() {
+			return true;
+		}
+
+		@Override
+		public boolean isNotLoginable() {
 			return false;
+		}
+
+		@Override
+		public boolean isNotWithdrawable() {
+			return true;
+		}
+
+		@Override
+		public boolean isNotAnonymizable() {
+			return false;
+		}
+	},
+	WITHDRAW {
+		@Override
+		public boolean isNotRegistrable() {
+			return true;
+		}
+
+		@Override
+		public boolean isNotLoginable() {
+			return true;
+		}
+
+		@Override
+		public boolean isNotWithdrawable() {
+			return true;
+		}
+
+		@Override
+		public boolean isNotAnonymizable() {
+			return true;
 		}
 	};
 
-	abstract boolean isAccessible();
+	abstract boolean isNotRegistrable();
+
+	abstract boolean isNotLoginable();
+
+	abstract boolean isNotWithdrawable();
+
+	abstract boolean isNotAnonymizable();
+
 }

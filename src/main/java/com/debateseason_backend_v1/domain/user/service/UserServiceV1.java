@@ -13,7 +13,6 @@ import com.debateseason_backend_v1.domain.user.domain.TokenIssuer;
 import com.debateseason_backend_v1.domain.user.domain.TokenPair;
 import com.debateseason_backend_v1.domain.user.domain.User;
 import com.debateseason_backend_v1.domain.user.domain.UserId;
-import com.debateseason_backend_v1.domain.user.infrastructure.UserEntity;
 import com.debateseason_backend_v1.domain.user.service.request.LogoutServiceRequest;
 import com.debateseason_backend_v1.domain.user.service.request.SocialLoginServiceRequest;
 import com.debateseason_backend_v1.domain.user.service.response.LoginResponse;
@@ -81,14 +80,14 @@ public class UserServiceV1 {
 	}
 
 	@Transactional
-	public void withdraw(Long userId) {
+	public void withdraw(UserId id) {
 
-		UserEntity user = userRepository.findById(userId)
-			.orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_USER));
+		User user = userRepository.findById(id);
 
 		user.withdraw();
 
-		refreshTokenRepository.deleteAllByUserId(user.getId());
+		userRepository.save(user);
+		refreshTokenRepository.deleteAllByUserId(user.getId().value());
 	}
 
 	private void saveRefreshToken(UserId userId, String refresh) {

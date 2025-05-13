@@ -2,11 +2,11 @@ package com.debateseason_backend_v1.domain.user.infrastructure;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.stereotype.Repository;
 
 import com.debateseason_backend_v1.domain.user.domain.User;
+import com.debateseason_backend_v1.domain.user.domain.UserId;
 import com.debateseason_backend_v1.domain.user.domain.UserStatus;
 import com.debateseason_backend_v1.domain.user.service.UserRepository;
 
@@ -24,8 +24,8 @@ public class UserRepositoryImpl implements UserRepository {
 	}
 
 	@Override
-	public Optional<UserEntity> findById(Long id) {
-		return userJpaRepository.findById(id);
+	public User findById(UserId id) {
+		return userJpaRepository.findById(id.value()).map(UserEntity::toModel).orElse(User.EMPTY);
 	}
 
 	@Override
@@ -34,8 +34,11 @@ public class UserRepositoryImpl implements UserRepository {
 	}
 
 	@Override
-	public List<UserEntity> findByIsDeletedTrueAndUpdatedAtBefore(LocalDateTime cutoffDate) {
-		return userJpaRepository.findByIsDeletedTrueAndUpdatedAtBefore(cutoffDate);
+	public List<User> findWithdrawnPendingUsers(UserStatus status, LocalDateTime cutoffDate) {
+		return userJpaRepository.findWithdrawnPendingUsers(status, cutoffDate)
+			.stream()
+			.map(UserEntity::toModel)
+			.toList();
 	}
 
 	@Override

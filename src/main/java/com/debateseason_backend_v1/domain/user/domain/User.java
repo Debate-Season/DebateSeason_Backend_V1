@@ -44,6 +44,12 @@ public class User {
 		return this;
 	}
 
+	public User anonymize(String uuid) {
+		this.socialAuthInfo = new SocialAuthInfo(uuid, SocialType.UNDEFINED);
+		this.status = UserStatus.WITHDRAWN;
+		return this;
+	}
+
 	public boolean hasProfile() {
 		return this.status != UserStatus.PENDING;
 	}
@@ -51,5 +57,5 @@ public class User {
 	public TokenPair issueTokens(TokenIssuer tokenIssuer) {
 		return tokenIssuer.issueTokenPair(this.id);
 	}
-	
+
 }

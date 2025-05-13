@@ -14,6 +14,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum SocialType {
 
+	UNDEFINED("undefined", "undefined", "undefined"),
 	KAKAO("kakao", "https://kauth.kakao.com", "https://kauth.kakao.com/.well-known/jwks.json"),
 	APPLE("apple", "https://appleid.apple.com", "https://appleid.apple.com/auth/keys");
 

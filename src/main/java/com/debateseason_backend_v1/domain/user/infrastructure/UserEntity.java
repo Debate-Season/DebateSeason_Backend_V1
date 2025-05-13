@@ -46,9 +46,6 @@ public class UserEntity {
 	@Enumerated(EnumType.STRING)
 	private UserStatus status;
 
-	@Column(name = "is_deleted")
-	private boolean isDeleted = false;
-
 	@CreatedDate
 	@Column(name = "created_at", updatable = false)
 	private LocalDateTime createdAt;
@@ -64,21 +61,6 @@ public class UserEntity {
 		this.socialType = socialType;
 		this.socialId = socialId;
 		this.status = status;
-	}
-
-	public void withdraw() {
-
-		this.isDeleted = true;
-	}
-
-	public void restore() {
-
-		this.isDeleted = false;
-	}
-
-	public void anonymize(String uuid) {
-
-		this.socialId = uuid;
 	}
 
 	public static UserEntity from(User user) {

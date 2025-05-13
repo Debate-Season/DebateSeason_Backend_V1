@@ -30,9 +30,9 @@ public class TermsControllerV1 implements TermsControllerV1Docs {
 	private final TermsServiceV1 termsService;
 
 	@GetMapping
-	public ApiResult<List<LatestTermsResponse>> getLatestTerms() {
+	public ApiResult<List<LatestTermsResponse>> getLatestTerms(@AuthenticationPrincipal CustomUserDetails userDetails) {
 
-		List<LatestTermsResponse> latestTerms = termsService.getLatestTerms();
+		List<LatestTermsResponse> latestTerms = termsService.getLatestTerms(userDetails.getUserId());
 
 		return ApiResult.success(
 			"최신 약관 목록 조회가 완료되었습니다.",
@@ -50,7 +50,7 @@ public class TermsControllerV1 implements TermsControllerV1Docs {
 
 		return VoidApiResult.success("약관 동의에 성공했습니다.");
 	}
-	
+
 	@GetMapping("/agree")
 	public ApiResult<List<UserTermsAgreementResponse>> getUserTermsInfo(
 		@AuthenticationPrincipal CustomUserDetails userDetails

@@ -15,6 +15,7 @@ import com.debateseason_backend_v1.common.exception.CustomException;
 import com.debateseason_backend_v1.common.exception.ErrorCode;
 import com.debateseason_backend_v1.common.response.ApiResult;
 
+import com.debateseason_backend_v1.domain.chat.application.repository.ChatRepository;
 import com.debateseason_backend_v1.domain.chatroom.entity.ChatRoomMananger;
 import com.debateseason_backend_v1.domain.chatroom.entity.team.Team;
 import com.debateseason_backend_v1.domain.chatroom.infrastructure.ChatRoomRepository;
@@ -31,10 +32,14 @@ import com.debateseason_backend_v1.domain.chatroom.model.response.chatroom.messa
 import com.debateseason_backend_v1.domain.issue.entity.IssueManager;
 import com.debateseason_backend_v1.domain.issue.infrastructure.IssueRepository;
 import com.debateseason_backend_v1.domain.issue.model.response.IssueBriefResponse;
+
 import com.debateseason_backend_v1.domain.media.entity.MediaManager;
 import com.debateseason_backend_v1.domain.media.infrastructure.MediaRepository;
 import com.debateseason_backend_v1.domain.media.type.MediaType;
-import com.debateseason_backend_v1.domain.repository.ChatRepository;
+
+
+
+
 
 import com.debateseason_backend_v1.domain.repository.UserChatRoomRepository;
 import com.debateseason_backend_v1.domain.repository.UserRepository;
@@ -438,13 +443,14 @@ public class ChatRoomServiceV1 {
 
 	}
 
+
 	private TeamScore createTeamScore(
 		String team,
 		int total,
 		int logic,
 		int attribute,
 		String mvp
-	){
+	) {
 		return TeamScore.builder()
 			.team(team)
 			.total(total)

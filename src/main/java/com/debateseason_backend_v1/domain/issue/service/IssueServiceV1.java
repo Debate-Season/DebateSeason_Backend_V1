@@ -12,7 +12,10 @@ import org.springframework.stereotype.Service;
 import com.debateseason_backend_v1.common.exception.CustomException;
 import com.debateseason_backend_v1.common.exception.ErrorCode;
 import com.debateseason_backend_v1.common.response.ApiResult;
+
+import com.debateseason_backend_v1.domain.chat.application.repository.ChatRepository;
 import com.debateseason_backend_v1.domain.chatroom.entity.ChatRoomMananger;
+
 import com.debateseason_backend_v1.domain.chatroom.model.response.chatroom.type.ResponseWithTimeAndOpinion;
 import com.debateseason_backend_v1.domain.issue.entity.IssueManager;
 import com.debateseason_backend_v1.domain.issue.PaginationDTO;
@@ -24,8 +27,11 @@ import com.debateseason_backend_v1.domain.issue.model.request.IssueRequest;
 import com.debateseason_backend_v1.domain.issue.model.CommunityRecords;
 import com.debateseason_backend_v1.domain.issue.model.response.IssueBriefResponse;
 import com.debateseason_backend_v1.domain.profile.enums.CommunityType;
-import com.debateseason_backend_v1.domain.repository.ChatRepository;
+
 import com.debateseason_backend_v1.domain.repository.ChatRoomJpaRepository;
+
+
+
 
 import com.debateseason_backend_v1.domain.repository.ProfileRepository;
 import com.debateseason_backend_v1.domain.repository.UserChatRoomRepository;
@@ -404,7 +410,7 @@ public class IssueServiceV1 {
 
 	// 1. 최신 채팅 시간
 	private String findLastestChatTime(Long chatRoomId){
-		Optional<LocalDateTime> latestChat = chatRepository.findLatestTimeStampByChatRoomId(chatRoomId);
+		Optional<LocalDateTime> latestChat = chatRepository.findMostRecentMessageTimestampByChatRoomId(chatRoomId);
 
 		String time = null; // 대화가 아무것도 없는 상태는 항상 null이다.
 

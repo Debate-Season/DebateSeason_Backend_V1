@@ -1,8 +1,8 @@
 package com.debateseason_backend_v1.domain.chat.event;
 
-import com.debateseason_backend_v1.domain.chat.model.request.ChatMessageRequest;
-import com.debateseason_backend_v1.domain.chat.service.ChatServiceV1;
-import com.debateseason_backend_v1.domain.chat.valide.ChatValidate;
+import com.debateseason_backend_v1.domain.chat.presentation.dto.chat.request.ChatMessageRequest;
+import com.debateseason_backend_v1.domain.chat.application.service.ChatServiceV1;
+import com.debateseason_backend_v1.domain.chat.validation.ChatValidate;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;

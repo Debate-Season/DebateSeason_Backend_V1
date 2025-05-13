@@ -15,6 +15,7 @@ import com.debateseason_backend_v1.domain.terms.dto.UserTermsAgreementDto;
 @Repository
 public interface UserTermsAgreementRepository extends JpaRepository<UserTermsAgreement, Long> {
 
+	// 사용자의 최신 약관 동의일 조회
 	@Query("""
 			SELECT new com.debateseason_backend_v1.domain.terms.dto.UserTermsAgreementDto(
 				t.termsType, MAX(uta.createdAt)

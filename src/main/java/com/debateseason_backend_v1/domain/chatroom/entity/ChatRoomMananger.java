@@ -7,10 +7,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import com.debateseason_backend_v1.domain.chat.application.repository.ChatRepository;
 import com.debateseason_backend_v1.domain.chatroom.model.response.chatroom.messages.Top5BestChatRoom;
 import com.debateseason_backend_v1.domain.chatroom.model.response.chatroom.type.ResponseWithTime;
 import com.debateseason_backend_v1.domain.chatroom.model.response.chatroom.type.ResponseWithTimeAndOpinion;
-import com.debateseason_backend_v1.domain.repository.ChatRepository;
+
 
 import lombok.NoArgsConstructor;
 
@@ -88,7 +89,7 @@ public class ChatRoomMananger {
 
 	// 3. 최신 채팅 시간(chatRoom 전용)
 	private String findLastestChatTime(Long chatRoomId){
-		Optional<LocalDateTime> latestChat = chatRepository.findLatestTimeStampByChatRoomId(chatRoomId);
+		Optional<LocalDateTime> latestChat = chatRepository.findMostRecentMessageTimestampByChatRoomId(chatRoomId);
 
 		String time = null; // 대화가 아무것도 없는 상태는 항상 null이다.
 

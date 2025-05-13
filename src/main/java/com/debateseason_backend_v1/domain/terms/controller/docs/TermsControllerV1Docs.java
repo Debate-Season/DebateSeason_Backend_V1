@@ -27,7 +27,7 @@ public interface TermsControllerV1Docs {
 		description = "최신 버전의 이용약관들을 조회합니다."
 	)
 	@ApiResponse(responseCode = "200", description = "이용약관 목록 조회 성공")
-	public ApiResult<List<LatestTermsResponse>> getLatestTerms();
+	public ApiResult<List<LatestTermsResponse>> getLatestTerms(CustomUserDetails userDetails);
 
 	@Operation(
 		summary = "이용약관 동의",

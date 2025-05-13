@@ -23,6 +23,7 @@ import com.debateseason_backend_v1.domain.terms.enums.TermsType;
 import com.debateseason_backend_v1.domain.terms.service.request.TermsAgreementServiceRequest;
 import com.debateseason_backend_v1.domain.terms.service.response.LatestTermsResponse;
 import com.debateseason_backend_v1.domain.terms.service.response.UserTermsAgreementResponse;
+import com.debateseason_backend_v1.domain.user.domain.UserId;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -97,7 +98,7 @@ public class TermsServiceV1 {
 	}
 
 	@Transactional(readOnly = true)
-	public boolean hasAgreedToAllRequiredTerms(Long userId) {
+	public boolean hasAgreedToAllRequiredTerms(UserId userId) {
 
 		// 1. 최신 필수 약관 ID 조회
 		List<Terms> requiredTerms = termsRepository.findAllLatestTerms().stream()
@@ -106,7 +107,7 @@ public class TermsServiceV1 {
 
 		// 2. 사용자가 동의한 약관 ID 조회
 		Set<Long> userAgreedTermsIds = userTermsAgreementRepository
-			.findAgreedTermsIdsByUserId(userId);
+			.findAgreedTermsIdsByUserId(userId.value());
 
 		return requiredTerms.stream()
 			.allMatch(term -> userAgreedTermsIds.contains(term.getId()));

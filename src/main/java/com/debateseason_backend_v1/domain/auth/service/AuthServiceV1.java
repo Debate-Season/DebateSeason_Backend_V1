@@ -11,6 +11,8 @@ import com.debateseason_backend_v1.domain.auth.service.request.TokenReissueServi
 import com.debateseason_backend_v1.domain.auth.service.response.TokenReissueResponse;
 import com.debateseason_backend_v1.domain.repository.RefreshTokenRepository;
 import com.debateseason_backend_v1.domain.repository.entity.RefreshToken;
+import com.debateseason_backend_v1.domain.user.domain.TokenIssuer;
+import com.debateseason_backend_v1.domain.user.domain.TokenPair;
 import com.debateseason_backend_v1.security.jwt.JwtUtil;
 
 import lombok.RequiredArgsConstructor;
@@ -21,6 +23,7 @@ import lombok.RequiredArgsConstructor;
 public class AuthServiceV1 {
 
 	private final JwtUtil jwtUtil;
+	private final TokenIssuer tokenIssuer;
 	private final RefreshTokenRepository refreshTokenRepository;
 
 	@Transactional
@@ -29,20 +32,19 @@ public class AuthServiceV1 {
 		RefreshToken refreshToken = refreshTokenRepository.findByToken(request.refreshToken())
 			.orElseThrow(() -> new CustomException(ErrorCode.INVALID_REFRESH_TOKEN));
 
-		String newAccessToken = jwtUtil.createAccessToken(refreshToken.getUser().getId());
-		String newRefreshToken = jwtUtil.createRefreshToken(refreshToken.getUser().getId());
+		TokenPair tokenPair = tokenIssuer.issueTokenPair(request.userId());
 
 		refreshTokenRepository.delete(refreshToken);
 
 		RefreshToken token = RefreshToken.builder()
-			.token(newRefreshToken)
-			.user(refreshToken.getUser())
+			.token(tokenPair.refreshToken())
+			.userId(refreshToken.getUserId())
 			.build();
 		refreshTokenRepository.save(token);
 
 		return TokenReissueResponse.builder()
-			.accessToken(newAccessToken)
-			.refreshToken(newRefreshToken)
+			.accessToken(tokenPair.accessToken())
+			.refreshToken(tokenPair.refreshToken())
 			.build();
 	}
 

@@ -7,9 +7,8 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import com.debateseason_backend_v1.domain.user.domain.User;
-import com.debateseason_backend_v1.domain.user.domain.UserPersistenceData;
+import com.debateseason_backend_v1.domain.user.domain.UserStatus;
 import com.debateseason_backend_v1.domain.user.enums.SocialType;
-import com.debateseason_backend_v1.domain.user.enums.UserStatus;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -44,6 +43,7 @@ public class UserEntity {
 	@Column(name = "social_id")
 	private String socialId;
 
+	@Enumerated(EnumType.STRING)
 	private UserStatus status;
 
 	@Column(name = "is_deleted")
@@ -58,10 +58,12 @@ public class UserEntity {
 	private LocalDateTime updatedAt;
 
 	@Builder
-	private UserEntity(SocialType socialType, String socialId, UserStatus status) {
+	private UserEntity(Long id, SocialType socialType, String socialId, UserStatus status) {
 
+		this.id = id;
 		this.socialType = socialType;
 		this.socialId = socialId;
+		this.status = status;
 	}
 
 	public void withdraw() {
@@ -80,12 +82,12 @@ public class UserEntity {
 	}
 
 	public static UserEntity from(User user) {
-		UserPersistenceData data = user.mapToPersistenceData();
 
 		return UserEntity.builder()
-			.socialType(data.socialAuthInfo().socialType())
-			.socialId(data.socialAuthInfo().socialId())
-			.status(data.status())
+			.id(user.getId().value())
+			.socialType(user.getSocialAuthInfo().socialType())
+			.socialId(user.getSocialAuthInfo().socialId())
+			.status(user.getStatus())
 			.build();
 	}
 

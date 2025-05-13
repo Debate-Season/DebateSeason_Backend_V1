@@ -6,7 +6,8 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Repository;
 
-import com.debateseason_backend_v1.domain.user.enums.SocialType;
+import com.debateseason_backend_v1.domain.user.domain.User;
+import com.debateseason_backend_v1.domain.user.domain.UserStatus;
 import com.debateseason_backend_v1.domain.user.service.UserRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -18,8 +19,8 @@ public class UserRepositoryImpl implements UserRepository {
 	private final UserJpaRepository userJpaRepository;
 
 	@Override
-	public UserEntity save(UserEntity userEntity) {
-		return userJpaRepository.save(userEntity);
+	public User save(User user) {
+		return userJpaRepository.save(UserEntity.from(user)).toModel();
 	}
 
 	@Override
@@ -28,12 +29,17 @@ public class UserRepositoryImpl implements UserRepository {
 	}
 
 	@Override
-	public Optional<UserEntity> findBySocialTypeAndIdentifier(SocialType socialType, String socialId) {
-		return userJpaRepository.findBySocialTypeAndSocialId(socialType, socialId);
+	public User findBySocialId(String socialId) {
+		return userJpaRepository.findBySocialId(socialId).map(UserEntity::toModel).orElse(User.EMPTY);
 	}
 
 	@Override
 	public List<UserEntity> findByIsDeletedTrueAndUpdatedAtBefore(LocalDateTime cutoffDate) {
 		return userJpaRepository.findByIsDeletedTrueAndUpdatedAtBefore(cutoffDate);
+	}
+
+	@Override
+	public void updateStatus(Long userId, UserStatus status) {
+		userJpaRepository.updateStatus(userId, status);
 	}
 }

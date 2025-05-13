@@ -58,6 +58,7 @@ public enum ErrorCode implements CodeInterface {
 	JWKS_RATE_LIMIT_REACHED(3011, HttpStatus.TOO_MANY_REQUESTS, "JWKS 서버 요청 제한에 도달했습니다."),
 	JWKS_RETRIEVAL_FAILED(3012, HttpStatus.INTERNAL_SERVER_ERROR, "JWKS 조회 중 오류가 발생했습니다."),
 	PUBLIC_KEY_EXTRACTION_FAILED(3013, HttpStatus.INTERNAL_SERVER_ERROR, "공개키 추출에 실패했습니다."),
+	UNAUTHORIZED_USER(3014, HttpStatus.UNAUTHORIZED, "인증된 사용자가 아닙니다."),
 
 	//4000번대 Chat 관련 에러,
 	VALUE_OUT_OF_RANGE(4003, HttpStatus.BAD_REQUEST, "메시지 값을 확인해 주세요"),
@@ -82,14 +83,14 @@ public enum ErrorCode implements CodeInterface {
 
 	// 400번대
 	NOT_FOUND_ISSUE(404, HttpStatus.NOT_FOUND, "주어진 id값에 해당하는 이슈방을 찾을 수 없습니다."),
-	NOT_FOUND_CHATROOM(404,HttpStatus.NOT_FOUND,"주어진 chatroomId로 해당하는 채팅방을 찾을 수 없습니다."),
+	NOT_FOUND_CHATROOM(404, HttpStatus.NOT_FOUND, "주어진 chatroomId로 해당하는 채팅방을 찾을 수 없습니다."),
 	NOT_FOUND_ISSUE_WITH_CATEGORY(400, HttpStatus.NOT_FOUND, "해당 category의 이슈방을 찾을 수 없습니다."),
 
 	// 페이지네이션 오류
-	PAGE_OUT_OF_RANGE(404,HttpStatus.NOT_FOUND,"검색범위를 넘어섰습니다. 내용을 불러올 수 없습니다."),
+	PAGE_OUT_OF_RANGE(404, HttpStatus.NOT_FOUND, "검색범위를 넘어섰습니다. 내용을 불러올 수 없습니다."),
 
 	// Media 관련 오류
-	MEDIA_NOT_FOUND(404,HttpStatus.NOT_FOUND,"요청하신 미디어는 존재하지 않습니다.");
+	MEDIA_NOT_FOUND(404, HttpStatus.NOT_FOUND, "요청하신 미디어는 존재하지 않습니다.");
 
 	private final Integer code;
 	private final HttpStatus httpStatus;

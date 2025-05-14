@@ -14,6 +14,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum AgeRangeType {
 
+	UNDEFINED("미정", -1, -1),
 	TEENAGER("10대", 10, 19),
 	TWENTIES("20대", 20, 29),
 	THIRTIES("30대", 30, 39),

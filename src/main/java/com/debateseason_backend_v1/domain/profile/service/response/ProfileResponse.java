@@ -1,9 +1,9 @@
 package com.debateseason_backend_v1.domain.profile.service.response;
 
+import com.debateseason_backend_v1.domain.profile.domain.Profile;
 import com.debateseason_backend_v1.domain.profile.enums.AgeRangeType;
 import com.debateseason_backend_v1.domain.profile.enums.CommunityType;
 import com.debateseason_backend_v1.domain.profile.enums.GenderType;
-import com.debateseason_backend_v1.domain.repository.entity.Profile;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
@@ -29,9 +29,9 @@ public record ProfileResponse(
 
 		return new ProfileResponse(
 			// profile.getProfileColor(),
-			profile.getNickname(),
-			profile.getGender(),
-			profile.getAgeRange(),
+			profile.getPersonalInfo().nickname().value(),
+			profile.getPersonalInfo().gender(),
+			profile.getPersonalInfo().ageRange(),
 			CommunityResponse.from(communityType)
 		);
 	}

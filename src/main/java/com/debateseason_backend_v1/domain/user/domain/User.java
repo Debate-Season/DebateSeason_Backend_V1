@@ -9,27 +9,21 @@ import lombok.Getter;
 @Getter
 public class User {
 
-	public static final User EMPTY = new User(null, null, null, UserStatus.NULL);
+	public static final User EMPTY = new User(null, null, null, null);
 
 	private UserId id;
 	private SocialAuthInfo socialAuthInfo;
 	private UserStatus status;
 
-	public User(Long id, String socialId, SocialType socialType, UserStatus status) {
-		this.id = new UserId(id);
+	public User(UserId id, String socialId, SocialType socialType, UserStatus status) {
+		this.id = id;
 		this.socialAuthInfo = new SocialAuthInfo(socialId, socialType);
 		this.status = status;
 	}
 
-	public User register(String socialId, SocialType socialType) {
-		if (this.status.isNotRegistrable()) {
-			throw new CustomException(ErrorCode.USER_ALREADY_REGISTERED);
-		}
+	public static User register(String socialId, SocialType socialType) {
 
-		this.socialAuthInfo = new SocialAuthInfo(socialId, socialType);
-		this.status = UserStatus.PENDING;
-
-		return this;
+		return new User(new UserId(null), socialId, socialType, UserStatus.PENDING);
 	}
 
 	public void login() {
@@ -40,6 +34,14 @@ public class User {
 		if (this.status == UserStatus.WITHDRAW_PENDING) {
 			this.status = UserStatus.ACTIVE;
 		}
+	}
+
+	public User profileCreated() {
+		if (this.status.isNotProfileCreatable()) {
+			throw new CustomException(ErrorCode.NOT_PROFILE_CREATABLE);
+		}
+		this.status = UserStatus.ACTIVE;
+		return this;
 	}
 
 	public void withdraw() {
@@ -54,6 +56,9 @@ public class User {
 		if (this.status.isNotAnonymizable()) {
 			throw new CustomException(ErrorCode.NOT_ANONYMIZABLE);
 		}
+
+		this.socialAuthInfo = new SocialAuthInfo(uuid, SocialType.UNDEFINED);
+		this.status = UserStatus.WITHDRAW;
 
 		return this;
 	}

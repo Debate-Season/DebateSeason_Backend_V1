@@ -20,6 +20,4 @@ public interface UserJpaRepository extends JpaRepository<UserEntity, Long> {
 		@Param("cutoffDate") LocalDateTime cutoffDate
 	);
 
-	@Query("UPDATE UserEntity u SET u.status = :status WHERE u.id = :userId")
-	void updateStatus(Long userId, UserStatus status);
 }

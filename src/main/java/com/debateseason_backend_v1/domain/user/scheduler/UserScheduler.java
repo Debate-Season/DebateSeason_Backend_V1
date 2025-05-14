@@ -8,8 +8,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.debateseason_backend_v1.common.component.UuidShortener;
-import com.debateseason_backend_v1.domain.repository.ProfileRepository;
-import com.debateseason_backend_v1.domain.repository.entity.Profile;
+import com.debateseason_backend_v1.domain.profile.domain.Profile;
+import com.debateseason_backend_v1.domain.profile.service.ProfileRepository;
 import com.debateseason_backend_v1.domain.user.domain.User;
 import com.debateseason_backend_v1.domain.user.domain.UserStatus;
 import com.debateseason_backend_v1.domain.user.service.UserRepository;
@@ -44,11 +44,11 @@ public class UserScheduler {
 			User anonymizedUser = user.anonymize(uuid);
 			userRepository.save(anonymizedUser);
 
-			Profile profile = profileRepository.findByUserId(user.getId().value())
-				.orElse(null);
+			Profile profile = profileRepository.findByUserId(user.getId());
 
-			if (profile != null) {
-				profile.anonymize("탈퇴회원#" + uuid);
+			if (profile != Profile.EMPTY) {
+				Profile anonymizedProfile = profile.anonymize(uuid);
+				profileRepository.save(anonymizedProfile);
 				log.info("회원 ID: {}의 프로필 익명화 완료", user.getId());
 			}
 		}

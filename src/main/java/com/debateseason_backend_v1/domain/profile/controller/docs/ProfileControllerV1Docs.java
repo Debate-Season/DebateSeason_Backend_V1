@@ -8,7 +8,8 @@ import com.debateseason_backend_v1.common.exception.ErrorCode;
 import com.debateseason_backend_v1.common.response.ApiResult;
 import com.debateseason_backend_v1.common.response.VoidApiResult;
 import com.debateseason_backend_v1.common.swagger.ApiErrorCode;
-import com.debateseason_backend_v1.domain.profile.controller.request.ProfileRegisterRequest;
+import com.debateseason_backend_v1.domain.profile.controller.request.ProfileCreateRequest;
+import com.debateseason_backend_v1.domain.profile.controller.request.ProfileFetchRequest;
 import com.debateseason_backend_v1.domain.profile.controller.request.ProfileUpdateRequest;
 import com.debateseason_backend_v1.domain.profile.service.response.ProfileResponse;
 import com.debateseason_backend_v1.security.CustomUserDetails;
@@ -20,7 +21,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
-@Tag(name = "Profile API", description = "프로필 API")
+@Tag(name = "ProfileEntity API", description = "프로필 API")
 public interface ProfileControllerV1Docs {
 
 	@Operation(
@@ -44,7 +45,7 @@ public interface ProfileControllerV1Docs {
 		ErrorCode.DUPLICATE_NICKNAME,
 	})
 	public VoidApiResult registerProfile(
-		@RequestBody ProfileRegisterRequest request,
+		@RequestBody ProfileCreateRequest request,
 		@AuthenticationPrincipal CustomUserDetails userDetails
 	);
 
@@ -60,7 +61,8 @@ public interface ProfileControllerV1Docs {
 		ErrorCode.NOT_FOUND_PROFILE,
 	})
 	public ApiResult<ProfileResponse> getMyProfile(
-		@AuthenticationPrincipal CustomUserDetails userDetails
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		ProfileFetchRequest request
 	);
 
 	@Operation(

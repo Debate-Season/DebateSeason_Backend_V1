@@ -1,13 +1,19 @@
-package com.debateseason_backend_v1.domain.repository.entity;
+package com.debateseason_backend_v1.domain.profile.infrastructure;
 
 import java.time.LocalDateTime;
 
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import com.debateseason_backend_v1.domain.profile.domain.CommunityId;
+import com.debateseason_backend_v1.domain.profile.domain.Nickname;
+import com.debateseason_backend_v1.domain.profile.domain.PersonalInfo;
+import com.debateseason_backend_v1.domain.profile.domain.Profile;
+import com.debateseason_backend_v1.domain.profile.domain.ProfileId;
 import com.debateseason_backend_v1.domain.profile.enums.AgeRangeType;
 import com.debateseason_backend_v1.domain.profile.enums.CommunityType;
 import com.debateseason_backend_v1.domain.profile.enums.GenderType;
+import com.debateseason_backend_v1.domain.user.domain.UserId;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -19,16 +25,19 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
+@Builder
 @Table(name = "profile")
 @EntityListeners(AuditingEntityListener.class)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Profile {
+public class ProfileEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -39,7 +48,7 @@ public class Profile {
 	private Long userId;
 
 	@Column(name = "profile_color")
-	private String profileColor;
+	private String profileImage;
 
 	@Column(name = "nickname", unique = true)
 	private String nickname;
@@ -59,39 +68,29 @@ public class Profile {
 	@Column(name = "updated_at")
 	private LocalDateTime updatedAt;
 
-	@Builder
-	private Profile(
-		Long userId, String profileColor, String nickname, Long communityId, GenderType gender, AgeRangeType ageRange
-	) {
-
-		this.userId = userId;
-		this.profileColor = profileColor;
-		this.nickname = nickname;
-		this.communityId = communityId;
-		this.gender = gender;
-		this.ageRange = ageRange;
-	}
-
-	public void update(
-		String profileColor, String nickname, Long communityId, GenderType gender, AgeRangeType ageRange
-	) {
-
-		this.profileColor = profileColor;
-		this.nickname = nickname;
-		this.communityId = communityId;
-		this.gender = gender;
-		this.ageRange = ageRange;
-	}
-
-	public void anonymize(String anonymousNickname) {
-
-		this.nickname = anonymousNickname;
-		this.gender = GenderType.UNDEFINED;
-	}
-
 	public CommunityType getCommunityType() {
 
 		return communityId != null ? CommunityType.findById(communityId) : null;
 	}
 
+	public static ProfileEntity from(Profile profile) {
+		return ProfileEntity.builder()
+			.id(profile.getId().value())
+			.userId(profile.getUserId().value())
+			.communityId(profile.getCommunityId().value())
+			.profileImage(profile.getPersonalInfo().profileImage())
+			.nickname(profile.getPersonalInfo().nickname().value())
+			.gender(profile.getPersonalInfo().gender())
+			.ageRange(profile.getPersonalInfo().ageRange())
+			.build();
+	}
+
+	public Profile toModel() {
+		return new Profile(
+			new ProfileId(id),
+			new UserId(userId),
+			new CommunityId(communityId),
+			new PersonalInfo(profileImage, new Nickname(nickname), gender, ageRange)
+		);
+	}
 }

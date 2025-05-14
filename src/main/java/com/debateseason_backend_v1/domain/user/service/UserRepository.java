@@ -17,5 +17,4 @@ public interface UserRepository {
 
 	List<User> findWithdrawnPendingUsers(UserStatus status, LocalDateTime cutoffDate);
 
-	void updateStatus(Long userId, UserStatus status);
 }

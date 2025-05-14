@@ -41,8 +41,4 @@ public class UserRepositoryImpl implements UserRepository {
 			.toList();
 	}
 
-	@Override
-	public void updateStatus(Long userId, UserStatus status) {
-		userJpaRepository.updateStatus(userId, status);
-	}
 }

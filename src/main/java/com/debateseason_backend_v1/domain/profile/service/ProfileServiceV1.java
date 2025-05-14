@@ -5,13 +5,15 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.debateseason_backend_v1.common.exception.CustomException;
 import com.debateseason_backend_v1.common.exception.ErrorCode;
+import com.debateseason_backend_v1.domain.profile.domain.Nickname;
+import com.debateseason_backend_v1.domain.profile.domain.Profile;
 import com.debateseason_backend_v1.domain.profile.enums.CommunityType;
-import com.debateseason_backend_v1.domain.profile.service.request.ProfileRegisterServiceRequest;
+import com.debateseason_backend_v1.domain.profile.service.request.ProfileCreateServiceRequest;
+import com.debateseason_backend_v1.domain.profile.service.request.ProfileFetchServiceRequest;
 import com.debateseason_backend_v1.domain.profile.service.request.ProfileUpdateServiceRequest;
 import com.debateseason_backend_v1.domain.profile.service.response.ProfileResponse;
-import com.debateseason_backend_v1.domain.profile.validator.ProfileValidator;
-import com.debateseason_backend_v1.domain.repository.ProfileRepository;
-import com.debateseason_backend_v1.domain.repository.entity.Profile;
+import com.debateseason_backend_v1.domain.user.domain.User;
+import com.debateseason_backend_v1.domain.user.service.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,31 +25,38 @@ import lombok.extern.slf4j.Slf4j;
 public class ProfileServiceV1 {
 
 	private final ProfileRepository profileRepository;
-	private final ProfileValidator profileValidator;
+	private final UserRepository userRepository;
 
 	@Transactional
-	public void register(ProfileRegisterServiceRequest request) {
+	public void register(ProfileCreateServiceRequest request) {
 
-		validateProfileRegistration(request);
+		User user = userRepository.findById(request.userId());
 
-		Profile profile = Profile.builder()
-			.userId(request.userId())
-			.profileColor(request.profileColor())
-			.nickname(request.nickname())
-			.gender(request.gender())
-			.ageRange(request.ageRange())
-			.communityId(request.communityId())
-			.build();
+		if (user == User.EMPTY) {
+			throw new CustomException(ErrorCode.NOT_FOUND_USER);
+		}
 
-		profileRepository.save(profile);
+		Profile profile = profileRepository.findByUserId(request.userId());
+
+		if (profile == Profile.EMPTY) {
+			profile = Profile.create(request.toCommand());
+			user.profileCreated();
+			profileRepository.save(profile);
+			userRepository.save(user);
+		} else {
+			throw new CustomException(ErrorCode.ALREADY_EXIST_PROFILE);
+		}
 	}
 
-	public ProfileResponse getProfileByUserId(Long userId) {
+	public ProfileResponse getProfileByUserId(ProfileFetchServiceRequest request) {
 
-		Profile profile = profileRepository.findByUserId(userId)
-			.orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_PROFILE));
+		Profile profile = profileRepository.findByUserId(request.userId());
 
-		CommunityType communityType = CommunityType.findById(profile.getCommunityId());
+		if (profile == Profile.EMPTY) {
+			throw new CustomException(ErrorCode.NOT_FOUND_PROFILE);
+		}
+
+		CommunityType communityType = CommunityType.findById(profile.getCommunityId().value());
 
 		return ProfileResponse.of(profile, communityType);
 	}
@@ -55,38 +64,21 @@ public class ProfileServiceV1 {
 	@Transactional
 	public void update(ProfileUpdateServiceRequest request) {
 
-		Profile profile = profileRepository.findByUserId(request.userId())
-			.orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_PROFILE));
+		Profile profile = profileRepository.findByUserId(request.userId());
 
-		validateProfileUpdate(request, profile);
+		Profile updatedProfile = profile.update(request.toCommand());
 
-		profile.update(
-			request.profileColor(), request.nickname(), request.communityId(), request.gender(), request.ageRange()
-		);
+		profileRepository.save(updatedProfile);
 	}
 
-	public void checkNicknameAvailability(String nickname) {
+	public void checkNicknameAvailability(String query) {
 
-		profileValidator.validateNicknamePattern(nickname);
-		profileValidator.validateNicknameExists(nickname);
-	}
+		Nickname nickname = new Nickname(query);
 
-	private void validateProfileRegistration(ProfileRegisterServiceRequest request) {
-
-		profileValidator.validateProfileExists(request.userId());
-		profileValidator.validateNicknamePattern(request.nickname());
-		profileValidator.validateNicknameExists(request.nickname());
-		profileValidator.validateSupportedCommunity(request.communityId());
-	}
-
-	private void validateProfileUpdate(ProfileUpdateServiceRequest request, Profile profile) {
-
-		if (!profile.getNickname().equals(request.nickname())) {
-			profileValidator.validateNicknamePattern(request.nickname());
-			profileValidator.validateNicknameExists(request.nickname());
+		if (profileRepository.existsByNickname(nickname)) {
+			throw new CustomException(ErrorCode.DUPLICATE_NICKNAME);
 		}
 
-		profileValidator.validateSupportedCommunity(request.communityId());
 	}
 
 }

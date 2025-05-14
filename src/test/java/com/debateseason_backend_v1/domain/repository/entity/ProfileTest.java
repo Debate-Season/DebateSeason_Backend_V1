@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import com.debateseason_backend_v1.domain.profile.enums.AgeRangeType;
 import com.debateseason_backend_v1.domain.profile.enums.CommunityType;
 import com.debateseason_backend_v1.domain.profile.enums.GenderType;
+import com.debateseason_backend_v1.domain.profile.infrastructure.ProfileEntity;
 
 class ProfileTest {
 
@@ -23,7 +24,7 @@ class ProfileTest {
 		AgeRangeType ageRange = AgeRangeType.TWENTIES;
 
 		// when
-		Profile profile = Profile.builder()
+		ProfileEntity profile = ProfileEntity.builder()
 			.userId(userId)
 			.profileColor(profileColor)
 			.nickname(nickname)
@@ -45,7 +46,7 @@ class ProfileTest {
 	@DisplayName("프로필을 업데이트할 수 있다")
 	void updateProfile() {
 		// given
-		Profile profile = Profile.builder()
+		ProfileEntity profile = ProfileEntity.builder()
 			.userId(1L)
 			.profileColor("RED")
 			.nickname("토론왕")
@@ -75,7 +76,7 @@ class ProfileTest {
 	@DisplayName("프로필을 익명화할 수 있다")
 	void anonymizeProfile() {
 		// given
-		Profile profile = Profile.builder()
+		ProfileEntity profile = ProfileEntity.builder()
 			.userId(1L)
 			.profileColor("RED")
 			.nickname("토론왕")
@@ -99,7 +100,7 @@ class ProfileTest {
 	void getCommunityType() {
 		// given
 		Long communityId = 1L; // DC_INSIDE
-		Profile profile = Profile.builder()
+		ProfileEntity profile = ProfileEntity.builder()
 			.userId(1L)
 			.profileColor("RED")
 			.nickname("토론왕")
@@ -121,7 +122,7 @@ class ProfileTest {
 	@DisplayName("communityId가 null이면 getCommunityType도 null을 반환한다")
 	void getCommunityTypeReturnsNullForNullCommunityId() {
 		// given
-		Profile profile = Profile.builder()
+		ProfileEntity profile = ProfileEntity.builder()
 			.userId(1L)
 			.profileColor("RED")
 			.nickname("토론왕")

@@ -34,7 +34,7 @@ public class UserServiceV2 {
 		User user = userRepository.findBySocialId(socialId);
 
 		if (user == User.EMPTY) {
-			user.register(socialId, request.socialType());
+			user = User.register(request.toCommand());
 			user = userRepository.save(user);
 		} else {
 			user.login();

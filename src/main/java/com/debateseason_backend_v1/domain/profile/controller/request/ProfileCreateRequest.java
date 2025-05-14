@@ -1,10 +1,10 @@
 package com.debateseason_backend_v1.domain.profile.controller.request;
 
+import com.debateseason_backend_v1.domain.profile.domain.AgeRangeType;
 import com.debateseason_backend_v1.domain.profile.domain.CommunityId;
+import com.debateseason_backend_v1.domain.profile.domain.GenderType;
 import com.debateseason_backend_v1.domain.profile.domain.Nickname;
 import com.debateseason_backend_v1.domain.profile.domain.PersonalInfo;
-import com.debateseason_backend_v1.domain.profile.enums.AgeRangeType;
-import com.debateseason_backend_v1.domain.profile.enums.GenderType;
 import com.debateseason_backend_v1.domain.profile.service.request.ProfileCreateServiceRequest;
 import com.debateseason_backend_v1.domain.user.domain.UserId;
 

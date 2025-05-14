@@ -13,7 +13,6 @@ import com.debateseason_backend_v1.domain.repository.RefreshTokenRepository;
 import com.debateseason_backend_v1.domain.repository.entity.RefreshToken;
 import com.debateseason_backend_v1.domain.user.domain.TokenIssuer;
 import com.debateseason_backend_v1.domain.user.domain.TokenPair;
-import com.debateseason_backend_v1.security.jwt.JwtUtil;
 
 import lombok.RequiredArgsConstructor;
 
@@ -22,7 +21,6 @@ import lombok.RequiredArgsConstructor;
 @Transactional(readOnly = true)
 public class AuthServiceV1 {
 
-	private final JwtUtil jwtUtil;
 	private final TokenIssuer tokenIssuer;
 	private final RefreshTokenRepository refreshTokenRepository;
 

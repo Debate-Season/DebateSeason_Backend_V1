@@ -15,7 +15,6 @@ import org.junit.jupiter.params.provider.EnumSource;
 
 import com.debateseason_backend_v1.common.exception.CustomException;
 import com.debateseason_backend_v1.common.exception.ErrorCode;
-import com.debateseason_backend_v1.domain.user.enums.SocialType;
 
 class UserTest {
 

@@ -2,7 +2,6 @@ package com.debateseason_backend_v1.domain.user.domain;
 
 import com.debateseason_backend_v1.common.exception.CustomException;
 import com.debateseason_backend_v1.common.exception.ErrorCode;
-import com.debateseason_backend_v1.domain.user.enums.SocialType;
 
 import lombok.Getter;
 
@@ -21,9 +20,9 @@ public class User {
 		this.status = status;
 	}
 
-	public static User register(String socialId, SocialType socialType) {
+	public static User register(UserRegisterCommand command) {
 
-		return new User(new UserId(null), socialId, socialType, UserStatus.PENDING);
+		return new User(UserId.EMPTY, command.socialId(), command.socialType(), UserStatus.PENDING);
 	}
 
 	public void login() {

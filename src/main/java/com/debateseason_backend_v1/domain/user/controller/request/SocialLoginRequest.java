@@ -1,6 +1,6 @@
 package com.debateseason_backend_v1.domain.user.controller.request;
 
-import com.debateseason_backend_v1.domain.user.enums.SocialType;
+import com.debateseason_backend_v1.domain.user.domain.SocialType;
 import com.debateseason_backend_v1.domain.user.service.request.SocialLoginServiceRequest;
 
 import io.swagger.v3.oas.annotations.media.Schema;

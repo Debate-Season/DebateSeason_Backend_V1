@@ -1,4 +1,4 @@
-package com.debateseason_backend_v1.domain.user.enums;
+package com.debateseason_backend_v1.domain.user.domain;
 
 import java.util.Arrays;
 

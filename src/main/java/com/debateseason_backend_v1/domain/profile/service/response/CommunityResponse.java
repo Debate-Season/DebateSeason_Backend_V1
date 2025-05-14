@@ -1,6 +1,6 @@
 package com.debateseason_backend_v1.domain.profile.service.response;
 
-import com.debateseason_backend_v1.domain.profile.enums.CommunityType;
+import com.debateseason_backend_v1.domain.profile.domain.CommunityType;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 

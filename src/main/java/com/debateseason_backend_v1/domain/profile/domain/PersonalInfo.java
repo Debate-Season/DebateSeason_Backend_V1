@@ -1,8 +1,5 @@
 package com.debateseason_backend_v1.domain.profile.domain;
 
-import com.debateseason_backend_v1.domain.profile.enums.AgeRangeType;
-import com.debateseason_backend_v1.domain.profile.enums.GenderType;
-
 public record PersonalInfo(
 	String profileImage,
 	Nickname nickname,

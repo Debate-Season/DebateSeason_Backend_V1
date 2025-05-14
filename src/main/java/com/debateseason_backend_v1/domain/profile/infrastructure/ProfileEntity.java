@@ -5,14 +5,14 @@ import java.time.LocalDateTime;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import com.debateseason_backend_v1.domain.profile.domain.AgeRangeType;
 import com.debateseason_backend_v1.domain.profile.domain.CommunityId;
+import com.debateseason_backend_v1.domain.profile.domain.CommunityType;
+import com.debateseason_backend_v1.domain.profile.domain.GenderType;
 import com.debateseason_backend_v1.domain.profile.domain.Nickname;
 import com.debateseason_backend_v1.domain.profile.domain.PersonalInfo;
 import com.debateseason_backend_v1.domain.profile.domain.Profile;
 import com.debateseason_backend_v1.domain.profile.domain.ProfileId;
-import com.debateseason_backend_v1.domain.profile.enums.AgeRangeType;
-import com.debateseason_backend_v1.domain.profile.enums.CommunityType;
-import com.debateseason_backend_v1.domain.profile.enums.GenderType;
 import com.debateseason_backend_v1.domain.user.domain.UserId;
 
 import jakarta.persistence.Column;
@@ -47,14 +47,14 @@ public class ProfileEntity {
 	@Column(name = "user_id")
 	private Long userId;
 
-	@Column(name = "profile_color")
+	@Column(name = "community_id")
+	private Long communityId;
+
+	@Column(name = "profile_image")
 	private String profileImage;
 
 	@Column(name = "nickname", unique = true)
 	private String nickname;
-
-	@Column(name = "community_id")
-	private Long communityId;
 
 	@Enumerated(EnumType.STRING)
 	@Column(name = "gender")

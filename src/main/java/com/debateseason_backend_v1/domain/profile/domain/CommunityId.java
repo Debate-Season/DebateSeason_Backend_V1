@@ -4,7 +4,6 @@ import java.util.Arrays;
 
 import com.debateseason_backend_v1.common.exception.CustomException;
 import com.debateseason_backend_v1.common.exception.ErrorCode;
-import com.debateseason_backend_v1.domain.profile.enums.CommunityType;
 
 public record CommunityId(
 	Long value

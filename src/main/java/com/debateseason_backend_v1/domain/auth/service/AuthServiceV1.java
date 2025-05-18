@@ -9,9 +9,10 @@ import com.debateseason_backend_v1.common.exception.CustomException;
 import com.debateseason_backend_v1.common.exception.ErrorCode;
 import com.debateseason_backend_v1.domain.auth.service.request.TokenReissueServiceRequest;
 import com.debateseason_backend_v1.domain.auth.service.response.TokenReissueResponse;
-import com.debateseason_backend_v1.domain.user.infrastructure.RefreshTokenEntity;
-import com.debateseason_backend_v1.domain.user.infrastructure.RefreshTokenJpaRepository;
-import com.debateseason_backend_v1.security.jwt.JwtUtil;
+import com.debateseason_backend_v1.domain.repository.RefreshTokenRepository;
+import com.debateseason_backend_v1.domain.repository.entity.RefreshToken;
+import com.debateseason_backend_v1.domain.user.domain.TokenIssuer;
+import com.debateseason_backend_v1.domain.user.domain.TokenPair;
 
 import lombok.RequiredArgsConstructor;
 
@@ -20,29 +21,28 @@ import lombok.RequiredArgsConstructor;
 @Transactional(readOnly = true)
 public class AuthServiceV1 {
 
-	private final JwtUtil jwtUtil;
-	private final RefreshTokenJpaRepository refreshTokenRepository;
+	private final TokenIssuer tokenIssuer;
+	private final RefreshTokenRepository refreshTokenRepository;
 
 	@Transactional
 	public TokenReissueResponse reissueToken(TokenReissueServiceRequest request) {
 
-		RefreshTokenEntity refreshTokenEntity = refreshTokenRepository.findByToken(request.refreshToken())
+		RefreshToken refreshToken = refreshTokenRepository.findByToken(request.refreshToken())
 			.orElseThrow(() -> new CustomException(ErrorCode.INVALID_REFRESH_TOKEN));
 
-		String newAccessToken = jwtUtil.createAccessToken(refreshTokenEntity.getId());
-		String newRefreshToken = jwtUtil.createRefreshToken(refreshTokenEntity.getId());
+		TokenPair tokenPair = tokenIssuer.issueTokenPair(request.userId());
 
-		refreshTokenRepository.delete(refreshTokenEntity);
+		refreshTokenRepository.delete(refreshToken);
 
-		RefreshTokenEntity token = RefreshTokenEntity.builder()
-			.token(newRefreshToken)
-			.userId(refreshTokenEntity.getUserId())
+		RefreshToken token = RefreshToken.builder()
+			.token(tokenPair.refreshToken())
+			.userId(refreshToken.getUserId())
 			.build();
 		refreshTokenRepository.save(token);
 
 		return TokenReissueResponse.builder()
-			.accessToken(newAccessToken)
-			.refreshToken(newRefreshToken)
+			.accessToken(tokenPair.accessToken())
+			.refreshToken(tokenPair.refreshToken())
 			.build();
 	}
 

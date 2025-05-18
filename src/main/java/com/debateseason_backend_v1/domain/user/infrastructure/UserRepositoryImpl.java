@@ -1,12 +1,13 @@
 package com.debateseason_backend_v1.domain.user.infrastructure;
 
-import java.util.Optional;
+import java.time.LocalDateTime;
+import java.util.List;
 
 import org.springframework.stereotype.Repository;
 
-import com.debateseason_backend_v1.common.exception.CustomException;
-import com.debateseason_backend_v1.common.exception.ErrorCode;
 import com.debateseason_backend_v1.domain.user.domain.User;
+import com.debateseason_backend_v1.domain.user.domain.UserId;
+import com.debateseason_backend_v1.domain.user.domain.UserStatus;
 import com.debateseason_backend_v1.domain.user.service.UserRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -18,20 +19,26 @@ public class UserRepositoryImpl implements UserRepository {
 	private final UserJpaRepository userJpaRepository;
 
 	@Override
-	public Long save(User user) {
-		return userJpaRepository.save(UserEntity.from(user)).getId();
+	public User save(User user) {
+		return userJpaRepository.save(UserEntity.from(user)).toModel();
 	}
 
 	@Override
-	public Optional<User> findByIdentifier(String identifier) {
-		return userJpaRepository.findByIdentifier(identifier).map(UserEntity::toModel);
+	public User findById(UserId id) {
+		return userJpaRepository.findById(id.value()).map(UserEntity::toModel).orElse(User.EMPTY);
 	}
 
 	@Override
-	public UserEntity findById(Long userId) {
-		return userJpaRepository.findById(userId).orElseThrow(
-			() -> new CustomException(ErrorCode.NOT_FOUND_USER)
-		);
+	public User findBySocialId(String socialId) {
+		return userJpaRepository.findBySocialId(socialId).map(UserEntity::toModel).orElse(User.EMPTY);
+	}
+
+	@Override
+	public List<User> findWithdrawnPendingUsers(UserStatus status, LocalDateTime cutoffDate) {
+		return userJpaRepository.findWithdrawnPendingUsers(status, cutoffDate)
+			.stream()
+			.map(UserEntity::toModel)
+			.toList();
 	}
 
 }

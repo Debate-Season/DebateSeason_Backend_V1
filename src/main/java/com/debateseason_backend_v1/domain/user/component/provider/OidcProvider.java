@@ -1,7 +1,5 @@
 package com.debateseason_backend_v1.domain.user.component.provider;
 
-import com.debateseason_backend_v1.domain.user.domain.OidcUserInfo;
-
 public interface OidcProvider {
 
 	/**
@@ -9,5 +7,5 @@ public interface OidcProvider {
 	 * 사용자 식별자(sub)를 반환.
 	 * 검증 실패 시 예외 발생.
 	 */
-	OidcUserInfo extractUserInfo(String idToken);
+	String extractUserId(String idToken);
 }

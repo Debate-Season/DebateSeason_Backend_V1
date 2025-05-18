@@ -11,6 +11,7 @@ import com.debateseason_backend_v1.domain.repository.entity.Issue;
 import com.debateseason_backend_v1.domain.repository.entity.UserIssue;
 import com.debateseason_backend_v1.domain.user.dto.UserIssueDTO;
 import com.debateseason_backend_v1.domain.user.infrastructure.UserEntity;
+import com.debateseason_backend_v1.domain.user.infrastructure.UserJpaRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,7 +23,7 @@ public class UserIssueServiceV1 {
 	// User와 Issue를 조회한다, -> UserIssue에 등록을 한다.
 
 	//
-	private final UserRepository userRepository;
+	private final UserJpaRepository userJpaRepository;
 	private final IssueJpaRepository issueJpaRepository;
 	//
 	private final UserIssueRepository userIssueRepository;
@@ -34,13 +35,15 @@ public class UserIssueServiceV1 {
 		Long issueId = userIssueDTO.getIssueId();
 
 		// 이 부분 나중에 GlobalExceptionHandler 만들어서 예외처리 할 예정 <- 수정해야 할 부분
-		UserEntity userEntity = userRepository.findById(userId);
+		UserEntity user = userJpaRepository.findById(userId).orElseThrow(
+			() -> new RuntimeException("There is no user : " + userId)
+		);
 		Issue issue = issueJpaRepository.findById(issueId).orElseThrow(
 			() -> new RuntimeException("There is no relevant issue : " + issueId)
 		);
 
 		UserIssue userIssue = UserIssue.builder()
-			.userEntity(userEntity)
+			.userEntity(user)
 			.issue(issue)
 			.build();
 

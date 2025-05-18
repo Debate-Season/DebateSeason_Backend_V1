@@ -10,6 +10,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import com.debateseason_backend_v1.common.enums.TokenType;
+import com.debateseason_backend_v1.domain.user.domain.TokenIssuer;
+import com.debateseason_backend_v1.domain.user.domain.TokenPair;
+import com.debateseason_backend_v1.domain.user.domain.UserId;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -21,7 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Component
-public class JwtUtil {
+public class JwtUtil implements TokenIssuer {
 
 	private SecretKey secretKey;
 	private final long accessTokenExpireTime;
@@ -39,6 +42,14 @@ public class JwtUtil {
 		);
 		this.accessTokenExpireTime = accessTokenExpireTime;
 		this.refreshTokenExpireTime = refreshTokenExpireTime;
+	}
+
+	@Override
+	public TokenPair issueTokenPair(UserId userId) {
+		String accessToken = createJwt(TokenType.ACCESS, userId.value(), accessTokenExpireTime);
+		String refreshToken = createJwt(TokenType.REFRESH, userId.value(), refreshTokenExpireTime);
+
+		return new TokenPair(accessToken, refreshToken);
 	}
 
 	public Long getUserId(String token) {
@@ -64,14 +75,6 @@ public class JwtUtil {
 		}
 	}
 
-	public String createAccessToken(Long userId) {
-		return createJwt(TokenType.ACCESS, userId, accessTokenExpireTime);
-	}
-
-	public String createRefreshToken(Long userId) {
-		return createJwt(TokenType.REFRESH, userId, refreshTokenExpireTime);
-	}
-
 	public boolean validate(String token) {
 
 		try {
@@ -85,7 +88,7 @@ public class JwtUtil {
 		}
 	}
 
-	public String createJwt(TokenType tokenType, Long userId, Long expiredMs) {
+	private String createJwt(TokenType tokenType, Long userId, Long expiredMs) {
 
 		Date now = new Date();
 		Date expiration = new Date(now.getTime() + expiredMs);
@@ -108,10 +111,6 @@ public class JwtUtil {
 			.build()
 			.parseSignedClaims(token)
 			.getPayload();
-	}
-
-	public long getRefreshTokenExpireTime() {
-		return refreshTokenExpireTime;
 	}
 
 }

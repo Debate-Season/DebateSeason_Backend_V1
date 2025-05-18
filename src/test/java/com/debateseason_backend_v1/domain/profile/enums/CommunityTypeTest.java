@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 
 import com.debateseason_backend_v1.common.exception.CustomException;
 import com.debateseason_backend_v1.common.exception.ErrorCode;
+import com.debateseason_backend_v1.domain.profile.domain.CommunityType;
 
 class CommunityTypeTest {
 

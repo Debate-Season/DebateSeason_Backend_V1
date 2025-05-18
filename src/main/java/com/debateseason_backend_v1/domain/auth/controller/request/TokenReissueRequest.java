@@ -1,6 +1,7 @@
 package com.debateseason_backend_v1.domain.auth.controller.request;
 
 import com.debateseason_backend_v1.domain.auth.service.request.TokenReissueServiceRequest;
+import com.debateseason_backend_v1.domain.user.domain.UserId;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
@@ -14,9 +15,10 @@ public record TokenReissueRequest(
 	@NotBlank(message = "Refresh Token은 필수입니다.")
 	String refreshToken
 ) {
-	public TokenReissueServiceRequest toServiceRequest() {
+	public TokenReissueServiceRequest toServiceRequest(Long userId) {
 		return TokenReissueServiceRequest.builder()
 			.refreshToken(refreshToken)
+			.userId(new UserId(userId))
 			.build();
 	}
 }

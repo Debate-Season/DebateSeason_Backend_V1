@@ -1,16 +1,20 @@
 package com.debateseason_backend_v1.domain.user.service;
 
-import java.util.Optional;
+import java.time.LocalDateTime;
+import java.util.List;
 
 import com.debateseason_backend_v1.domain.user.domain.User;
-import com.debateseason_backend_v1.domain.user.infrastructure.UserEntity;
+import com.debateseason_backend_v1.domain.user.domain.UserId;
+import com.debateseason_backend_v1.domain.user.domain.UserStatus;
 
 public interface UserRepository {
 
-	Long save(User user);
+	User save(User user);
 
-	Optional<User> findByIdentifier(String identifier);
+	User findById(UserId id);
 
-	UserEntity findById(Long userId);
+	User findBySocialId(String socialId);
+
+	List<User> findWithdrawnPendingUsers(UserStatus status, LocalDateTime cutoffDate);
 
 }

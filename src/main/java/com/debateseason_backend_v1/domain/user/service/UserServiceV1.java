@@ -1,26 +1,22 @@
 package com.debateseason_backend_v1.domain.user.service;
 
-import java.time.LocalDateTime;
-import java.util.Optional;
-
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.debateseason_backend_v1.common.enums.TokenType;
 import com.debateseason_backend_v1.common.exception.CustomException;
 import com.debateseason_backend_v1.common.exception.ErrorCode;
-import com.debateseason_backend_v1.domain.repository.ProfileRepository;
+import com.debateseason_backend_v1.domain.repository.RefreshTokenRepository;
+import com.debateseason_backend_v1.domain.repository.entity.RefreshToken;
 import com.debateseason_backend_v1.domain.terms.service.TermsServiceV1;
-import com.debateseason_backend_v1.domain.user.controller.response.LoginResponse;
+import com.debateseason_backend_v1.domain.user.domain.TokenIssuer;
+import com.debateseason_backend_v1.domain.user.domain.TokenPair;
 import com.debateseason_backend_v1.domain.user.domain.User;
-import com.debateseason_backend_v1.domain.user.infrastructure.RefreshTokenEntity;
-
-import com.debateseason_backend_v1.domain.user.infrastructure.UserEntity;
+import com.debateseason_backend_v1.domain.user.domain.UserId;
 import com.debateseason_backend_v1.domain.user.service.request.LogoutServiceRequest;
 import com.debateseason_backend_v1.domain.user.service.request.SocialLoginServiceRequest;
-
-import com.debateseason_backend_v1.security.jwt.TokenIssuer;
-import com.debateseason_backend_v1.security.jwt.Tokens;
+import com.debateseason_backend_v1.domain.user.service.response.LoginResponse;
+import com.debateseason_backend_v1.security.jwt.JwtUtil;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,46 +27,42 @@ import lombok.extern.slf4j.Slf4j;
 @Transactional(readOnly = true)
 public class UserServiceV1 {
 
+	private final JwtUtil jwtUtil;
+	private final TokenIssuer tokenIssuer;
 	private final TermsServiceV1 termsService;
 	private final UserRepository userRepository;
-	private final ProfileRepository profileRepository;
 	private final RefreshTokenRepository refreshTokenRepository;
-	private final TokenIssuer tokenIssuer;
 
 	@Transactional
 	public LoginResponse socialLogin(SocialLoginServiceRequest request) {
-		/*
-		Optional<User> user = userRepository.findByIdentifier(request.identifier());
 
-		if (user.isEmpty()) {
+		User user = userRepository.findBySocialId(request.identifier());
 
+		if (user == User.EMPTY) {
+			user = User.register(request.toCommand());
+			user = userRepository.save(user);
+		} else {
+			user.login();
+			userRepository.save(user);
 		}
 
-		Tokens tokens = tokenIssuer.issue(user.getId());
-		saveRefreshToken(user.getId().value(), tokens.refreshToken());
+		TokenPair tokenPair = user.issueTokens(tokenIssuer);
 
-		boolean profileStatus = profileRepository.existsByUserId(userEntity.getId());
+		saveRefreshToken(user.getId(), tokenPair.refreshToken());
 
-		boolean termsStatus = termsService.hasAgreedToAllRequiredTerms(userEntity.getId());
-
-
+		boolean termsStatus = termsService.hasAgreedToAllRequiredTerms(user.getId());
 
 		return LoginResponse.builder()
-			.accessToken(newAccessToken)
-			.refreshToken(newRefreshToken)
+			.accessToken(tokenPair.accessToken())
+			.refreshToken(tokenPair.refreshToken())
 			.socialType(request.socialType().getDescription())
-			.profileStatus(profileStatus)
+			.profileStatus(user.hasProfile())
 			.termsStatus(termsStatus)
 			.build();
-
-		 */
-
-		return null;
 	}
 
 	@Transactional
 	public void logout(LogoutServiceRequest request) {
-		/*
 
 		if (!refreshTokenRepository.existsByToken(request.refreshToken())) {
 			throw new CustomException(ErrorCode.INVALID_REFRESH_TOKEN);
@@ -85,53 +77,27 @@ public class UserServiceV1 {
 		}
 
 		refreshTokenRepository.deleteByToken(request.refreshToken());
-
-		 */
 	}
 
 	@Transactional
-	public void withdraw(Long userId) {
+	public void withdraw(UserId id) {
 
-		/*
-		UserEntity userEntity = userRepository.findById(userId);
+		User user = userRepository.findById(id);
 
-		userEntity.withdraw();
+		user.withdraw();
 
-		refreshTokenRepository.deleteAllByUserId(userEntity.getId());
-
-		 */
-
+		userRepository.save(user);
+		refreshTokenRepository.deleteAllByUserId(user.getId().value());
 	}
 
-	private UserEntity createNewUser(SocialLoginServiceRequest request) {
+	private void saveRefreshToken(UserId userId, String refresh) {
 
-		/*
-		UserEntity userEntity = UserEntity.builder()
-			.socialType(request.socialType())
-			.externalId(request.identifier())
-			.build();
-
-		return userRepository.save(userEntity);
-
-		 */
-		return null;
-	}
-
-	private void saveRefreshToken(Long userId, String refresh, Long expiredMs) {
-
-		/*
-		LocalDateTime expiration = LocalDateTime.now().plusSeconds(expiredMs / 1000);
-
-		RefreshTokenEntity refreshTokenEntity = RefreshTokenEntity.builder()
+		RefreshToken refreshToken = RefreshToken.builder()
 			.token(refresh)
-			.userId(userId)
-			.expirationAt(expiration)
+			.userId(userId.value())
 			.build();
 
-		refreshTokenRepository.save(refreshTokenEntity);
-
-		 */
-
+		refreshTokenRepository.save(refreshToken);
 	}
 
 }

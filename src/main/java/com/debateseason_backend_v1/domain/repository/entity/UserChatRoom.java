@@ -29,7 +29,7 @@ public class UserChatRoom {
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "user_id", nullable = false)
-	private UserEntity userEntity;
+	private UserEntity user;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "chat_room_id", nullable = false)
@@ -41,11 +41,11 @@ public class UserChatRoom {
 	private String interest;// YES or NO
 
 	public static UserChatRoom toJpaEntity(
-		UserEntity userEntity,
+		UserEntity user,
 		ChatRoom chatRoom,
 		String opinion){
 		return UserChatRoom.builder()
-			.userEntity(userEntity)
+			.user(user)
 			.chatRoom(chatRoom)
 			.opinion(opinion)
 			.build();

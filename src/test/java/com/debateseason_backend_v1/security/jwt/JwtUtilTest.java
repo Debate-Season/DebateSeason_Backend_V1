@@ -2,14 +2,19 @@ package com.debateseason_backend_v1.security.jwt;
 
 import static org.assertj.core.api.AssertionsForClassTypes.*;
 
+import java.lang.reflect.Method;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import com.debateseason_backend_v1.common.enums.TokenType;
+import com.debateseason_backend_v1.domain.user.domain.TokenPair;
+import com.debateseason_backend_v1.domain.user.domain.UserId;
 
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
@@ -30,7 +35,8 @@ class JwtUtilTest {
 		@Test
 		@DisplayName("Access 토큰 생성 성공")
 		void createAccessToken_Success() {
-			String accessToken = jwtUtil.createAccessToken(TEST_USER_ID);
+			TokenPair tokenPair = jwtUtil.issueTokenPair(new UserId(TEST_USER_ID));
+			String accessToken = tokenPair.accessToken();
 
 			assertThat(accessToken).isNotNull();
 			assertThat(jwtUtil.getUserId(accessToken)).isEqualTo(TEST_USER_ID);
@@ -41,7 +47,8 @@ class JwtUtilTest {
 		@Test
 		@DisplayName("Refresh 토큰 생성 성공")
 		void createRefreshToken_Success() {
-			String refreshToken = jwtUtil.createRefreshToken(TEST_USER_ID);
+			TokenPair tokenPair = jwtUtil.issueTokenPair(new UserId(TEST_USER_ID));
+			String refreshToken = tokenPair.refreshToken();
 
 			assertThat(refreshToken).isNotNull();
 			assertThat(jwtUtil.getUserId(refreshToken)).isEqualTo(TEST_USER_ID);
@@ -52,7 +59,8 @@ class JwtUtilTest {
 		@Test
 		@DisplayName("토큰 검증 성공")
 		void validateToken_Success() {
-			String token = jwtUtil.createAccessToken(TEST_USER_ID);
+			TokenPair tokenPair = jwtUtil.issueTokenPair(new UserId(TEST_USER_ID));
+			String token = tokenPair.accessToken();
 
 			assertThat(jwtUtil.validate(token)).isTrue();
 		}
@@ -63,8 +71,11 @@ class JwtUtilTest {
 	class FailureCase {
 		@Test
 		@DisplayName("만료된 토큰 검증 실패")
-		void validateToken_WhenExpired_ShouldThrow() {
-			String expiredToken = jwtUtil.createJwt(TokenType.ACCESS, TEST_USER_ID, -1000L);
+		void validateToken_WhenExpired_ShouldThrow() throws Exception {
+			// Use reflection to access the private createJwt method
+			Method createJwtMethod = JwtUtil.class.getDeclaredMethod("createJwt", TokenType.class, Long.class, Long.class);
+			createJwtMethod.setAccessible(true);
+			String expiredToken = (String) createJwtMethod.invoke(jwtUtil, TokenType.ACCESS, TEST_USER_ID, -1000L);
 
 			assertThatThrownBy(() -> jwtUtil.validate(expiredToken))
 				.isInstanceOf(ExpiredJwtException.class);
@@ -83,7 +94,8 @@ class JwtUtilTest {
 		@Test
 		@DisplayName("시그니처가 변조된 토큰 검증 실패")
 		void validateToken_WhenSignatureInvalid_ShouldThrow() {
-			String token = jwtUtil.createAccessToken(TEST_USER_ID) + "invalid";
+			TokenPair tokenPair = jwtUtil.issueTokenPair(new UserId(TEST_USER_ID));
+			String token = tokenPair.accessToken() + "invalid";
 
 			assertThatThrownBy(() -> jwtUtil.validate(token))
 				.isInstanceOf(SignatureException.class);

@@ -12,8 +12,10 @@ import org.springframework.stereotype.Service;
 import com.debateseason_backend_v1.common.exception.CustomException;
 import com.debateseason_backend_v1.common.exception.ErrorCode;
 import com.debateseason_backend_v1.common.response.ApiResult;
+
 import com.debateseason_backend_v1.domain.chat.application.repository.ChatRepository;
 import com.debateseason_backend_v1.domain.chatroom.entity.ChatRoomMananger;
+
 import com.debateseason_backend_v1.domain.chatroom.model.response.chatroom.type.ResponseWithTimeAndOpinion;
 import com.debateseason_backend_v1.domain.issue.entity.IssueManager;
 import com.debateseason_backend_v1.domain.issue.PaginationDTO;
@@ -24,20 +26,26 @@ import com.debateseason_backend_v1.domain.issue.model.response.IssueDetailRespon
 import com.debateseason_backend_v1.domain.issue.model.request.IssueRequest;
 import com.debateseason_backend_v1.domain.issue.model.CommunityRecords;
 import com.debateseason_backend_v1.domain.issue.model.response.IssueBriefResponse;
-import com.debateseason_backend_v1.domain.profile.enums.CommunityType;
 
+import com.debateseason_backend_v1.domain.profile.domain.CommunityType;
+import com.debateseason_backend_v1.domain.profile.infrastructure.ProfileEntity;
+import com.debateseason_backend_v1.domain.profile.infrastructure.ProfileJpaRepository;
+import com.debateseason_backend_v1.domain.profile.service.ProfileRepository;
 import com.debateseason_backend_v1.domain.repository.ChatRoomJpaRepository;
 
-import com.debateseason_backend_v1.domain.repository.ProfileRepository;
+
+
+
+
 import com.debateseason_backend_v1.domain.repository.UserChatRoomRepository;
 import com.debateseason_backend_v1.domain.repository.UserIssueRepository;
 
 import com.debateseason_backend_v1.domain.repository.entity.Issue;
-import com.debateseason_backend_v1.domain.repository.entity.Profile;
 
 import com.debateseason_backend_v1.domain.repository.entity.UserIssue;
 import com.debateseason_backend_v1.domain.user.dto.UserDTO;
 import com.debateseason_backend_v1.domain.user.infrastructure.UserEntity;
+import com.debateseason_backend_v1.domain.user.infrastructure.UserJpaRepository;
 import com.debateseason_backend_v1.domain.user.service.UserRepository;
 import com.debateseason_backend_v1.domain.userIssue.UserIssueManager;
 
@@ -53,9 +61,9 @@ public class IssueServiceV1 {
 	private final IssueRepository issueRepository;
 	private final UserIssueRepository userIssueRepository;
 	private final UserChatRoomRepository userChatRoomRepository;
-	private final UserRepository userRepository;
+	private final UserJpaRepository userJpaRepository;
 
-	private final ProfileRepository profileRepository;
+	private final ProfileJpaRepository profileJpaRepository;
 	private final ChatRepository chatRepository;
 
 	private final ChatRoomJpaRepository chatRoomJpaRepository;
@@ -111,7 +119,7 @@ public class IssueServiceV1 {
 
 
 		//
-		Profile profile = profileRepository.findByUserId(userId).orElseThrow(
+		ProfileEntity profile = profileJpaRepository.findByUserId(userId).orElseThrow(
 			() -> new CustomException(ErrorCode.NOT_FOUND_PROFILE)
 		);
 
@@ -215,7 +223,10 @@ public class IssueServiceV1 {
 	@Transactional // 만약에 하나로 문제가 생기면 바로 Rollback
 	public ApiResult<String> bookMark(Long issueId, Long userId){
 
-		UserEntity user = userRepository.findById(userId);
+		UserEntity user = userJpaRepository.findById(userId).orElseThrow(
+			()-> new CustomException(ErrorCode.NOT_FOUND_USER)
+		)
+			;
 
 		Issue issue = issueRepository.findById(issueId);
 

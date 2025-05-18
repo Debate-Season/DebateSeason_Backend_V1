@@ -1,65 +1,73 @@
 package com.debateseason_backend_v1.domain.user.domain;
 
-import java.time.Duration;
-import java.time.LocalDateTime;
+import com.debateseason_backend_v1.common.exception.CustomException;
+import com.debateseason_backend_v1.common.exception.ErrorCode;
 
-import com.debateseason_backend_v1.domain.user.enums.SocialType;
-import com.debateseason_backend_v1.domain.user.enums.UserStatus;
-
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 
-/**
- * 사용자 도메인 객체입니다.
- * 사용자의 상태와 행동을 정의합니다.
- */
 @Getter
-@Builder
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class User {
 
+	public static final User EMPTY = new User(null, null, null, null);
+
 	private UserId id;
+	private SocialAuthInfo socialAuthInfo;
 	private UserStatus status;
-	private SocialType socialType;
-	private String identifier;
-	private LocalDateTime createdAt;
-	private LocalDateTime updateAt;
-	private LocalDateTime withdrawalRequestedAt;
 
-	public static User create(OidcUserInfo oidcUserInfo) {
+	public User(UserId id, String socialId, SocialType socialType, UserStatus status) {
+		this.id = id;
+		this.socialAuthInfo = new SocialAuthInfo(socialId, socialType);
+		this.status = status;
+	}
 
-		return User.builder()
-			.socialType(oidcUserInfo.socialType())
-			.identifier(oidcUserInfo.identifier())
-			.status(UserStatus.PENDING)
-			.build();
+	public static User register(UserRegisterCommand command) {
+
+		return new User(UserId.EMPTY, command.socialId(), command.socialType(), UserStatus.PENDING);
+	}
+
+	public void login() {
+		if (this.status.isNotLoginable()) {
+			throw new CustomException(ErrorCode.NOT_LOGINABLE);
+		}
+
+		if (this.status == UserStatus.WITHDRAW_PENDING) {
+			this.status = UserStatus.ACTIVE;
+		}
+	}
+
+	public User profileCreated() {
+		if (this.status.isNotProfileCreatable()) {
+			throw new CustomException(ErrorCode.NOT_PROFILE_CREATABLE);
+		}
+		this.status = UserStatus.ACTIVE;
+		return this;
+	}
+
+	public void withdraw() {
+		if (this.status.isNotWithdrawable()) {
+			throw new CustomException(ErrorCode.NOT_WITHDRAWABLE);
+		}
+
+		this.status = UserStatus.WITHDRAW_PENDING;
+	}
+
+	public User anonymize(String uuid) {
+		if (this.status.isNotAnonymizable()) {
+			throw new CustomException(ErrorCode.NOT_ANONYMIZABLE);
+		}
+
+		this.socialAuthInfo = new SocialAuthInfo(uuid, SocialType.UNDEFINED);
+		this.status = UserStatus.WITHDRAW;
+
+		return this;
 	}
 
 	public boolean hasProfile() {
-		return this.status == UserStatus.ACTIVE;
+		return this.status != UserStatus.PENDING;
 	}
 
-	public boolean isBlock() {
-		return this.status == UserStatus.BLOCKED;
-	}
-
-	public boolean isPendingWithdrawal() {
-		return this.status == UserStatus.PENDING_WITHDRAWAL;
-	}
-
-	public boolean isWithdrawn() {
-		return this.status == UserStatus.WITHDRAWN;
-	}
-
-	public void restoreFromWithdrawal(LocalDateTime now) {
-
-		if (this.status == UserStatus.PENDING_WITHDRAWAL &&
-			Duration.between(this.withdrawalRequestedAt, now).toDays() < 5) {
-			this.status = UserStatus.ACTIVE;
-			this.withdrawalRequestedAt = null;
-		}
+	public TokenPair issueTokens(TokenIssuer tokenIssuer) {
+		return tokenIssuer.issueTokenPair(this.id);
 	}
 
 }

@@ -12,7 +12,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.debateseason_backend_v1.domain.user.component.SystemTimeProvider;
 import com.debateseason_backend_v1.domain.user.domain.User;
 import com.debateseason_backend_v1.domain.user.domain.UserId;
 import com.debateseason_backend_v1.domain.user.enums.SocialType;

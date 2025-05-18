@@ -8,19 +8,19 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.debateseason_backend_v1.domain.repository.entity.ChatRoom;
-import com.debateseason_backend_v1.domain.user.infrastructure.UserEntity;
 import com.debateseason_backend_v1.domain.repository.entity.UserChatRoom;
+import com.debateseason_backend_v1.domain.user.infrastructure.UserEntity;
 
 @Repository
 public interface UserChatRoomRepository extends JpaRepository<UserChatRoom, Long> {
 	List<UserChatRoom> findByChatRoom(
 		ChatRoom chatRoom
 	);
-	UserChatRoom findByUserEntityAndChatRoom(
+	UserChatRoom findByUserAndChatRoom(
 		UserEntity user,
 		ChatRoom chatRoom
 	);
-	UserChatRoom findByUserEntityIdAndChatRoomId(
+	UserChatRoom findByUserIdAndChatRoomId(
 		Long userId,Long
 		chatroomId
 	);

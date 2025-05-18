@@ -12,7 +12,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.debateseason_backend_v1.common.response.ApiResult;
 import com.debateseason_backend_v1.common.response.VoidApiResult;
 import com.debateseason_backend_v1.domain.profile.controller.docs.ProfileControllerV1Docs;
-import com.debateseason_backend_v1.domain.profile.controller.request.ProfileRegisterRequest;
+import com.debateseason_backend_v1.domain.profile.controller.request.ProfileCreateRequest;
+import com.debateseason_backend_v1.domain.profile.controller.request.ProfileFetchRequest;
 import com.debateseason_backend_v1.domain.profile.controller.request.ProfileUpdateRequest;
 import com.debateseason_backend_v1.domain.profile.service.ProfileServiceV1;
 import com.debateseason_backend_v1.domain.profile.service.response.ProfileResponse;
@@ -32,7 +33,7 @@ public class ProfileControllerV1 implements ProfileControllerV1Docs {
 
 	@PostMapping
 	public VoidApiResult registerProfile(
-		@Valid @RequestBody ProfileRegisterRequest request,
+		@Valid @RequestBody ProfileCreateRequest request,
 		@AuthenticationPrincipal CustomUserDetails userDetails
 	) {
 
@@ -43,10 +44,13 @@ public class ProfileControllerV1 implements ProfileControllerV1Docs {
 
 	@GetMapping("/me")
 	public ApiResult<ProfileResponse> getMyProfile(
-		@AuthenticationPrincipal CustomUserDetails userDetails
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		ProfileFetchRequest request
 	) {
 
-		ProfileResponse response = profileService.getProfileByUserId(userDetails.getUserId());
+		ProfileResponse response = profileService.getProfileByUserId(
+			request.toServiceRequest(userDetails.getUserId())
+		);
 
 		return ApiResult.success("프로필 조회가 완료되었습니다.", response);
 	}

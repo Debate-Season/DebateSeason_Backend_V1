@@ -6,8 +6,10 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import com.debateseason_backend_v1.domain.user.domain.SocialType;
 import com.debateseason_backend_v1.domain.user.domain.User;
-import com.debateseason_backend_v1.domain.user.enums.SocialType;
+import com.debateseason_backend_v1.domain.user.domain.UserId;
+import com.debateseason_backend_v1.domain.user.domain.UserStatus;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -39,11 +41,11 @@ public class UserEntity {
 	@Column(name = "social_type")
 	private SocialType socialType;
 
-	@Column(name = "identifier")
-	private String identifier;
+	@Column(name = "social_id")
+	private String socialId;
 
-	@Column(name = "is_deleted")
-	private boolean isDeleted = false;
+	@Enumerated(EnumType.STRING)
+	private UserStatus status;
 
 	@CreatedDate
 	@Column(name = "created_at", updatable = false)
@@ -54,35 +56,25 @@ public class UserEntity {
 	private LocalDateTime updatedAt;
 
 	@Builder
-	private UserEntity(SocialType socialType, String externalId) {
+	private UserEntity(Long id, SocialType socialType, String socialId, UserStatus status) {
 
+		this.id = id;
 		this.socialType = socialType;
-		this.identifier = externalId;
-	}
-
-	public void withdraw() {
-
-		this.isDeleted = true;
-	}
-
-	public void restore() {
-
-		this.isDeleted = false;
-	}
-
-	public void anonymize(String uuid) {
-
-		this.identifier = uuid;
+		this.socialId = socialId;
+		this.status = status;
 	}
 
 	public static UserEntity from(User user) {
+
 		return UserEntity.builder()
-			.socialType(user.getSocialType())
+			.id(user.getId().value())
+			.socialType(user.getSocialAuthInfo().socialType())
+			.socialId(user.getSocialAuthInfo().socialId())
+			.status(user.getStatus())
 			.build();
 	}
 
 	public User toModel() {
-		return User.builder()
-			.build();
+		return new User(new UserId(id), socialId, socialType, status);
 	}
 }

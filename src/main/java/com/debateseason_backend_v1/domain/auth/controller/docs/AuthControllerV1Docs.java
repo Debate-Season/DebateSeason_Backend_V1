@@ -1,10 +1,13 @@
 package com.debateseason_backend_v1.domain.auth.controller.docs;
 
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+
 import com.debateseason_backend_v1.common.exception.ErrorCode;
 import com.debateseason_backend_v1.common.response.ApiResult;
 import com.debateseason_backend_v1.common.swagger.ApiErrorCode;
 import com.debateseason_backend_v1.domain.auth.controller.request.TokenReissueRequest;
 import com.debateseason_backend_v1.domain.auth.service.response.TokenReissueResponse;
+import com.debateseason_backend_v1.security.CustomUserDetails;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
@@ -24,5 +27,8 @@ public interface AuthControllerV1Docs {
 		ErrorCode.INVALID_REFRESH_TOKEN,
 		ErrorCode.MISSING_REFRESH_TOKEN
 	})
-	ApiResult<TokenReissueResponse> reissueToken(@RequestBody TokenReissueRequest request);
+	ApiResult<TokenReissueResponse> reissueToken(
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@RequestBody TokenReissueRequest request
+	);
 }

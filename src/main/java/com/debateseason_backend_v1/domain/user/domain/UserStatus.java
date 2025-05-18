@@ -1,18 +1,119 @@
 package com.debateseason_backend_v1.domain.user.domain;
 
-public interface UserStatus {
-	interface Active extends UserStatus {
-	}
+public enum UserStatus {
 
-	interface Blocked extends UserStatus {
-	}
+	PENDING {
+		@Override
+		public boolean isNotProfileCreatable() {
+			return false;
+		}
 
-	interface Withdrawn extends UserStatus {
-	}
+		@Override
+		public boolean isNotLoginable() {
+			return false;
+		}
 
-	interface Pending extends UserStatus {
-	}
+		@Override
+		public boolean isNotWithdrawable() {
+			return false;
+		}
 
-	interface PendingWithdrawal extends UserStatus {
-	}
+		@Override
+		public boolean isNotAnonymizable() {
+			return true;
+		}
+	},
+	ACTIVE {
+		@Override
+		public boolean isNotProfileCreatable() {
+			return true;
+		}
+
+		@Override
+		public boolean isNotLoginable() {
+			return false;
+		}
+
+		@Override
+		public boolean isNotWithdrawable() {
+			return false;
+		}
+
+		@Override
+		public boolean isNotAnonymizable() {
+			return true;
+		}
+	},
+	BLOCKED {
+		@Override
+		public boolean isNotProfileCreatable() {
+			return true;
+		}
+
+		@Override
+		public boolean isNotLoginable() {
+			return true;
+		}
+
+		@Override
+		public boolean isNotWithdrawable() {
+			return true;
+		}
+
+		@Override
+		public boolean isNotAnonymizable() {
+			return true;
+		}
+	},
+	WITHDRAW_PENDING {
+		@Override
+		public boolean isNotProfileCreatable() {
+			return true;
+		}
+
+		@Override
+		public boolean isNotLoginable() {
+			return false;
+		}
+
+		@Override
+		public boolean isNotWithdrawable() {
+			return true;
+		}
+
+		@Override
+		public boolean isNotAnonymizable() {
+			return false;
+		}
+	},
+	WITHDRAW {
+		@Override
+		public boolean isNotProfileCreatable() {
+			return true;
+		}
+
+		@Override
+		public boolean isNotLoginable() {
+			return true;
+		}
+
+		@Override
+		public boolean isNotWithdrawable() {
+			return true;
+		}
+
+		@Override
+		public boolean isNotAnonymizable() {
+			return true;
+		}
+	};
+
+	abstract boolean isNotProfileCreatable();
+
+	abstract boolean isNotLoginable();
+
+	abstract boolean isNotWithdrawable();
+
+	abstract boolean isNotAnonymizable();
+
 }

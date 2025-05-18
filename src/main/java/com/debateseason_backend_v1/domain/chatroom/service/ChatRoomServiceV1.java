@@ -32,9 +32,13 @@ import com.debateseason_backend_v1.domain.chatroom.model.response.chatroom.messa
 import com.debateseason_backend_v1.domain.issue.entity.IssueManager;
 import com.debateseason_backend_v1.domain.issue.infrastructure.IssueRepository;
 import com.debateseason_backend_v1.domain.issue.model.response.IssueBriefResponse;
+
 import com.debateseason_backend_v1.domain.media.entity.MediaManager;
 import com.debateseason_backend_v1.domain.media.infrastructure.MediaRepository;
 import com.debateseason_backend_v1.domain.media.type.MediaType;
+
+
+
 
 
 import com.debateseason_backend_v1.domain.repository.UserChatRoomRepository;
@@ -45,7 +49,7 @@ import com.debateseason_backend_v1.domain.repository.entity.Media;
 
 import com.debateseason_backend_v1.domain.repository.entity.UserChatRoom;
 import com.debateseason_backend_v1.domain.user.infrastructure.UserEntity;
-import com.debateseason_backend_v1.domain.user.service.UserRepository;
+import com.debateseason_backend_v1.domain.user.infrastructure.UserJpaRepository;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -56,7 +60,7 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 public class ChatRoomServiceV1 {
 
-	private final UserRepository userRepository;
+	private final UserJpaRepository userJpaRepository;
 	private final ChatRoomRepository chatRoomRepository;
 	private final IssueRepository issueRepository; // 혹시나 Service쓰면, 나중에 순환참조 발생할 것 같아서 Repository로 함.
 	private final UserChatRoomRepository userChatRoomRepository;
@@ -96,10 +100,12 @@ public class ChatRoomServiceV1 {
 		ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId);
 
 		// 2. User 가져오기
-		UserEntity user = userRepository.findById(userId);
+		UserEntity user = userJpaRepository.findById(userId).orElseThrow(
+			() -> new CustomException(ErrorCode.NOT_FOUND_USER)
+		);
 
 		// 3. 투표하기
-		UserChatRoom userChatRoom = userChatRoomRepository.findByUserEntityAndChatRoom(user, chatRoom);
+		UserChatRoom userChatRoom = userChatRoomRepository.findByUserAndChatRoom(user, chatRoom);
 
 
 		if (userChatRoom == null) {// 3. 최초 투표에만 Entity 생성, 나머지는 Update(Dirty Checking)
@@ -130,7 +136,7 @@ public class ChatRoomServiceV1 {
 		String opinion = "NEUTRAL";// 아무런 의견을 표명하지 않은 경우에는 NEUTRAL로 반환을 하는데, 이건 저장할 가치가 없다.
 
 		// 내가 이 토론방에 투표한 의견 가져오기
-		UserChatRoom getMyChatRoom = userChatRoomRepository.findByUserEntityIdAndChatRoomId(userId,chatRoomId);
+		UserChatRoom getMyChatRoom = userChatRoomRepository.findByUserIdAndChatRoomId(userId,chatRoomId);
 		if(getMyChatRoom!=null){
 			opinion = getMyChatRoom.getOpinion();
 		}
@@ -438,13 +444,14 @@ public class ChatRoomServiceV1 {
 
 	}
 
+
 	private TeamScore createTeamScore(
 		String team,
 		int total,
 		int logic,
 		int attribute,
 		String mvp
-	){
+	) {
 		return TeamScore.builder()
 			.team(team)
 			.total(total)

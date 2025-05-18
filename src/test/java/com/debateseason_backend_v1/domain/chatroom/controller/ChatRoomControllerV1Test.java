@@ -153,7 +153,7 @@ public class ChatRoomControllerV1Test {
 					.characterEncoding(Charset.forName("UTF-8"))
 					.param("opinion", opinion)
 					.param("chatroom-id", String.valueOf(chatRoomId))
-					.param("user-id", String.valueOf(userId))
+					.param("userEntity-id", String.valueOf(userId))
 				)
 				.andDo(print())
 				.andExpect(MockMvcResultMatchers.status().isOk());

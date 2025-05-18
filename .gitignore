@@ -40,3 +40,5 @@ out/
 
 **/application-*secret.yml
 **/application-secret.yml
+
+.junie/guidelines.md

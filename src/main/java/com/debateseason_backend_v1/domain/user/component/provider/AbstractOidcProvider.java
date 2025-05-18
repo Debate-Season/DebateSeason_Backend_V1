@@ -21,6 +21,8 @@ import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.debateseason_backend_v1.common.exception.CustomException;
 import com.debateseason_backend_v1.common.exception.ErrorCode;
+import com.debateseason_backend_v1.domain.user.domain.OidcUserInfo;
+import com.debateseason_backend_v1.domain.user.enums.SocialType;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -34,8 +36,8 @@ public abstract class AbstractOidcProvider implements OidcProvider {
 	/**
 	 * 생성자
 	 *
-	 * @param jwksUrl JWKS 엔드포인트 URL
-	 * @param issuer 토큰 발급자
+	 * @param jwksUrl  JWKS 엔드포인트 URL
+	 * @param issuer   토큰 발급자
 	 * @param audience 토큰 대상자
 	 */
 	protected AbstractOidcProvider(String jwksUrl, String issuer, String audience) {
@@ -63,10 +65,14 @@ public abstract class AbstractOidcProvider implements OidcProvider {
 	 * @return 사용자 식별자 (sub claim)
 	 */
 	@Override
-	public String extractUserId(String idToken) {
+	public OidcUserInfo extractUserInfo(String idToken) {
 
 		DecodedJWT verifiedToken = verifyToken(idToken);
-		return verifiedToken.getSubject();
+		String subject = verifiedToken.getSubject();
+
+		SocialType socialType = getSocialType();
+
+		return new OidcUserInfo(socialType, subject);
 	}
 
 	/**
@@ -164,4 +170,6 @@ public abstract class AbstractOidcProvider implements OidcProvider {
 			.withAudience(audience)
 			.build();
 	}
+
+	protected abstract SocialType getSocialType();
 }

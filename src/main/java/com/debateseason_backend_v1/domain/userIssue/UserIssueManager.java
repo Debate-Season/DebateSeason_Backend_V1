@@ -1,16 +1,16 @@
 package com.debateseason_backend_v1.domain.userIssue;
 
 import com.debateseason_backend_v1.domain.repository.entity.Issue;
-import com.debateseason_backend_v1.domain.repository.entity.User;
 import com.debateseason_backend_v1.domain.repository.entity.UserIssue;
+import com.debateseason_backend_v1.domain.user.infrastructure.UserEntity;
 
 public class UserIssueManager {
 
 	// 1. Issue 북마크 등록하기
-	public UserIssue bookMarkUserIssue(User user, Issue issue) {
+	public UserIssue bookMarkUserIssue(UserEntity userEntity, Issue issue) {
 
 		return UserIssue.builder()
-			.user(user)
+			.userEntity(userEntity)
 			.issue(issue)
 			.bookmark("yes")
 			.build();

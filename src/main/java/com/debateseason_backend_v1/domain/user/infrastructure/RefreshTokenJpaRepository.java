@@ -1,4 +1,4 @@
-package com.debateseason_backend_v1.domain.repository;
+package com.debateseason_backend_v1.domain.user.infrastructure;
 
 import java.util.Optional;
 
@@ -6,16 +6,14 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
-import com.debateseason_backend_v1.domain.repository.entity.RefreshToken;
+public interface RefreshTokenJpaRepository extends JpaRepository<RefreshTokenEntity, Long> {
 
-public interface RefreshTokenRepository extends JpaRepository<RefreshToken, Long> {
-
-	Optional<RefreshToken> findByToken(String token);
+	Optional<RefreshTokenEntity> findByToken(String token);
 
 	void deleteByToken(String token);
 
 	@Modifying
-	@Query("DELETE FROM RefreshToken rt WHERE rt.user.id = :userId")
+	@Query("DELETE FROM RefreshTokenEntity rt WHERE rt.userId = :userId")
 	void deleteAllByUserId(Long userId);
 
 	boolean existsByToken(String token);

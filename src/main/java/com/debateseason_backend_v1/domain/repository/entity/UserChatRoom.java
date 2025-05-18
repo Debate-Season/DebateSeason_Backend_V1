@@ -1,5 +1,7 @@
 package com.debateseason_backend_v1.domain.repository.entity;
 
+import com.debateseason_backend_v1.domain.user.infrastructure.UserEntity;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -27,7 +29,7 @@ public class UserChatRoom {
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "user_id", nullable = false)
-	private User user;
+	private UserEntity userEntity;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "chat_room_id", nullable = false)
@@ -39,11 +41,11 @@ public class UserChatRoom {
 	private String interest;// YES or NO
 
 	public static UserChatRoom toJpaEntity(
-		User user,
+		UserEntity userEntity,
 		ChatRoom chatRoom,
 		String opinion){
 		return UserChatRoom.builder()
-			.user(user)
+			.userEntity(userEntity)
 			.chatRoom(chatRoom)
 			.opinion(opinion)
 			.build();

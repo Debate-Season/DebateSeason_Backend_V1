@@ -9,8 +9,8 @@ import com.debateseason_backend_v1.common.exception.CustomException;
 import com.debateseason_backend_v1.common.exception.ErrorCode;
 import com.debateseason_backend_v1.domain.auth.service.request.TokenReissueServiceRequest;
 import com.debateseason_backend_v1.domain.auth.service.response.TokenReissueResponse;
-import com.debateseason_backend_v1.domain.repository.RefreshTokenRepository;
-import com.debateseason_backend_v1.domain.repository.entity.RefreshToken;
+import com.debateseason_backend_v1.domain.user.infrastructure.RefreshTokenEntity;
+import com.debateseason_backend_v1.domain.user.infrastructure.RefreshTokenJpaRepository;
 import com.debateseason_backend_v1.security.jwt.JwtUtil;
 
 import lombok.RequiredArgsConstructor;
@@ -21,22 +21,22 @@ import lombok.RequiredArgsConstructor;
 public class AuthServiceV1 {
 
 	private final JwtUtil jwtUtil;
-	private final RefreshTokenRepository refreshTokenRepository;
+	private final RefreshTokenJpaRepository refreshTokenRepository;
 
 	@Transactional
 	public TokenReissueResponse reissueToken(TokenReissueServiceRequest request) {
 
-		RefreshToken refreshToken = refreshTokenRepository.findByToken(request.refreshToken())
+		RefreshTokenEntity refreshTokenEntity = refreshTokenRepository.findByToken(request.refreshToken())
 			.orElseThrow(() -> new CustomException(ErrorCode.INVALID_REFRESH_TOKEN));
 
-		String newAccessToken = jwtUtil.createAccessToken(refreshToken.getUser().getId());
-		String newRefreshToken = jwtUtil.createRefreshToken(refreshToken.getUser().getId());
+		String newAccessToken = jwtUtil.createAccessToken(refreshTokenEntity.getId());
+		String newRefreshToken = jwtUtil.createRefreshToken(refreshTokenEntity.getId());
 
-		refreshTokenRepository.delete(refreshToken);
+		refreshTokenRepository.delete(refreshTokenEntity);
 
-		RefreshToken token = RefreshToken.builder()
+		RefreshTokenEntity token = RefreshTokenEntity.builder()
 			.token(newRefreshToken)
-			.user(refreshToken.getUser())
+			.userId(refreshTokenEntity.getUserId())
 			.build();
 		refreshTokenRepository.save(token);
 

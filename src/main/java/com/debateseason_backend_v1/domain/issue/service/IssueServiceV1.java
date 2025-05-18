@@ -12,10 +12,8 @@ import org.springframework.stereotype.Service;
 import com.debateseason_backend_v1.common.exception.CustomException;
 import com.debateseason_backend_v1.common.exception.ErrorCode;
 import com.debateseason_backend_v1.common.response.ApiResult;
-
 import com.debateseason_backend_v1.domain.chat.application.repository.ChatRepository;
 import com.debateseason_backend_v1.domain.chatroom.entity.ChatRoomMananger;
-
 import com.debateseason_backend_v1.domain.chatroom.model.response.chatroom.type.ResponseWithTimeAndOpinion;
 import com.debateseason_backend_v1.domain.issue.entity.IssueManager;
 import com.debateseason_backend_v1.domain.issue.PaginationDTO;
@@ -30,18 +28,17 @@ import com.debateseason_backend_v1.domain.profile.enums.CommunityType;
 
 import com.debateseason_backend_v1.domain.repository.ChatRoomJpaRepository;
 
-
-
-
 import com.debateseason_backend_v1.domain.repository.ProfileRepository;
 import com.debateseason_backend_v1.domain.repository.UserChatRoomRepository;
 import com.debateseason_backend_v1.domain.repository.UserIssueRepository;
-import com.debateseason_backend_v1.domain.repository.UserRepository;
+
 import com.debateseason_backend_v1.domain.repository.entity.Issue;
 import com.debateseason_backend_v1.domain.repository.entity.Profile;
-import com.debateseason_backend_v1.domain.repository.entity.User;
+
 import com.debateseason_backend_v1.domain.repository.entity.UserIssue;
 import com.debateseason_backend_v1.domain.user.dto.UserDTO;
+import com.debateseason_backend_v1.domain.user.infrastructure.UserEntity;
+import com.debateseason_backend_v1.domain.user.service.UserRepository;
 import com.debateseason_backend_v1.domain.userIssue.UserIssueManager;
 
 import jakarta.transaction.Transactional;
@@ -218,14 +215,11 @@ public class IssueServiceV1 {
 	@Transactional // 만약에 하나로 문제가 생기면 바로 Rollback
 	public ApiResult<String> bookMark(Long issueId, Long userId){
 
-		User user = userRepository.findById(userId).orElseThrow(
-			()-> new CustomException(ErrorCode.NOT_FOUND_USER)
-		)
-		;
+		UserEntity user = userRepository.findById(userId);
 
 		Issue issue = issueRepository.findById(issueId);
 
-		UserIssue fetchUserIssue= userIssueRepository.findByIssueAndUser(issue,user);
+		UserIssue fetchUserIssue= userIssueRepository.findByIssueAndUserEntity(issue,user);
 
 		UserIssueManager userIssueManager = new UserIssueManager();
 
@@ -354,7 +348,7 @@ public class IssueServiceV1 {
 
 		// 2. 활성화된 최상위 5개 이슈방을 보여준다.
 		// issue_id, COUNT(ch.chat_room_id)
-		
+
 		// 최상위 5개의 이슈 id를 가져옴
 		List<Long> issueIds = issueRepository.findTop5ActiveIssuesByCountingChats().stream().map(
 			e-> (Long)e[0]

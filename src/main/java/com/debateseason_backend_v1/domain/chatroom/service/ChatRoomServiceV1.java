@@ -32,23 +32,20 @@ import com.debateseason_backend_v1.domain.chatroom.model.response.chatroom.messa
 import com.debateseason_backend_v1.domain.issue.entity.IssueManager;
 import com.debateseason_backend_v1.domain.issue.infrastructure.IssueRepository;
 import com.debateseason_backend_v1.domain.issue.model.response.IssueBriefResponse;
-
 import com.debateseason_backend_v1.domain.media.entity.MediaManager;
 import com.debateseason_backend_v1.domain.media.infrastructure.MediaRepository;
 import com.debateseason_backend_v1.domain.media.type.MediaType;
 
 
-
-
-
 import com.debateseason_backend_v1.domain.repository.UserChatRoomRepository;
-import com.debateseason_backend_v1.domain.repository.UserRepository;
+
 import com.debateseason_backend_v1.domain.repository.entity.ChatRoom;
 import com.debateseason_backend_v1.domain.repository.entity.Issue;
 import com.debateseason_backend_v1.domain.repository.entity.Media;
-import com.debateseason_backend_v1.domain.repository.entity.User;
-import com.debateseason_backend_v1.domain.repository.entity.UserChatRoom;
 
+import com.debateseason_backend_v1.domain.repository.entity.UserChatRoom;
+import com.debateseason_backend_v1.domain.user.infrastructure.UserEntity;
+import com.debateseason_backend_v1.domain.user.service.UserRepository;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -99,12 +96,10 @@ public class ChatRoomServiceV1 {
 		ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId);
 
 		// 2. User 가져오기
-		User user = userRepository.findById(userId).orElseThrow(
-			() -> new CustomException(ErrorCode.NOT_FOUND_USER)
-		);
+		UserEntity user = userRepository.findById(userId);
 
 		// 3. 투표하기
-		UserChatRoom userChatRoom = userChatRoomRepository.findByUserAndChatRoom(user, chatRoom);
+		UserChatRoom userChatRoom = userChatRoomRepository.findByUserEntityAndChatRoom(user, chatRoom);
 
 
 		if (userChatRoom == null) {// 3. 최초 투표에만 Entity 생성, 나머지는 Update(Dirty Checking)
@@ -135,7 +130,7 @@ public class ChatRoomServiceV1 {
 		String opinion = "NEUTRAL";// 아무런 의견을 표명하지 않은 경우에는 NEUTRAL로 반환을 하는데, 이건 저장할 가치가 없다.
 
 		// 내가 이 토론방에 투표한 의견 가져오기
-		UserChatRoom getMyChatRoom = userChatRoomRepository.findByUserIdAndChatRoomId(userId,chatRoomId);
+		UserChatRoom getMyChatRoom = userChatRoomRepository.findByUserEntityIdAndChatRoomId(userId,chatRoomId);
 		if(getMyChatRoom!=null){
 			opinion = getMyChatRoom.getOpinion();
 		}
@@ -189,7 +184,7 @@ public class ChatRoomServiceV1 {
 
 			}
 			else{	// wiki
-				
+
 				// 합계
 				int logic = 0;
 				int attitude = 0;
@@ -443,14 +438,13 @@ public class ChatRoomServiceV1 {
 
 	}
 
-
 	private TeamScore createTeamScore(
 		String team,
 		int total,
 		int logic,
 		int attribute,
 		String mvp
-	) {
+	){
 		return TeamScore.builder()
 			.team(team)
 			.total(total)
@@ -463,4 +457,3 @@ public class ChatRoomServiceV1 {
 	}
 
 }
-

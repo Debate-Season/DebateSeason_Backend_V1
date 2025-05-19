@@ -60,6 +60,7 @@ public interface ChatJpaRepository extends JpaRepository<ChatEntity,Long> {
             WHERE c.chatRoomId.id = :chatRoomId
             ORDER BY c.timeStamp
             DESC
+            LIMIT 1
             """)
     Optional<LocalDateTime> findMostRecentMessageTimestampByChatRoomId(@Param("chatRoomId") Long chatRoomId);
 }

@@ -32,9 +32,15 @@ public class Media {
 
 	private String url;
 
+	private String src;//
+
 	private String category;
 
 	private String media;
+
+	private String type;// news, community, youtube
+
+	private int count;// 조회수
 
 	@CreatedDate
 	@Column(name = "created_at", updatable = false)

@@ -60,12 +60,19 @@ public enum ErrorCode implements CodeInterface {
 	PUBLIC_KEY_EXTRACTION_FAILED(3013, HttpStatus.INTERNAL_SERVER_ERROR, "공개키 추출에 실패했습니다."),
 
 	//4000번대 Chat 관련 에러,
-	VALUE_OUT_OF_RANGE(3003, HttpStatus.BAD_REQUEST, "메시지 값을 확인해 주세요"),
+	VALUE_OUT_OF_RANGE(4003, HttpStatus.BAD_REQUEST, "메시지 값을 확인해 주세요"),
+	NOT_FOUND_MESSAGE(4003, HttpStatus.BAD_REQUEST, "존재 하지 않는 메시지 입니다."),
 
 	// 5000번대 약관 관련 에러
 	NOT_FOUND_TERMS(5000, HttpStatus.NOT_FOUND, "존재하지 않는 약관입니다."),
 	REQUIRED_TERMS_NOT_AGREED(5001, HttpStatus.BAD_REQUEST, "필수 약관에 모두 동의해야 합니다."),
 	ALREADY_AGREED_TERMS(5002, HttpStatus.BAD_REQUEST, "이미 동의한 이용약관입니다."),
+
+	//6000번대 신고 관련 에러
+	ALREADY_REPORTED(6001, HttpStatus.CONFLICT, "이미 신고된 메시지 입니다."),
+	REPORT_ALREADY_PROCESSED(6002, HttpStatus.CONFLICT, "이미 처리된 신고는 상태를 변경할 수 없습니다."),
+	SELF_REPORT_NOT_ALLOWED(6003, HttpStatus.BAD_REQUEST, "자신의 메시지는 신고할 수 없습니다."),
+	NOT_FOUND_REPORT(404, HttpStatus.NOT_FOUND, "NOT_FOUND"),
 
 	// API 요청 에러
 	BAD_REQUEST(400, HttpStatus.BAD_REQUEST, "잘못된 요청입니다."),
@@ -79,7 +86,10 @@ public enum ErrorCode implements CodeInterface {
 	NOT_FOUND_ISSUE_WITH_CATEGORY(400, HttpStatus.NOT_FOUND, "해당 category의 이슈방을 찾을 수 없습니다."),
 
 	// 페이지네이션 오류
-	PAGE_OUT_OF_RANGE(404,HttpStatus.NOT_FOUND,"검색범위를 넘어섰습니다. 내용을 불러올 수 없습니다.");
+	PAGE_OUT_OF_RANGE(404,HttpStatus.NOT_FOUND,"검색범위를 넘어섰습니다. 내용을 불러올 수 없습니다."),
+
+	// Media 관련 오류
+	MEDIA_NOT_FOUND(404,HttpStatus.NOT_FOUND,"요청하신 미디어는 존재하지 않습니다.");
 
 	private final Integer code;
 	private final HttpStatus httpStatus;

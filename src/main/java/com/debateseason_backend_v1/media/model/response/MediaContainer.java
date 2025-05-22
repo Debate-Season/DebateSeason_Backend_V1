@@ -2,6 +2,8 @@ package com.debateseason_backend_v1.media.model.response;
 
 import java.util.List;
 
+import com.debateseason_backend_v1.domain.youtubeLive.domain.YoutubeLive;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -17,7 +19,9 @@ public class MediaContainer {
 
 	private List<BreakingNewsResponse> breakingNews;
 
-	private MediaResponse mostRecentMedia;
+	//private MediaResponse mostRecentMedia;
+
+	private YoutubeLive youtubeLive;
 
 	private List<MediaResponse> items;
 }

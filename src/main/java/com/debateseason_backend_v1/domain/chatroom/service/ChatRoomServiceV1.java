@@ -103,7 +103,7 @@ public class ChatRoomServiceV1 {
 			userChatRoom = UserChatRoom.builder()
 				.user(user)
 				.chatRoom(chatRoom)
-				.opinion(opinion)
+				.opinion(opinion) // String
 				.build();
 
 			userChatRoomRepository.save(userChatRoom); // 1. 투표를 할 때 userChatRoom에 저장이 된다.
@@ -426,7 +426,7 @@ public class ChatRoomServiceV1 {
 		}
 
 
-		List<Object[]> chatRoomList = userChatRoomRepository.findChatRoomByChatRoomIds(chatRoomIds);
+		List<Object[]> chatRoomList = userChatRoomRepository.findChatRoomWithOpinions(userId,chatRoomIds);
 
 		// 아직 투표한 방이 없어서 아무것도 없는 상태로 가져올 수 있다.
 		if (chatRoomList.isEmpty()){
@@ -458,6 +458,7 @@ public class ChatRoomServiceV1 {
 				String title = (String)e[3];
 				String content = (String)e[4];
 				String localDateTime = e[5].toString();
+				String opinion = e[6].toString();// opinion
 
 				String result = localDateTime.split("\\.")[0];
 				LocalDateTime createdAt = LocalDateTime.parse(result, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
@@ -473,6 +474,7 @@ public class ChatRoomServiceV1 {
 					.disagree(Math.toIntExact(disagree))
 					.createdAt(createdAt)
 					.time(time)
+					 .opinion(opinion)
 					.build();
 
 

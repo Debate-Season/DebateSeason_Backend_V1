@@ -18,11 +18,11 @@ public interface UserChatRoomRepository extends JpaRepository<UserChatRoom, Long
 	UserChatRoom findByUserIdAndChatRoomId(Long userId,Long chatroomId);
 
 	// 1-1 Paramter가 없는 경우
-	@Query(value = "SELECT chat_room_id FROM user_chat_room WHERE user_id = :userId ORDER BY chat_room_id DESC LIMIT 2", nativeQuery = true)
+	@Query(value = "SELECT chat_room_id FROM user_chat_room WHERE user_id = :userId ORDER BY chat_room_id DESC LIMIT 3", nativeQuery = true)
 	List<Long> findTop2ChatRoomIdsByUserId(@Param("userId") Long userId);
 
 	// 1-2. Parameter가 있는 경우
-	@Query(value = "SELECT chat_room_id FROM user_chat_room WHERE user_id = :userId AND chat_room_id < :ChatRoomId ORDER BY chat_room_id DESC LIMIT 2", nativeQuery = true)
+	@Query(value = "SELECT chat_room_id FROM user_chat_room WHERE user_id = :userId AND chat_room_id < :ChatRoomId ORDER BY chat_room_id DESC LIMIT 3", nativeQuery = true)
 	List<Long> findTop2ChatRoomIdsByUserIdAndChatRoomId(
 		@Param("userId") Long userId,
 		@Param("ChatRoomId") Long ChatRoomId
@@ -30,6 +30,7 @@ public interface UserChatRoomRepository extends JpaRepository<UserChatRoom, Long
 
 	// 1-3. 1.에서 가져온 토론방의 id값들로 해당 user가 투표한 토론방 여러개 조회하기.
 	// AGREE, DISAGREE, chat_room_id, title, content, created_at 순으로 가져오기
+	/*
 	@Query(value = """
         SELECT 
             COUNT(CASE WHEN ucr.opinion = 'AGREE' THEN 1 END) AS AGREE,
@@ -42,6 +43,46 @@ public interface UserChatRoomRepository extends JpaRepository<UserChatRoom, Long
         ORDER BY ucr.chat_room_id DESC
         """, nativeQuery = true)
 	List<Object[]> findChatRoomByChatRoomIds(@Param("chatRoomIds") List<Long> chatRoomIds);
+
+	 */
+
+	// refesh 쿼리
+	@Query(value = """
+        SELECT
+            ucr3.AGREE,
+            ucr3.DISAGREE,
+            ch.chat_room_id,
+            ch.title,
+            ch.content,
+            ch.created_at,
+            ucr3.opinion
+        FROM chat_room ch
+        INNER JOIN (
+            SELECT ucr2.chat_room_id, ucr2.opinion, ucr1.AGREE, ucr1.DISAGREE
+            FROM (
+                SELECT
+                    ucr.chat_room_id,
+                    COUNT(CASE WHEN ucr.opinion = 'AGREE' THEN 1 END) AS AGREE,
+                    COUNT(CASE WHEN ucr.opinion = 'DISAGREE' THEN 1 END) AS DISAGREE
+                FROM user_chat_room ucr
+                WHERE chat_room_id IN (:chatRoomIds)
+                GROUP BY ucr.chat_room_id
+            ) ucr1
+            INNER JOIN (
+                SELECT chat_room_id, opinion
+                FROM user_chat_room
+                WHERE user_id = :userId
+            ) ucr2
+            ON ucr1.chat_room_id = ucr2.chat_room_id
+        ) ucr3
+        ON ch.chat_room_id = ucr3.chat_room_id
+        ORDER BY ch.created_at DESC
+        """, nativeQuery = true)
+	List<Object[]> findChatRoomWithOpinions(
+		@Param("userId") Long userId,
+		@Param("chatRoomIds") List<Long> chatRoomIds
+	);
+
 
 	// 2-1 이슈방 issue-id로만 조회
 	@Query(value = "SELECT chat_room_id FROM chat_room WHERE issue_id = :issueId ORDER BY chat_room_id DESC LIMIT 3", nativeQuery = true)

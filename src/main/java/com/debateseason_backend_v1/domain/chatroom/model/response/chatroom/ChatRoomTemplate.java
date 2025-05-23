@@ -34,6 +34,6 @@ public class ChatRoomTemplate {
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "Asia/Seoul")
 	private LocalDateTime createdAt;
 
-	//@Schema(description = "투표", example = "AGREE")
-	//private String opinion;
+	@Schema(description = "투표", example = "AGREE")
+	private String opinion;
 }

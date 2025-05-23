@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.debateseason_backend_v1.common.response.ApiResult;
+import com.debateseason_backend_v1.domain.youtubeLive.infrastructure.YoutubeLiveRepository;
 import com.debateseason_backend_v1.media.docs.MediaControllerV1Docs;
 import com.debateseason_backend_v1.media.model.MediaType;
 import com.debateseason_backend_v1.media.model.response.MediaContainer;

@@ -11,6 +11,9 @@ import com.debateseason_backend_v1.common.exception.ErrorCode;
 import com.debateseason_backend_v1.common.response.ApiResult;
 import com.debateseason_backend_v1.domain.repository.entity.Media;
 import com.debateseason_backend_v1.domain.repository.MediaRepository;
+import com.debateseason_backend_v1.domain.youtubeLive.domain.YoutubeLive;
+import com.debateseason_backend_v1.domain.youtubeLive.infrastructure.YoutubeLiveEntity;
+import com.debateseason_backend_v1.domain.youtubeLive.infrastructure.YoutubeLiveRepository;
 import com.debateseason_backend_v1.media.model.response.BreakingNewsResponse;
 import com.debateseason_backend_v1.media.model.response.MediaContainer;
 import com.debateseason_backend_v1.media.model.response.MediaResponse;
@@ -23,6 +26,8 @@ import lombok.RequiredArgsConstructor;
 public class MediaService {
 
 	private final MediaRepository mediaRepository;
+
+	private final YoutubeLiveRepository youtubeLiveRepository;
 
 	public ApiResult<MediaContainer> fetch(String type, String time){
 
@@ -48,6 +53,7 @@ public class MediaService {
 		// created_at -> 기사 시간
 		Media findLatestMedia = mediaRepository.findLatestNews();
 
+		/*
 		MediaResponse mostRecentMedia = MediaResponse.builder()
 			.id(findLatestMedia.getId())
 			.src(findLatestMedia.getSrc())
@@ -57,6 +63,8 @@ public class MediaService {
 			.outdated(findLatestMedia.getCreatedAt())
 			.build()
 			;
+
+		 */
 
 
 		List<Media> mediaList = null;
@@ -96,11 +104,17 @@ public class MediaService {
 			mediaResponses.add(mediaResponse);
 		}
 
+		// 유튜브 Live
+		YoutubeLiveEntity youtubeLiveEntity = youtubeLiveRepository.fetch("news");
+
+		YoutubeLive youtubeLive = youtubeLiveEntity.from(youtubeLiveEntity);
+
 		MediaContainer mediaContainer = MediaContainer.builder()
-				.breakingNews(breakingNews)
-			 	.mostRecentMedia(mostRecentMedia)
-			    .items(mediaResponses)
-				.build()
+			.breakingNews(breakingNews)
+			//.mostRecentMedia(mostRecentMedia)
+			.youtubeLive(youtubeLive)
+			.items(mediaResponses)
+			.build()
 			;
 
 

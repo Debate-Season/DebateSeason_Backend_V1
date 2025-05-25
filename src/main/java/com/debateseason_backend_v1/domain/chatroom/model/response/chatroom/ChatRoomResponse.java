@@ -3,7 +3,8 @@ package com.debateseason_backend_v1.domain.chatroom.model.response.chatroom;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import com.debateseason_backend_v1.domain.chatroom.model.response.chatroom.messages.TeamScore;
+import com.debateseason_backend_v1.domain.chatroom.entity.team.TeamScore;
+import com.debateseason_backend_v1.domain.chatroom.model.response.chatroom.dummy.HightlightResponse;
 import com.fasterxml.jackson.annotation.JsonFormat;
 
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -38,7 +39,7 @@ public class ChatRoomResponse{
 
 	private List<TeamScore> teams;
 
-	//private HightlightResponse highlight;
+	private HightlightResponse highlight;
 
 	// CreateDate 반환
 	@Schema(description = "반대 수",example = "2024-12-03T08:51:57")

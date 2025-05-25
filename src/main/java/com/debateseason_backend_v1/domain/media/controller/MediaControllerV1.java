@@ -1,4 +1,4 @@
-package com.debateseason_backend_v1.media.controller;
+package com.debateseason_backend_v1.domain.media.controller;
 
 import org.springframework.lang.Nullable;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -8,11 +8,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.debateseason_backend_v1.common.response.ApiResult;
-import com.debateseason_backend_v1.domain.youtubeLive.infrastructure.YoutubeLiveRepository;
-import com.debateseason_backend_v1.media.docs.MediaControllerV1Docs;
-import com.debateseason_backend_v1.media.model.MediaType;
-import com.debateseason_backend_v1.media.model.response.MediaContainer;
-import com.debateseason_backend_v1.media.service.MediaService;
+import com.debateseason_backend_v1.domain.media.service.MediaService;
+import com.debateseason_backend_v1.domain.media.docs.MediaControllerV1Docs;
+import com.debateseason_backend_v1.domain.media.type.MediaContentType;
+import com.debateseason_backend_v1.domain.media.model.response.MediaContainer;
 
 import lombok.RequiredArgsConstructor;
 
@@ -25,10 +24,10 @@ public class MediaControllerV1 implements MediaControllerV1Docs {
 
 	@GetMapping("/home/media")
 	public ApiResult<MediaContainer> getMedia(
-		@RequestParam(name = "type",required = false) @Nullable MediaType mediaType,
+		@RequestParam(name = "type",required = false) @Nullable MediaContentType mediaContentType,
 		@RequestParam(name = "time",required = false)String time){
 
-		String type = mediaType == null ? null : mediaType.toString();
+		String type = mediaContentType == null ? null : mediaContentType.toString();
 		// type
 		// all, 또는 type null -> 모두 가져오기
 		// news, youtube, community

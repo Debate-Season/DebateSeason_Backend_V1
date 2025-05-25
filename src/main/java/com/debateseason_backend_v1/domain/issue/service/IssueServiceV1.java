@@ -2,28 +2,37 @@ package com.debateseason_backend_v1.domain.issue.service;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
 import com.debateseason_backend_v1.common.exception.CustomException;
 import com.debateseason_backend_v1.common.exception.ErrorCode;
 import com.debateseason_backend_v1.common.response.ApiResult;
+
+import com.debateseason_backend_v1.domain.chat.application.repository.ChatRepository;
+import com.debateseason_backend_v1.domain.chatroom.entity.ChatRoomMananger;
+
 import com.debateseason_backend_v1.domain.chatroom.model.response.chatroom.type.ResponseWithTimeAndOpinion;
+import com.debateseason_backend_v1.domain.issue.entity.IssueManager;
 import com.debateseason_backend_v1.domain.issue.PaginationDTO;
+import com.debateseason_backend_v1.domain.issue.infrastructure.IssueRepository;
+import com.debateseason_backend_v1.domain.issue.model.mapper.IssueDetailMapper;
+import com.debateseason_backend_v1.domain.issue.model.mapper.IssueMapper;
 import com.debateseason_backend_v1.domain.issue.model.response.IssueDetailResponse;
 import com.debateseason_backend_v1.domain.issue.model.request.IssueRequest;
 import com.debateseason_backend_v1.domain.issue.model.CommunityRecords;
 import com.debateseason_backend_v1.domain.issue.model.response.IssueBriefResponse;
 import com.debateseason_backend_v1.domain.profile.enums.CommunityType;
-import com.debateseason_backend_v1.domain.chat.infrastructure.chat.ChatJpaRepository;
-import com.debateseason_backend_v1.domain.repository.ChatRoomRepository;
-import com.debateseason_backend_v1.domain.repository.IssueRepository;
+
+import com.debateseason_backend_v1.domain.repository.ChatRoomJpaRepository;
+
+
+
+
 import com.debateseason_backend_v1.domain.repository.ProfileRepository;
 import com.debateseason_backend_v1.domain.repository.UserChatRoomRepository;
 import com.debateseason_backend_v1.domain.repository.UserIssueRepository;
@@ -33,6 +42,7 @@ import com.debateseason_backend_v1.domain.repository.entity.Profile;
 import com.debateseason_backend_v1.domain.repository.entity.User;
 import com.debateseason_backend_v1.domain.repository.entity.UserIssue;
 import com.debateseason_backend_v1.domain.user.dto.UserDTO;
+import com.debateseason_backend_v1.domain.userIssue.UserIssueManager;
 
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
@@ -49,62 +59,61 @@ public class IssueServiceV1 {
 	private final UserRepository userRepository;
 
 	private final ProfileRepository profileRepository;
-	private final ChatJpaRepository chatRepository;
+	private final ChatRepository chatRepository;
 
-	private final ChatRoomRepository chatRoomRepository;
+	private final ChatRoomJpaRepository chatRoomJpaRepository;
 
-
+	private final int cursorSize = 10;
 
 	// 1. save 이슈방
+	// Refactored
 	public ApiResult<Object> save(IssueRequest issueRequest) {
 
-		Issue issue = Issue.builder()
-			.title(issueRequest.getTitle())
-			.majorCategory(issueRequest.getMajorCategory())
-			//.middleCategory(issueDTO.getMiddleCategory())
-			.build();
-		issueRepository.save(issue);
+		Issue IssueJpaEntity = Issue.toJpaEntity(issueRequest);
+
+		issueRepository.save(IssueJpaEntity);
 
 		return ApiResult.builder()
 			.status(200)
 			.code(ErrorCode.SUCCESS)
 			.message("이슈방 " + issueRequest.getTitle() + "가 생성되었습니다.")
 			.build();
-
 	}
 
 	//2. fetch 단건 이슈방
 	@Transactional
 	public ApiResult<IssueDetailResponse> fetch2(Long issueId, Long userId, Long ChatRoomId) {
 
-		Long chats = 0L;
+		// 확인용
+		issueRepository.findById(issueId);
 
-		List<Object[]> object = userIssueRepository.findByIssueIdAndUserId(issueId,userId);
 
-		String bookMarkState = "no";
+		Long chats;
+
 		// 첫 방문 항상 bookmarkState는 no
-		if(!object.isEmpty()){
-			Object[] object2 = object.get(0);
-			bookMarkState = (String)object2[0];
+		String bookMarkState = "no";
 
+		// User가 해당 이슈 bookMark했는지 가져오는 쿼리
+		String userIssue = userIssueRepository.findBookMarkByIssueIdAndUserId(issueId,userId);
+
+
+
+		// 그 사용자가 방문했는지 여부를 bookMarkState에 덮어씌운다.
+		if(userIssue!=null){
+			bookMarkState=userIssue;
 		}
 
 
 		// issue_id, title, COUNT(ui.issue_id) AS bookmarks
-		List<Object[]> fetchIssue = issueRepository.findSingleIssueWithBookmarks(issueId);
+		List<Object[]> fetchIssue = issueRepository.findIssueWithBookmarks(issueId);
 
-		// 수정. issue없는 에러 조회
-		if(issueRepository.findById(issueId).isEmpty()){
-			throw new CustomException(ErrorCode.NOT_FOUND_ISSUE);
-		}
+		IssueMapper issueMapper = IssueManager.findIssueWithIdAndTitleAndBookMarks(fetchIssue);
 
-		String issueTitle = "this is error" ;
-		Long bookMarks = 0L;
-		for(Object[] obj : fetchIssue){
-			issueTitle = (String)obj[1];
-			bookMarks = (Long)obj[2];
-		}
+		String issueTitle = issueMapper.getTitle() ;
+		Long bookMarks = issueMapper.getBookMarks();
 
+
+		//
 		Profile profile = profileRepository.findByUserId(userId).orElseThrow(
 			() -> new CustomException(ErrorCode.NOT_FOUND_PROFILE)
 		);
@@ -132,22 +141,27 @@ public class IssueServiceV1 {
 
 		// 첫 페이지
 		if(ChatRoomId==null){
-			chatRoomIds = userChatRoomRepository.findTop3ChatRoomIdsByIssueId(issueId);
+			chatRoomIds = userChatRoomRepository.findTopChatRoomIdsByIssueIdWithSize(issueId,cursorSize);
 		}
 		else{
 			// 그 이후 페이지
-			chatRoomIds = userChatRoomRepository.findTop3ChatRoomIdsByIssueIdAndChatRoomId(issueId,ChatRoomId);
+			chatRoomIds = userChatRoomRepository.findTopChatRoomIdsByIssueIdAndChatRoomIdWithSize(issueId,ChatRoomId,cursorSize);
 		}
+
+
+		IssueDetailResponse issueDetailResponse;
+
 
 		// 채팅방은 없으면 없는대로 반환을 한다
 		if(chatRoomIds.isEmpty()){
-
-			IssueDetailResponse issueDetailResponse = IssueDetailResponse.builder()
+			IssueDetailMapper issueDetailMapper = IssueDetailMapper.builder()
 				.title(issueTitle)
 				.bookMarkState(bookMarkState)
 				.bookMarks(bookMarks)
 				.map(sortedMap)
 				.build();
+
+			issueDetailResponse =IssueManager.createIssueDetailResponseWithNoChatRooms(issueDetailMapper);
 
 
 			return ApiResult.<IssueDetailResponse>builder()
@@ -161,66 +175,24 @@ public class IssueServiceV1 {
 		// chat_room_id, title, content, created_at,
 		//            COUNT(CASE WHEN ucr.opinion = 'AGREE' THEN 1 END) AS AGREE,
 		//            COUNT(CASE WHEN ucr.opinion = 'DISAGREE' THEN 1 END) AS DISAGREE
-		List<ResponseWithTimeAndOpinion> chatRooms =  userChatRoomRepository.findChatRoomAggregates(chatRoomIds).stream().map(
-			e->{
-				Long chatRoomId = (Long)e[0];
-				String title = (String)e[1];
-				String content = (String)e[2];
 
-				String localDateTime= e[3].toString();
-				String result = localDateTime.split("\\.")[0];
-				LocalDateTime createdAt = LocalDateTime.parse(result, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+		ChatRoomMananger chatRoomMananger = new ChatRoomMananger(chatRepository);
+		List<Object[]> chatRoomsByIdWithOpinions = userChatRoomRepository.findChatRoomAggregates(chatRoomIds);
 
-				int agree = Math.toIntExact((Long)e[4]);
-				int disagree = Math.toIntExact((Long)e[5]);
-
-				String time = findLastestChatTime(chatRoomId);
-
-				return ResponseWithTimeAndOpinion.builder()
-					.chatRoomId(chatRoomId)
-					.title(title)
-					.content(content)
-					.createdAt(createdAt)
-					.opinion("NEUTRAL")
-					.agree(agree)
-					.disagree(disagree)
-					.time(time)
-					.build();
-
-
-
-			}
-		).collect(Collectors.toList());
-			;
+		List<ResponseWithTimeAndOpinion> chatRooms = chatRoomMananger.findChatRoomsCountingOpinions(chatRoomsByIdWithOpinions);
 
 		// chat_room_id, opinion AS opinion
-
+		// 채팅방 각각에 대해서 사용자의 Opinion을 부여한다.
+		// 사용자는 채팅방 리스트에서 자신이 어떤 Opinion인지 확인이 가능하다.
 		List<Object[]> opinions =  userChatRoomRepository.findUserChatRoomOpinions(userId,chatRoomIds);
-		if(!opinions.isEmpty()){
-			for(Object [] obj : opinions){
-				if(obj[0]!=null){
-					// 투표를 하면 무조건 chatRoomId가 null이 아니다.
-					Long chatRoomId = (Long)obj[0];
-					String opinion = (String)obj[1];
-
-					for(ResponseWithTimeAndOpinion e: chatRooms){
-						if(e.getChatRoomId()==chatRoomId){
-							e.setOpinion(opinion);
-							break;
-						}
-					}
-				}
-
-
-			}
-		}
+		chatRoomMananger.addOpinionToChatRoom(chatRooms,opinions);
 
 		// 오늘 신규 대화
 		chats = issueRepository.countChatsTodayByIssueId(issueId);
 
 
 		// 1-5 IssueDAO만들기
-		IssueDetailResponse issueDetailResponse = IssueDetailResponse.builder()
+		IssueDetailMapper issueDetailMapper = IssueDetailMapper.builder()
 			.title(issueTitle)
 			.bookMarkState(bookMarkState)
 			.bookMarks(bookMarks)
@@ -229,7 +201,7 @@ public class IssueServiceV1 {
 			.chatRoomMap(chatRooms)
 			.build();
 
-		//
+		issueDetailResponse = IssueManager.createIssueDetailResponseWithChatRooms(issueDetailMapper);
 
 		return ApiResult.<IssueDetailResponse>builder()
 			.status(200)
@@ -242,36 +214,27 @@ public class IssueServiceV1 {
 	}
 
 	// 즐겨찾기 등록하기
+	// Refactored
 	@Transactional // 만약에 하나로 문제가 생기면 바로 Rollback
 	public ApiResult<String> bookMark(Long issueId, Long userId){
 
 		User user = userRepository.findById(userId).orElseThrow(
 			()-> new CustomException(ErrorCode.NOT_FOUND_USER)
 		)
-		;
+			;
 
-		Issue issue = issueRepository.findById(issueId).orElseThrow(
-			() -> new CustomException(ErrorCode.NOT_FOUND_ISSUE)
-		);
+		Issue issue = issueRepository.findById(issueId);
 
 		UserIssue fetchUserIssue= userIssueRepository.findByIssueAndUser(issue,user);
 
+		UserIssueManager userIssueManager = new UserIssueManager();
+
 
 		// 중복 등록 방지
+		// 이 부분은 Jpa 더티체킹을 발생시킴
 		if(fetchUserIssue!=null){
+			String bookMarkState = userIssueManager.updateBookMarkUserIssue(fetchUserIssue);
 
-			String bookMarkState;
-
-			// 더티 체킹하자
-			if(fetchUserIssue.getBookmark().equals("yes")){
-				// no로 바꾸자
-				bookMarkState="no";
-				fetchUserIssue.setBookmark("no");
-			}
-			else{
-				bookMarkState="yes";
-				fetchUserIssue.setBookmark("yes");
-			}
 			return ApiResult.<String>builder()
 				.status(200)
 				.code(ErrorCode.SUCCESS)
@@ -281,12 +244,7 @@ public class IssueServiceV1 {
 
 		}
 
-		// 첫 북마크일 경우 새로 등록을 한다.
-		UserIssue userIssue = new UserIssue();
-		userIssue.setUser(user);
-		userIssue.setIssue(issue);
-		userIssue.setBookmark("yes");
-
+		UserIssue userIssue = userIssueManager.bookMarkUserIssue(user,issue);
 		userIssueRepository.save(userIssue);
 
 		return ApiResult.<String>builder()
@@ -299,9 +257,9 @@ public class IssueServiceV1 {
 
 	// 4. issueMap 가져오기
 	// issue_id, title, major_category, (middle_category), created_at
-	public ApiResult<PaginationDTO> fetchIssueMap(Long page, String majorCategory//, String middleCategory
-	)
-	{
+	public ApiResult<PaginationDTO> fetchIssueMap(Long page, String majorCategory){//, String middleCategory
+
+		IssueManager issueManager = new IssueManager();
 
 		// 일단 issueId 여러개를 가져온다.
 		List<Long> issueIds;
@@ -310,22 +268,20 @@ public class IssueServiceV1 {
 
 			// 전체 불러오기
 			if(page == null){
-				issueIds = issueRepository.findTop6Issues();
+				issueIds = issueRepository.findTop6Issues(cursorSize);
 			}
 			else{
-				issueIds = issueRepository.findTop6IssuesByPage(page);
+				issueIds = issueRepository.findTop6IssuesByPage(page,cursorSize);
 			}
 
 		}else{
 			if(page == null){
-				issueIds = issueRepository.findTop6IssuesByCategory(majorCategory);
+				issueIds = issueRepository.findTop6IssuesByCategory(majorCategory,cursorSize);
 			}
 			else{
-				issueIds = issueRepository.findTop6IssuesByPageAndCategory(majorCategory,page);
+				issueIds = issueRepository.findTop6IssuesByPageAndCategory(majorCategory,page,cursorSize);
 			}
 		}
-
-
 
 		if (issueIds.isEmpty()){
 			// 페이지네이션 오류
@@ -334,31 +290,10 @@ public class IssueServiceV1 {
 
 		// issue_id, title, created_at, chat_room_count, COUNT(ui2.issue_id) AS bookmarks
 		// issueIds를 넣어줌으로써 어떠한 page, category에 상관없이 하나의 쿼리로 커버가 가능하다.
-		List<IssueBriefResponse> issueBriefResponse = issueRepository.findIssuesWithBookmarks(issueIds).stream().map(
-			e->{
-				Long issueId = (Long)e[0];
-				String title = (String)e[1];
+		//List<IssueBriefResponse> issueBriefResponse = issueRepository.findIssuesWithBookmarks(issueIds).stream().map(
+		List<Object[]> issues = issueRepository.findIssueCountingBookmarkAndChatRoom(issueIds);
+		PaginationDTO paginationDTO = issueManager.createIssueForIssueMapOnly(issues);
 
-				String time = e[2].toString();
-				String result = time.split("\\.")[0];
-				LocalDateTime createdAt = LocalDateTime.parse(result, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-
-				Long chatRoomCount = (Long)e[3];
-				Long bookMarkCount = (Long)e[4];
-
-				return IssueBriefResponse.builder()
-					.issueId(issueId)
-					.title(title)
-					.createdAt(createdAt)
-					.countChatRoom(chatRoomCount)
-					.bookMarks(bookMarkCount)
-					.build()
-					;
-			}
-		).toList();
-
-		PaginationDTO paginationDTO = new PaginationDTO();
-		paginationDTO.setItems(issueBriefResponse);
 
 		return ApiResult.<PaginationDTO>builder()
 			.status(200)
@@ -369,7 +304,7 @@ public class IssueServiceV1 {
 
 	}
 
-	// 구버전
+	// 구버전 Legacy
 	public ApiResult<List<IssueBriefResponse>> fetchAll() {
 		List<Issue> issueList = issueRepository.findAll();
 
@@ -384,7 +319,7 @@ public class IssueServiceV1 {
 				.issueId(id)
 				.title(issueList.get(i).getTitle())
 				.createdAt(issueList.get(i).getCreatedAt())
-				.countChatRoom(chatRoomRepository.countByIssue(issueList.get(i)))
+				.countChatRoom(chatRoomJpaRepository.countByIssue(issueList.get(i)))
 				.build();
 			responseList.add(response);
 		}
@@ -419,7 +354,7 @@ public class IssueServiceV1 {
 
 		// 2. 활성화된 최상위 5개 이슈방을 보여준다.
 		// issue_id, COUNT(ch.chat_room_id)
-		
+
 		// 최상위 5개의 이슈 id를 가져옴
 		List<Long> issueIds = issueRepository.findTop5ActiveIssuesByCountingChats().stream().map(
 			e-> (Long)e[0]
@@ -473,6 +408,7 @@ public class IssueServiceV1 {
 
 	}
 
+	// 1. 최신 채팅 시간
 	private String findLastestChatTime(Long chatRoomId){
 		Optional<LocalDateTime> latestChat = chatRepository.findMostRecentMessageTimestampByChatRoomId(chatRoomId);
 
@@ -492,3 +428,4 @@ public class IssueServiceV1 {
 	}
 
 }
+

@@ -17,7 +17,8 @@ public interface UserIssueRepository extends JpaRepository<UserIssue,Long> {
 
     UserIssue findByIssueAndUser(Issue issue, User user);
 
+    // 사용자 A가 이슈 "some Issue"에 북마크를 했는지 여부를 반환받을 수 있다. yes or no
     @Query(value = "SELECT bookmark FROM user_issue WHERE issue_id = :issueId AND user_id = :userId", nativeQuery = true)
-    List<Object[]> findByIssueIdAndUserId(@Param("issueId") Long issueId, @Param("userId") Long userId);
+    String findBookMarkByIssueIdAndUserId(@Param("issueId") Long issueId, @Param("userId") Long userId);
 
 }

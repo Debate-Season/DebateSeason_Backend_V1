@@ -1,14 +1,14 @@
-package com.debateseason_backend_v1.media.model.response;
+package com.debateseason_backend_v1.domain.media.model.response;
 
 import java.util.List;
-
-import com.debateseason_backend_v1.domain.youtubeLive.domain.YoutubeLive;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import com.debateseason_backend_v1.domain.youtubeLive.domain.YoutubeLive;
 
 @Getter
 @Setter
@@ -17,11 +17,13 @@ import lombok.Setter;
 @Builder
 public class MediaContainer {
 
-	private List<BreakingNewsResponse> breakingNews;
+	//private List<BreakingNewsResponse> breakingNews;
+	private List<Object> breakingNews;
 
 	//private MediaResponse mostRecentMedia;
 
 	private YoutubeLive youtubeLive;
 
-	private List<MediaResponse> items;
+	//private List<MediaResponse> items;
+	private List<Object> items;
 }

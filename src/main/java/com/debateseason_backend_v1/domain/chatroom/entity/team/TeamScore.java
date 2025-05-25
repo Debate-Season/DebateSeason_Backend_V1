@@ -1,4 +1,4 @@
-package com.debateseason_backend_v1.domain.chatroom.model.response.chatroom.messages;
+package com.debateseason_backend_v1.domain.chatroom.entity.team;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

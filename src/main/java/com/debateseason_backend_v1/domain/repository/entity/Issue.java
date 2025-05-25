@@ -5,6 +5,8 @@ import java.time.LocalDateTime;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import com.debateseason_backend_v1.domain.issue.model.request.IssueRequest;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
@@ -41,5 +43,14 @@ public class Issue {
 	@CreatedDate
 	@Column(name = "created_at", updatable = false)
 	private LocalDateTime createdAt;
+
+	// 1. Issue 생성하기
+	public static Issue toJpaEntity(IssueRequest issueRequest){
+		return Issue.builder()
+			.title(issueRequest.getTitle())
+			.majorCategory(issueRequest.getMajorCategory())
+			//.middleCategory(issueDTO.getMiddleCategory())
+			.build();
+	}
 
 }

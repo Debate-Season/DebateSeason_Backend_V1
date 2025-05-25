@@ -37,4 +37,15 @@ public class UserChatRoom {
 
 	// 관심등록
 	private String interest;// YES or NO
+
+	public static UserChatRoom toJpaEntity(
+		User user,
+		ChatRoom chatRoom,
+		String opinion){
+		return UserChatRoom.builder()
+			.user(user)
+			.chatRoom(chatRoom)
+			.opinion(opinion)
+			.build();
+	}
 }

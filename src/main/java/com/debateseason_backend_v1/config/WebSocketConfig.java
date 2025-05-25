@@ -55,25 +55,25 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     public void registerStompEndpoints(StompEndpointRegistry register) {
         register.addEndpoint(stompConnectUrl)
             .setAllowedOrigins("*");
-            // .withSockJS();
+        // .withSockJS();
     }
 
     @Override
     public void configureWebSocketTransport(WebSocketTransportRegistration registration) {
         registration.setMessageSizeLimit(64 * 1024)    // 64KB
-                   .setSendBufferSizeLimit(512 * 1024) // 512KB
-                   .setSendTimeLimit(20000);           // 20 seconds
+            .setSendBufferSizeLimit(512 * 1024) // 512KB
+            .setSendTimeLimit(20000);           // 20 seconds
     }
 
     @Override
     public boolean configureMessageConverters(List<MessageConverter> messageConverters) {
         DefaultContentTypeResolver resolver = new DefaultContentTypeResolver();
         resolver.setDefaultMimeType(MimeTypeUtils.APPLICATION_JSON);
-        
+
         MappingJackson2MessageConverter converter = new MappingJackson2MessageConverter();
         converter.setObjectMapper(new ObjectMapper());
         converter.setContentTypeResolver(resolver);
-        
+
         messageConverters.add(converter);
         return false;
     }
@@ -84,21 +84,21 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
             @Override
             public Message<?> preSend(Message<?> message, MessageChannel channel) {
                 StompHeaderAccessor accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
-                
+
                 if (StompCommand.CONNECT.equals(accessor.getCommand())) {
                     String token = accessor.getFirstNativeHeader("Authorization");
                     log.info("WebSocket 연결 시도 - 토큰: {}", token != null ? "존재함" : "없음");
-                    
+
                     if (token != null && token.startsWith("Bearer ")) {
                         token = token.substring(7);
                         try {
                             // 토큰 검증
                             jwtUtil.validate(token);
-                            
+
                             // 사용자 ID 추출
                             Long userId = jwtUtil.getUserId(token);
                             log.info("WebSocket 인증 성공 - 사용자 ID: {}", userId);
-                            
+
                             accessor.setUser(new Principal() {
                                 @Override
                                 public String getName() {

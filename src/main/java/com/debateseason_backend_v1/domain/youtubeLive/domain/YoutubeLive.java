@@ -2,6 +2,9 @@ package com.debateseason_backend_v1.domain.youtubeLive.domain;
 
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
+import jakarta.persistence.Column;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -23,26 +26,8 @@ public class YoutubeLive {
 
 	private String category;
 
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "Asia/Seoul")
 	private LocalDateTime createAt;
-
-	// DTO 객체를 만든다.
-	// 도메인 엔티티 그대로 넘겼는데, 속성값을 바꾸는 것이라면???, 또한 아직 도메인 엔티티 그대로 써야한다면???
-	public YoutubeLiveDto createDto() {
-
-		// 새로운 객체 생성.
-		return YoutubeLiveDto.builder()
-			.id(id)
-			.title(title)
-			.supplier(supplier)
-			.videoId(videoId)
-			.category(category)
-			.createAt(createAt)
-			.build()
-			;
-
-	}
-
-
 
 
 }

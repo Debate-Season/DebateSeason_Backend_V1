@@ -1,11 +1,11 @@
-package com.debateseason_backend_v1.media.docs;
+package com.debateseason_backend_v1.domain.media.docs;
 
 import org.springframework.lang.Nullable;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.debateseason_backend_v1.common.response.ApiResult;
-import com.debateseason_backend_v1.media.model.MediaType;
-import com.debateseason_backend_v1.media.model.response.MediaContainer;
+import com.debateseason_backend_v1.domain.media.model.response.MediaContainer;
+import com.debateseason_backend_v1.domain.media.model.MediaType;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;

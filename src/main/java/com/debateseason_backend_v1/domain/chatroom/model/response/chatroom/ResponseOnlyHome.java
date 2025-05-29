@@ -6,7 +6,7 @@ import java.util.List;
 import com.debateseason_backend_v1.domain.chatroom.model.response.chatroom.messages.Top5BestChatRoom;
 import com.debateseason_backend_v1.domain.chatroom.model.response.chatroom.type.ResponseWithTime;
 import com.debateseason_backend_v1.domain.issue.model.response.IssueBriefResponse;
-import com.debateseason_backend_v1.media.model.response.BreakingNewsResponse;
+import com.debateseason_backend_v1.domain.media.model.response.BreakingNewsResponse;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

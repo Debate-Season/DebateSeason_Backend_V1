@@ -1,6 +1,7 @@
-package com.debateseason_backend_v1.media.model.response;
+package com.debateseason_backend_v1.domain.media.model.response;
 
 import java.util.List;
+import java.util.Map;
 
 import com.debateseason_backend_v1.domain.youtubeLive.domain.YoutubeLive;
 
@@ -21,7 +22,7 @@ public class MediaContainer {
 
 	//private MediaResponse mostRecentMedia;
 
-	private YoutubeLive youtubeLive;
+	private Map<String,YoutubeLive> youtubeLiveContainer;
 
 	private List<MediaResponse> items;
 }

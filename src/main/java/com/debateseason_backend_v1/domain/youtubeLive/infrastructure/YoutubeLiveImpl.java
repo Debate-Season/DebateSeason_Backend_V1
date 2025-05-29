@@ -2,6 +2,8 @@ package com.debateseason_backend_v1.domain.youtubeLive.infrastructure;
 
 
 
+import java.util.List;
+
 import org.springframework.stereotype.Repository;
 
 
@@ -17,7 +19,7 @@ public class YoutubeLiveImpl implements YoutubeLiveRepository{
 
 	// 1. categrory별로 가져오기
 	@Override
-	public YoutubeLiveEntity fetch(String category) {
+	public YoutubeLiveEntity fetchByCategory(String category) {
 		YoutubeLiveEntity youtubeLiveEntity =youtubeLiveJpaRepository.findByCategory(category);
 
 		// null일 경우는 없지만, null이면 알려야 한다.
@@ -26,5 +28,10 @@ public class YoutubeLiveImpl implements YoutubeLiveRepository{
 
 		}
 		return youtubeLiveEntity;
+	}
+
+	@Override
+	public List<YoutubeLiveEntity> findAll() {
+		return youtubeLiveJpaRepository.findAll();
 	}
 }

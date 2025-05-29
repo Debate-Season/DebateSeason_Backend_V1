@@ -1,22 +1,24 @@
-package com.debateseason_backend_v1.media.service;
+package com.debateseason_backend_v1.domain.media.service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.stereotype.Service;
 
 import com.debateseason_backend_v1.common.exception.CustomException;
 import com.debateseason_backend_v1.common.exception.ErrorCode;
 import com.debateseason_backend_v1.common.response.ApiResult;
+import com.debateseason_backend_v1.domain.media.model.response.BreakingNewsResponse;
+import com.debateseason_backend_v1.domain.media.model.response.MediaContainer;
 import com.debateseason_backend_v1.domain.repository.entity.Media;
 import com.debateseason_backend_v1.domain.repository.MediaRepository;
 import com.debateseason_backend_v1.domain.youtubeLive.domain.YoutubeLive;
 import com.debateseason_backend_v1.domain.youtubeLive.infrastructure.YoutubeLiveEntity;
 import com.debateseason_backend_v1.domain.youtubeLive.infrastructure.YoutubeLiveRepository;
-import com.debateseason_backend_v1.media.model.response.BreakingNewsResponse;
-import com.debateseason_backend_v1.media.model.response.MediaContainer;
-import com.debateseason_backend_v1.media.model.response.MediaResponse;
+import com.debateseason_backend_v1.domain.media.model.response.MediaResponse;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -105,14 +107,19 @@ public class MediaService {
 		}
 
 		// 유튜브 Live
-		YoutubeLiveEntity youtubeLiveEntity = youtubeLiveRepository.fetch("news");
+		Map<String,YoutubeLive> youtubeLiveContainer = new HashMap<>();
 
-		YoutubeLive youtubeLive = youtubeLiveEntity.from(youtubeLiveEntity);
+		List<YoutubeLiveEntity> fetchedAllYoutubeLives = youtubeLiveRepository.findAll();
+
+		for(YoutubeLiveEntity e : fetchedAllYoutubeLives){
+			YoutubeLive youtubeLive = e.from(e);
+			youtubeLiveContainer.put(youtubeLive.getCategory(),youtubeLive);
+		}
 
 		MediaContainer mediaContainer = MediaContainer.builder()
 			.breakingNews(breakingNews)
 			//.mostRecentMedia(mostRecentMedia)
-			.youtubeLive(youtubeLive)
+			.youtubeLiveContainer(youtubeLiveContainer)
 			.items(mediaResponses)
 			.build()
 			;

@@ -29,5 +29,7 @@ public class YoutubeLive {
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "Asia/Seoul")
 	private LocalDateTime createAt;
 
+	private String src;
+
 
 }

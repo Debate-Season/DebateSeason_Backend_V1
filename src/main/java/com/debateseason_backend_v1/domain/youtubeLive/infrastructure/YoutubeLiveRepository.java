@@ -12,4 +12,8 @@ public interface YoutubeLiveRepository {
 
 	// 2. Live 전체 가져오기
 	List<YoutubeLiveEntity> findAll();
+
+	// 3. Live 상세보기
+	public YoutubeLiveEntity findById(Integer id);
+
 }

@@ -502,16 +502,32 @@ public class ChatRoomServiceV1 {
 	private String findLastestChatTime(Long chatRoomId){
 		Optional<LocalDateTime> latestChat = chatRepository.findMostRecentMessageTimestampByChatRoomId(chatRoomId);
 
-		String time = null; // 대화가 아무것도 없는 상태는 항상 null이다.
+		String time = null;
 
 		if(latestChat.isPresent()){
 			// 몇 분이 지났는지.
 			Duration outdated = Duration.between(latestChat.get(), LocalDateTime.now());
 
-			time = new StringBuilder()
-				.append(outdated.toMinutes())
-				.append("분 전 대화")
-				.toString();
+			int realTime = 0; // 대화가 아무것도 없는 상태는 항상 null이다.
+			realTime = (int)outdated.toMinutes();
+
+			if(realTime == 0){
+				time = "방금 전 대화";
+			}
+			else if(realTime >0 && realTime<60){ // mm만 표기
+				time = outdated.toMinutes() + "분 전 대화"; // 분
+			}
+			else if(realTime >=60 && realTime <1440){ // hh:mm
+				int hour = realTime/60;
+				int minute = realTime%60;
+
+				time = hour+"시간 "+minute+"분 전 대화";
+			}
+			else{ // day로 표기
+				int day = realTime/1440;
+
+				time = day+"일 전 대화";
+			}
 
 		}
 		return time;

@@ -30,8 +30,16 @@ public class YoutubeLiveImpl implements YoutubeLiveRepository{
 		return youtubeLiveEntity;
 	}
 
+	// 2. 모든 YoutubeLive 가져오기 -> 수정 충분히 가능 (무한 스크롤 형식으로 될지도?)
 	@Override
 	public List<YoutubeLiveEntity> findAll() {
 		return youtubeLiveJpaRepository.findAll();
+	}
+	
+	// 3. YoutubeLive 상세보기
+	public YoutubeLiveEntity findById(Integer id){
+		return youtubeLiveJpaRepository.findById(id).orElseThrow(
+			()-> new RuntimeException("YoutubeLive 엔티티 id값이 없다. -> 발생가능성 없음.")
+		);
 	}
 }

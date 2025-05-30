@@ -44,6 +44,9 @@ public class YoutubeLiveEntity {
 	@Column(name = "created_at")
 	private LocalDateTime createdAt;
 
+	@Column(name = "src")
+	private String scr;
+
 	// Jpa에서 반환시 어떠한 처리없이 바로 넘기므로, 도메인 엔티티로 전달해도 괜찮다.
 	public YoutubeLive from(YoutubeLiveEntity youtubeLiveEntity){
 		return YoutubeLive.builder()
@@ -53,6 +56,7 @@ public class YoutubeLiveEntity {
 			.videoId(youtubeLiveEntity.getVideoId())
 			.category(youtubeLiveEntity.getCategory())
 			.createAt(youtubeLiveEntity.getCreatedAt())
+			.src(youtubeLiveEntity.getScr())
 			.build()
 			;
 	}

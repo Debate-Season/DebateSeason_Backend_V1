@@ -2,7 +2,6 @@ package com.debateseason_backend_v1.domain.media.service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -16,6 +15,7 @@ import com.debateseason_backend_v1.domain.media.model.response.MediaContainer;
 import com.debateseason_backend_v1.domain.repository.entity.Media;
 import com.debateseason_backend_v1.domain.repository.MediaRepository;
 import com.debateseason_backend_v1.domain.youtubeLive.domain.YoutubeLive;
+import com.debateseason_backend_v1.domain.youtubeLive.domain.YoutubeMapper;
 import com.debateseason_backend_v1.domain.youtubeLive.infrastructure.YoutubeLiveEntity;
 import com.debateseason_backend_v1.domain.youtubeLive.infrastructure.YoutubeLiveRepository;
 import com.debateseason_backend_v1.domain.media.model.response.MediaResponse;
@@ -44,30 +44,6 @@ public class MediaService {
 						.build()
 			).toList()
 			;
-
-		// 최신 미디어 1건 가져오기
-
-		// 필요한 필드 변수들
-		// src -> 썸네일
-		// url -> 링크
-		// title -> 제목
-		// media -> 공급업체
-		// created_at -> 기사 시간
-		Media findLatestMedia = mediaRepository.findLatestNews();
-
-		/*
-		MediaResponse mostRecentMedia = MediaResponse.builder()
-			.id(findLatestMedia.getId())
-			.src(findLatestMedia.getSrc())
-			.url(findLatestMedia.getUrl())
-			.title(findLatestMedia.getTitle())
-			.supplier(findLatestMedia.getMedia())
-			.outdated(findLatestMedia.getCreatedAt())
-			.build()
-			;
-
-		 */
-
 
 		List<Media> mediaList = null;
 
@@ -107,18 +83,15 @@ public class MediaService {
 		}
 
 		// 유튜브 Live
-		Map<String,YoutubeLive> youtubeLiveContainer = new HashMap<>();
 
 		List<YoutubeLiveEntity> fetchedAllYoutubeLives = youtubeLiveRepository.findAll();
 
-		for(YoutubeLiveEntity e : fetchedAllYoutubeLives){
-			YoutubeLive youtubeLive = e.from(e);
-			youtubeLiveContainer.put(youtubeLive.getCategory(),youtubeLive);
-		}
+		YoutubeMapper youtubeMapper = new YoutubeMapper();
+		Map<String,YoutubeLive> youtubeLiveContainer = youtubeMapper.toDomain(fetchedAllYoutubeLives);
 
 		MediaContainer mediaContainer = MediaContainer.builder()
 			.breakingNews(breakingNews)
-			//.mostRecentMedia(mostRecentMedia)
+
 			.youtubeLiveContainer(youtubeLiveContainer)
 			.items(mediaResponses)
 			.build()
@@ -152,8 +125,5 @@ public class MediaService {
 			.message("미디어 조회수를 업데이트 했습니다.")
 			.build();
 	}
-
-
-
 
 }

@@ -20,7 +20,7 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
 
 	Long countByIssue(Issue issue);
 
-	// 인기 토론방 5개
+	// 2. Legacy 인기 토론방 5개
 	@Query(value = """
     SELECT iss.issue_id, iss.title,  
            chatroom.chat_room_id, chatroom.title
@@ -42,6 +42,43 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
     ) chatroom ON iss.issue_id = chatroom.issue_id
 """, nativeQuery = true)
 	List<Object[]> findTop5ActiveChatRooms();
+
+
+	// 2. fix : 인기 토론방 5개
+	// chat_room_id, title, created_at, AGREE, DISAGREE
+	@Query(value = """
+    SELECT 
+        ucr.chat_room_id,
+        tmp3.title,
+        tmp3.created_at,
+        COUNT(CASE WHEN ucr.opinion = 'AGREE' THEN 1 END) AS AGREE,
+        COUNT(CASE WHEN ucr.opinion = 'DISAGREE' THEN 1 END) AS DISAGREE
+    FROM user_chat_room ucr
+    INNER JOIN (
+        SELECT 
+            cr.chat_room_id, 
+            cr.title,
+            tmp2.chats,
+            cr.created_at
+        FROM chat_room cr
+        INNER JOIN (
+            SELECT 
+                chat_room_id, 
+                COUNT(chat_room_id) AS chats 
+            FROM chat
+            WHERE time_stamp <= NOW()
+            GROUP BY chat_room_id
+            ORDER BY chats DESC
+            LIMIT 5       
+        ) tmp2 
+        ON cr.chat_room_id = tmp2.chat_room_id
+    ) tmp3
+    ON ucr.chat_room_id = tmp3.chat_room_id
+    GROUP BY ucr.chat_room_id, tmp3.title, tmp3.created_at, tmp3.chats
+    ORDER BY tmp3.chats DESC
+    """, nativeQuery = true)
+	List<Object[]> findTop5ChatRoomsOrderedByChatCounts();
+
 
 
 	/*

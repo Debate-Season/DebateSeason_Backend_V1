@@ -1,4 +1,4 @@
-package com.debateseason_backend_v1.domain.youtubeLive.domain;
+package com.debateseason_backend_v1.crolling.youtubelive.domain;
 
 import java.time.LocalDateTime;
 
@@ -11,7 +11,7 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 @Builder
-public class YoutubeLiveDto {
+public class TmpYoutubeLiveDto {
 
 	private final Integer id;
 

@@ -3,7 +3,6 @@ package com.debateseason_backend_v1.domain.youtubeLive.infrastructure;
 import java.time.LocalDateTime;
 
 import com.debateseason_backend_v1.domain.youtubeLive.domain.YoutubeLive;
-import com.debateseason_backend_v1.domain.youtubeLive.domain.YoutubeLiveDto;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -27,6 +26,7 @@ import lombok.Setter;
 public class YoutubeLiveEntity {
 
 	@Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "id")
 	private Integer id;
 
 	@Column(name = "title", columnDefinition = "VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci")

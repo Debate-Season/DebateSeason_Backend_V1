@@ -25,7 +25,7 @@ import lombok.RequiredArgsConstructor;
 public class FmKorea {
 
 	private final MediaRepository mediaRepository;
-	@Scheduled(cron = "0 0 17 * * ?",zone = "Asia/Seoul")
+	//@Scheduled(cron = "0 0 17 * * ?",zone = "Asia/Seoul")
 	public void doCroll() throws InterruptedException {
 
 		WebDriverManager.chromedriver().setup();

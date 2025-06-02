@@ -32,7 +32,7 @@ public class NewsScheduler {
 
 	private final Map<String,String> newsList = new HashMap<>();
 
-	@Scheduled(cron = "0 0 17 * * ?",zone = "Asia/Seoul")
+	//@Scheduled(cron = "0 0 17 * * ?",zone = "Asia/Seoul")
 	public void doCroll() throws InterruptedException {
 
 

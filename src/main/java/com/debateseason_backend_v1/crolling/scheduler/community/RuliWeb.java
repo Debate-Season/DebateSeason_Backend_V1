@@ -40,7 +40,10 @@ public class RuliWeb {
 		String userAgent = userAgents[rand.nextInt(userAgents.length)];
 
 		ChromeOptions options = new ChromeOptions();
-		options.addArguments("--headless=new"); // headless 모드
+		options.addArguments("--headless=new");
+		options.addArguments("--no-sandbox");
+		options.addArguments("--disable-dev-shm-usage");
+
 		options.addArguments("user-agent=" + userAgent); // 랜덤 User-Agent 설정
 
 		// 추가적인 헤더 설정 (필요시)

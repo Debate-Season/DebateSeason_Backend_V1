@@ -110,6 +110,9 @@ public class HumorUniv {
 		catch (NullPointerException e){
 			e.printStackTrace();
 		}
+		finally {
+			driver.quit();
+		}
 
 
 	}

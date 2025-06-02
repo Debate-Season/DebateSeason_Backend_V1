@@ -65,11 +65,19 @@ public class Ppompu {
 		//#revolution_main_table > tbody > tr:nth-child(14)
 		//#revolution_main_table > tbody > tr:nth-child(15)
 
+		try {
 			extractData(4);
 			extractData(5);
 			extractData(6);
 			extractData(7);
 			extractData(8);
+		}
+		catch (Exception e){
+			throw new RuntimeException(e);
+		}
+		finally {
+			driver.quit();
+		}
 	}
 
 	private void extractData(int boardIndex){
@@ -77,7 +85,7 @@ public class Ppompu {
 		// body > div.wrapper > div.contents > div.container > div > div.board_box > table > tbody > tr:nth-child(4)
 		// body > div.wrapper > div.contents > div.container > div > div.board_box > table > tbody > tr:nth-child(5)
 
-		try {
+
 		//#revolution_main_table > tbody > tr:nth-child(11) > td:nth-child(2) > img.baseList-img
 		WebElement e = driver.findElement(By.cssSelector("body > div.wrapper > div.contents > div.container > div > div.board_box > table > tbody > tr:nth-child("+boardIndex+")"));
 		
@@ -122,16 +130,6 @@ public class Ppompu {
 			.build();
 
 			mediaRepository.save(ppomPu);
-
-
-		}
-		catch (Exception e){
-			throw new RuntimeException(e);
-		}
-
-
-
-
 	}
 
 }

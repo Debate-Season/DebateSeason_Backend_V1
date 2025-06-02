@@ -56,17 +56,25 @@ public class RuliWeb {
 
 		driver.get("https://bbs.ruliweb.com/best/political");
 
-		// 재사용될 부분
-		extractData(1);
-		extractData(2);
-		extractData(3);
-		extractData(4);
-		extractData(5);
+		try {
+			// 재사용될 부분
+			extractData(1);
+			extractData(2);
+			extractData(3);
+			extractData(4);
+			extractData(5);
+		}
+		catch (Exception e){
+			throw new RuntimeException(e);
+		}
+		finally {
+			driver.quit();
+		}
 
 	}
 
 	private  void extractData(int boardIndex){
-		try {
+
 			// #best_body > table > tbody > tr:nth-child(1) > td.subject > a
 			WebElement element1 = driver.findElement(
 				By.cssSelector("#best_body > table > tbody > tr:nth-child(" + boardIndex + ")"));
@@ -111,18 +119,5 @@ public class RuliWeb {
 
 			mediaRepository.save(RuliWeb);
 		}
-		catch (Exception e){
-			throw new RuntimeException(e);
-		}
-
-
-
-	}
-
-
-
-
-
-
 
 }

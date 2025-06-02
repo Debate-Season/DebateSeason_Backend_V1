@@ -52,46 +52,56 @@ public class Clien {
 
 		WebDriver driver = new ChromeDriver(options);
 
-		// 정치/시사 + 인기
-		driver.get("https://www.clien.net/service/group/clien_all?&od=T33");
+		try {
+			// 정치/시사 + 인기
+			driver.get("https://www.clien.net/service/group/clien_all?&od=T33");
 
-		for(int i=1; i<6; i++){
-			// body > div.nav_container > div.nav_body > div.nav_content > div.content_list > div.list_content > div:nth-child(1)
-			WebElement webElement =
-				driver.findElement(By.cssSelector("body > div.nav_container > div.nav_body > div.nav_content > div.content_list > div.list_content > div:nth-child("+i+")"));
+			for (int i = 1; i < 6; i++) {
+				// body > div.nav_container > div.nav_body > div.nav_content > div.content_list > div.list_content > div:nth-child(1)
+				WebElement webElement =
+					driver.findElement(By.cssSelector(
+						"body > div.nav_container > div.nav_body > div.nav_content > div.content_list > div.list_content > div:nth-child("
+							+ i + ")"));
 
-			// body > div.nav_container > div.nav_body > div.nav_content > div.content_list > div.list_content > div:nth-child(1) > div.list_title
-			WebElement hrefElement = webElement.findElement(By.cssSelector("div.list_title"));
+				// body > div.nav_container > div.nav_body > div.nav_content > div.content_list > div.list_content > div:nth-child(1) > div.list_title
+				WebElement hrefElement = webElement.findElement(By.cssSelector("div.list_title"));
 
-			// body > div.nav_container > div.nav_body > div.nav_content > div.content_list > div.list_content > div:nth-child(1) > div.list_title > a.list_subject
-			String url = hrefElement.findElement(By.cssSelector("a.list_subject")).getAttribute("href");
-			// body > div.nav_container > div.nav_body > div.nav_content > div.content_list > div.list_content > div:nth-child(1) > div.list_title > a.list_subject > span.subject_fixed
-			String title = hrefElement.findElement(By.cssSelector("a.list_subject > span.subject_fixed")).getText();
+				// body > div.nav_container > div.nav_body > div.nav_content > div.content_list > div.list_content > div:nth-child(1) > div.list_title > a.list_subject
+				String url = hrefElement.findElement(By.cssSelector("a.list_subject")).getAttribute("href");
+				// body > div.nav_container > div.nav_body > div.nav_content > div.content_list > div.list_content > div:nth-child(1) > div.list_title > a.list_subject > span.subject_fixed
+				String title = hrefElement.findElement(By.cssSelector("a.list_subject > span.subject_fixed")).getText();
 
-			// body > div.nav_container > div.nav_body > div.nav_content > div.content_list > div.list_content > div:nth-child(1) > div.list_time > span > span
-			String time = webElement.findElement(By.cssSelector("div.list_time > span")).getText();
+				// body > div.nav_container > div.nav_body > div.nav_content > div.content_list > div.list_content > div:nth-child(1) > div.list_time > span > span
+				String time = webElement.findElement(By.cssSelector("div.list_time > span")).getText();
 
-			LocalDate today = LocalDate.now();
+				LocalDate today = LocalDate.now();
 
-			String date = today+" "+time;
+				String date = today + " " + time;
 
-			// Create a DateTimeFormatter with the appropriate pattern
-			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-			// Parse the string to a LocalDateTime object
-			LocalDateTime dateTime = LocalDateTime.parse(date, formatter);
+				// Create a DateTimeFormatter with the appropriate pattern
+				DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+				// Parse the string to a LocalDateTime object
+				LocalDateTime dateTime = LocalDateTime.parse(date, formatter);
 
-			Media Clien = Media.builder()
-				.title(title)
-				.url(url)
-				.src(null)// 이미지
-				.category("사회")
-				.media("클리앙")
-				.type("community")
-				.count(0)
-				.createdAt(dateTime)
-				.build();
+				Media Clien = Media.builder()
+					.title(title)
+					.url(url)
+					.src(null)// 이미지
+					.category("사회")
+					.media("클리앙")
+					.type("community")
+					.count(0)
+					.createdAt(dateTime)
+					.build();
 
-			mediaRepository.save(Clien);
+				mediaRepository.save(Clien);
+			}
+		}
+		catch (Exception e){
+			e.printStackTrace();
+		}
+		finally {
+			driver.quit();;
 		}
 
 

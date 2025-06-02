@@ -25,7 +25,7 @@ public class Ppompu {
 	private final MediaRepository mediaRepository;
 
 	private WebDriver driver ;
-	@Scheduled(cron = "0 0 17 * * ?",zone = "Asia/Seoul")
+	//@Scheduled(cron = "0 0 17 * * ?",zone = "Asia/Seoul")
 	public void doCroll() throws InterruptedException {
 
 		WebDriverManager.chromedriver().setup();

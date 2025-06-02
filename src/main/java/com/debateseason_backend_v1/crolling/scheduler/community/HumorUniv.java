@@ -26,7 +26,7 @@ public class HumorUniv {
 	private final MediaRepository mediaRepository;
 	private final int start = 3;
 
-	@Scheduled(cron = "0 0 17 * * ?",zone = "Asia/Seoul")
+	//@Scheduled(cron = "0 0 17 * * ?",zone = "Asia/Seoul")
 	public void doCroll(){
 		WebDriverManager.chromedriver().setup();
 

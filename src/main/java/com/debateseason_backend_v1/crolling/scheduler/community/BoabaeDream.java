@@ -24,7 +24,7 @@ public class BoabaeDream {
 
 	private final MediaRepository mediaRepository;
 
-	@Scheduled(cron = "0 0 17 * * ?",zone = "Asia/Seoul")
+	//@Scheduled(cron = "0 0 17 * * ?",zone = "Asia/Seoul")
 	public void doCroll(){
 
 		WebDriverManager.chromedriver().setup();

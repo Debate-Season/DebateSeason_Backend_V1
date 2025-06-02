@@ -1,21 +1,17 @@
-package com.debateseason_backend_v1.domain.youtubeLive.domain;
+package com.debateseason_backend_v1.crolling.youtubelive.domain;
 
 import java.time.LocalDateTime;
-
-import com.debateseason_backend_v1.crolling.youtubelive.domain.TmpYoutubeLiveDto;
-import com.fasterxml.jackson.annotation.JsonFormat;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-
 import lombok.Setter;
 
 @Getter
 @Setter//?
 @AllArgsConstructor
 @Builder
-public class YoutubeLive {
+public class TmpYoutubeLive {
 	private Integer id;
 
 	private String title;
@@ -26,15 +22,16 @@ public class YoutubeLive {
 
 	private String category;
 
-	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "Asia/Seoul")
 	private LocalDateTime createAt;
 
 	private String src;
 
-	public YoutubeLiveDto createDto() {
+	// DTO 객체를 만든다.
+	// 도메인 엔티티 그대로 넘겼는데, 속성값을 바꾸는 것이라면???, 또한 아직 도메인 엔티티 그대로 써야한다면???
+	public TmpYoutubeLiveDto createDto() {
 
 		// 새로운 객체 생성.
-		return YoutubeLiveDto.builder()
+		return TmpYoutubeLiveDto.builder()
 			.id(id)
 			.title(title)
 			.supplier(supplier)
@@ -46,6 +43,8 @@ public class YoutubeLive {
 			;
 
 	}
+
+
 
 
 }

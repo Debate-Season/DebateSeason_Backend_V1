@@ -3,6 +3,7 @@ package com.debateseason_backend_v1.domain.youtubeLive.infrastructure;
 
 import java.util.List;
 
+
 import com.debateseason_backend_v1.domain.youtubeLive.domain.YoutubeLiveDto;
 
 public interface YoutubeLiveRepository {
@@ -15,5 +16,11 @@ public interface YoutubeLiveRepository {
 
 	// 3. Live 상세보기
 	public YoutubeLiveEntity findById(Integer id);
+
+	// 1.유튜브 라이브 저장
+	void save(YoutubeLiveDto youtubeLiveDto);
+
+	// 2. category에 맞게 데이터 가져오기
+	YoutubeLiveEntity fetch(String category);
 
 }

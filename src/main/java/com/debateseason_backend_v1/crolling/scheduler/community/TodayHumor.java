@@ -51,60 +51,69 @@ public class TodayHumor { // 에러발생
 
 		WebDriver driver = new ChromeDriver(options);
 
-		// 정치/시사 + 인기
-		driver.get("https://www.todayhumor.co.kr/board/list.php?table=bestofbest");
+		try {
+			// 정치/시사 + 인기
+			driver.get("https://www.todayhumor.co.kr/board/list.php?table=bestofbest");
 
-		// body > div.whole_box > div > div > table > tbody > tr:nth-child(2)
-		// body > div.whole_box > div > div > table > tbody > tr:nth-child(2) > td.subject > a
+			// body > div.whole_box > div > div > table > tbody > tr:nth-child(2)
+			// body > div.whole_box > div > div > table > tbody > tr:nth-child(2) > td.subject > a
 
-		for(int i=2; i<2+5; i++){
+			for (int i = 2; i < 2 + 5; i++) {
 
-			WebElement webElement = driver.findElement(By.cssSelector("body > div.whole_box > div > div > table > tbody > tr:nth-child("+i+")"));
+				WebElement webElement = driver.findElement(
+					By.cssSelector("body > div.whole_box > div > div > table > tbody > tr:nth-child(" + i + ")"));
 
-			WebElement hrefElement = webElement.findElement(By.cssSelector("td.subject > a"));
-			String title = hrefElement.getText();
-			String url = hrefElement.getAttribute("href");
-			String dateElement = webElement.findElement(By.cssSelector("td.date")).getText();
-			
-			// 이미지 null 처리, null이면 null인대로 들어간다.
-			String img = null;
-			String[] datelist = dateElement.split(" ");// 25/05/06, 16:08
+				WebElement hrefElement = webElement.findElement(By.cssSelector("td.subject > a"));
+				String title = hrefElement.getText();
+				String url = hrefElement.getAttribute("href");
+				String dateElement = webElement.findElement(By.cssSelector("td.date")).getText();
 
-			String dateparts = datelist[0];// 25/05/06
+				// 이미지 null 처리, null이면 null인대로 들어간다.
+				String img = null;
+				String[] datelist = dateElement.split(" ");// 25/05/06, 16:08
 
-			String []dateparts2 = dateparts.split("/");
+				String dateparts = datelist[0];// 25/05/06
 
-			String year = "20"+dateparts2[0]+"-";// 2025-
-			String month = dateparts2[1]+"-";// 05-
-			String day = dateparts2[2]+" ";// 06
+				String[] dateparts2 = dateparts.split("/");
 
-			// 2025-05-06(공백s)
-			String joineddate = year+month+day;
+				String year = "20" + dateparts2[0] + "-";// 2025-
+				String month = dateparts2[1] + "-";// 05-
+				String day = dateparts2[2] + " ";// 06
 
-			// 16:08
-			String timeparts = datelist[1];// 16:08
+				// 2025-05-06(공백s)
+				String joineddate = year + month + day;
 
-			// 2025-05-06 16:08
-			String date = joineddate+timeparts;
+				// 16:08
+				String timeparts = datelist[1];// 16:08
 
-			// Create a DateTimeFormatter with the appropriate pattern
-			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-			// Parse the string to a LocalDateTime object
-			LocalDateTime dateTime = LocalDateTime.parse(date, formatter);
+				// 2025-05-06 16:08
+				String date = joineddate + timeparts;
 
-			Media todayHumor = Media.builder()
-				.title(title)
-				.url(url)
-				.src(img)
-				.category("사회")
-				.media("오늘의유머")
-				.type("community")
-				.count(0)
-				.createdAt(dateTime)
-				.build();
+				// Create a DateTimeFormatter with the appropriate pattern
+				DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+				// Parse the string to a LocalDateTime object
+				LocalDateTime dateTime = LocalDateTime.parse(date, formatter);
 
-			mediaRepository.save(todayHumor);
+				Media todayHumor = Media.builder()
+					.title(title)
+					.url(url)
+					.src(img)
+					.category("사회")
+					.media("오늘의유머")
+					.type("community")
+					.count(0)
+					.createdAt(dateTime)
+					.build();
 
+				mediaRepository.save(todayHumor);
+
+			}
+		}
+		catch (Exception e){
+			e.printStackTrace();
+		}
+		finally {
+			driver.quit();
 		}
 	}
 }

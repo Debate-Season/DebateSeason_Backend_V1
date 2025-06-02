@@ -25,7 +25,6 @@ public class BoabaeDream {
 	private final MediaRepository mediaRepository;
 
 	@Scheduled(cron = "0 0 17 * * ?",zone = "Asia/Seoul")
-	@Scheduled(fixedDelay = 1000)
 	public void doCroll(){
 
 		WebDriverManager.chromedriver().setup();
@@ -52,48 +51,58 @@ public class BoabaeDream {
 
 		WebDriver driver = new ChromeDriver(options);
 
-		driver.get("https://www.bobaedream.co.kr/list?code=best");
+		try{
+			driver.get("https://www.bobaedream.co.kr/list?code=best");
 
-		// #boardlist > tbody > tr:nth-child(1)
+			// #boardlist > tbody > tr:nth-child(1)
 
-		// title, a : #boardlist > tbody > tr:nth-child(1) > td.pl14 > a.bsubject
+			// title, a : #boardlist > tbody > tr:nth-child(1) > td.pl14 > a.bsubject
 
-		// time : #boardlist > tbody > tr:nth-child(1) > td.date
+			// time : #boardlist > tbody > tr:nth-child(1) > td.date
 
-		for(int i=1; i<=5; i++){
+			for(int i=1; i<=5; i++){
 
-			WebElement webElement = driver.findElement(By.cssSelector("#boardlist > tbody > tr:nth-child(+"+i+")"));
+				WebElement webElement = driver.findElement(By.cssSelector("#boardlist > tbody > tr:nth-child(+"+i+")"));
 
-			WebElement titleElement = webElement.findElement(By.cssSelector("td.pl14 > a.bsubject"));
+				WebElement titleElement = webElement.findElement(By.cssSelector("td.pl14 > a.bsubject"));
 
-			String title = titleElement.getText();
-			String href = titleElement.getAttribute("href");
+				String title = titleElement.getText();
+				String href = titleElement.getAttribute("href");
 
-			String time = webElement.findElement(By.cssSelector("td.date")).getText();
+				String time = webElement.findElement(By.cssSelector("td.date")).getText();
 
-			LocalDateTime now = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS);
+				LocalDateTime now = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS);
 
-			// 문자열에서 시와 분 파싱
-			int hour = Integer.parseInt(time.split(":")[0]);
-			int minute = Integer.parseInt(time.split(":")[1]);
+				// 문자열에서 시와 분 파싱
+				int hour = Integer.parseInt(time.split(":")[0]);
+				int minute = Integer.parseInt(time.split(":")[1]);
 
-			// 시:분만 21:42로 덮어쓰기, 초와 나노초는 유지
-			LocalDateTime replaced = now.withHour(hour).withMinute(minute);
+				// 시:분만 21:42로 덮어쓰기, 초와 나노초는 유지
+				LocalDateTime replaced = now.withHour(hour).withMinute(minute);
 
-			Media boBaeDream = Media.builder()
-				.title(title)
-				.url(href)
-				.src(null)
-				.category("사회")
-				.media("보배드림")
-				.type("community")
-				.count(0)
-				.createdAt(replaced)
-				.build();
+				Media boBaeDream = Media.builder()
+					.title(title)
+					.url(href)
+					.src(null)
+					.category("사회")
+					.media("보배드림")
+					.type("community")
+					.count(0)
+					.createdAt(replaced)
+					.build();
 
-			mediaRepository.save(boBaeDream);
+				mediaRepository.save(boBaeDream);
 
+			}
 		}
+		catch (Exception e){
+			e.printStackTrace();
+		}
+		finally {
+			driver.quit();
+		}
+
+
 
 	}
 

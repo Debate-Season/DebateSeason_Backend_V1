@@ -58,64 +58,55 @@ public class MLBPARK {
 		// #bd_4180795_0 > div > div.fm_best_widget._bd_pc > ul > li:nth-child(5) > div > a:nth-child(2) > img
 		WebDriver driver = new ChromeDriver(options);
 
-		// 정치/시사 + 인기
-		driver.get("https://mlbpark.donga.com/mp/best.php?b=bullpen&m=like");
+		try {
+			// 정치/시사 + 인기
+			driver.get("https://mlbpark.donga.com/mp/best.php?b=bullpen&m=like");
 
-		//System.out.println(driver.getPageSource());
+			//System.out.println(driver.getPageSource());
 
-		for(int i=1; i<=5; i++){
-			WebElement webElement = driver.findElement(By.cssSelector("#container > div.contents > div.left_cont > div > div.tab_contents > div.tbl_box > table > tbody > tr:nth-child("+i+")"));
-			String id = webElement.findElement(By.cssSelector("td:nth-child(1)")).getText();
+			for (int i = 1; i <= 5; i++) {
+				WebElement webElement = driver.findElement(By.cssSelector(
+					"#container > div.contents > div.left_cont > div > div.tab_contents > div.tbl_box > table > tbody > tr:nth-child("
+						+ i + ")"));
+				String id = webElement.findElement(By.cssSelector("td:nth-child(1)")).getText();
 
-			WebElement titleElement = webElement.findElement(By.cssSelector("td:nth-child(2) > a"));
-			String title = titleElement.getText();
+				WebElement titleElement = webElement.findElement(By.cssSelector("td:nth-child(2) > a"));
+				String title = titleElement.getText();
 
-			String href = titleElement.getAttribute("href");
+				String href = titleElement.getAttribute("href");
 
-			//String date = webElement.findElement(By.cssSelector("td:nth-child(4) > span")).getText();
+				//String date = webElement.findElement(By.cssSelector("td:nth-child(4) > span")).getText();
 
-			LocalDateTime now = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS);
+				LocalDateTime now = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS);
 
-			Media mlbPark = Media.builder()
-				.title(title)
-				.url(href)
-				.src(null)// 이미지 원래 없음.
-				.category("사회")
-				.media("엠엘비파크")
-				.type("community")
-				.count(0)
-				.createdAt(now)
-				.build();
+				Media mlbPark = Media.builder()
+					.title(title)
+					.url(href)
+					.src(null)// 이미지 원래 없음.
+					.category("사회")
+					.media("엠엘비파크")
+					.type("community")
+					.count(0)
+					.createdAt(now)
+					.build();
 
-			Thread.sleep(1000);
+				Thread.sleep(1000);
 
-			mediaRepository.save(mlbPark);
+				mediaRepository.save(mlbPark);
+			}
+
+			// #container > div.contents > div.left_cont > div > div.tab_contents > div.tbl_box > table > tbody > tr:nth-child(1) > td:nth-child(1)
+			// #container > div.contents > div.left_cont > div > div.tab_contents > div.tbl_box > table > tbody > tr:nth-child(1) > td:nth-child(2) > a
+			// #container > div.contents > div.left_cont > div > div.tab_contents > div.tbl_box > table > tbody > tr:nth-child(1) > td:nth-child(3) > span
+			// #container > div.contents > div.left_cont > div > div.tab_contents > div.tbl_box > table > tbody > tr:nth-child(1) > td:nth-child(4) > span
+
 		}
-
-
-		// #container > div.contents > div.left_cont > div > div.tab_contents > div.tbl_box > table > tbody > tr:nth-child(1) > td:nth-child(1)
-		// #container > div.contents > div.left_cont > div > div.tab_contents > div.tbl_box > table > tbody > tr:nth-child(1) > td:nth-child(2) > a
-		// #container > div.contents > div.left_cont > div > div.tab_contents > div.tbl_box > table > tbody > tr:nth-child(1) > td:nth-child(3) > span
-		// #container > div.contents > div.left_cont > div > div.tab_contents > div.tbl_box > table > tbody > tr:nth-child(1) > td:nth-child(4) > span
-
-
-
-
-
-
-		String image = null;
-		String category = "사회";
-		String media = "엠엘비파크";
-		String type = "community";
-
-
-		WebElement webElement2 = driver.findElement(By.cssSelector("#container > div.contents > div.left_cont > div > div.tab_contents > div.tbl_box > table > tbody > tr:nth-child(2)"));
-		// #container > div.contents > div.left_cont > div > div.tab_contents > div.tbl_box > table > tbody > tr:nth-child(3) > td:nth-child(1)
-		// #container > div.contents > div.left_cont > div > div.tab_contents > div.tbl_box > table > tbody > tr:nth-child(3) > td:nth-child(2) > a
-		WebElement webElement3 = driver.findElement(By.cssSelector("#container > div.contents > div.left_cont > div > div.tab_contents > div.tbl_box > table > tbody > tr:nth-child(3)"));
-		WebElement webElement4 = driver.findElement(By.cssSelector("#container > div.contents > div.left_cont > div > div.tab_contents > div.tbl_box > table > tbody > tr:nth-child(4)"));
-		WebElement webElement5 = driver.findElement(By.cssSelector("#container > div.contents > div.left_cont > div > div.tab_contents > div.tbl_box > table > tbody > tr:nth-child(5)"));
-
+		catch (Exception e){
+			e.printStackTrace();
+		}
+		finally {
+			driver.quit();
+		}
 
 
 

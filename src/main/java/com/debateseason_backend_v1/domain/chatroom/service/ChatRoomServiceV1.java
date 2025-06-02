@@ -33,7 +33,7 @@ import com.debateseason_backend_v1.domain.repository.entity.ChatRoom;
 import com.debateseason_backend_v1.domain.repository.entity.Issue;
 import com.debateseason_backend_v1.domain.repository.entity.User;
 import com.debateseason_backend_v1.domain.repository.entity.UserChatRoom;
-import com.debateseason_backend_v1.media.model.response.BreakingNewsResponse;
+import com.debateseason_backend_v1.domain.media.model.response.BreakingNewsResponse;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -103,7 +103,7 @@ public class ChatRoomServiceV1 {
 			userChatRoom = UserChatRoom.builder()
 				.user(user)
 				.chatRoom(chatRoom)
-				.opinion(opinion)
+				.opinion(opinion) // String
 				.build();
 
 			userChatRoomRepository.save(userChatRoom); // 1. 투표를 할 때 userChatRoom에 저장이 된다.
@@ -426,7 +426,7 @@ public class ChatRoomServiceV1 {
 		}
 
 
-		List<Object[]> chatRoomList = userChatRoomRepository.findChatRoomByChatRoomIds(chatRoomIds);
+		List<Object[]> chatRoomList = userChatRoomRepository.findChatRoomWithOpinions(userId,chatRoomIds);
 
 		// 아직 투표한 방이 없어서 아무것도 없는 상태로 가져올 수 있다.
 		if (chatRoomList.isEmpty()){
@@ -458,6 +458,7 @@ public class ChatRoomServiceV1 {
 				String title = (String)e[3];
 				String content = (String)e[4];
 				String localDateTime = e[5].toString();
+				String opinion = e[6].toString();// opinion
 
 				String result = localDateTime.split("\\.")[0];
 				LocalDateTime createdAt = LocalDateTime.parse(result, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
@@ -473,6 +474,7 @@ public class ChatRoomServiceV1 {
 					.disagree(Math.toIntExact(disagree))
 					.createdAt(createdAt)
 					.time(time)
+					 .opinion(opinion)
 					.build();
 
 
@@ -500,16 +502,32 @@ public class ChatRoomServiceV1 {
 	private String findLastestChatTime(Long chatRoomId){
 		Optional<LocalDateTime> latestChat = chatRepository.findMostRecentMessageTimestampByChatRoomId(chatRoomId);
 
-		String time = null; // 대화가 아무것도 없는 상태는 항상 null이다.
+		String time = null;
 
 		if(latestChat.isPresent()){
 			// 몇 분이 지났는지.
 			Duration outdated = Duration.between(latestChat.get(), LocalDateTime.now());
 
-			time = new StringBuilder()
-				.append(outdated.toMinutes())
-				.append("분 전 대화")
-				.toString();
+			int realTime = 0; // 대화가 아무것도 없는 상태는 항상 null이다.
+			realTime = (int)outdated.toMinutes();
+
+			if(realTime == 0){
+				time = "방금 전 대화";
+			}
+			else if(realTime >0 && realTime<60){ // mm만 표기
+				time = outdated.toMinutes() + "분 전 대화"; // 분
+			}
+			else if(realTime >=60 && realTime <1440){ // hh:mm
+				int hour = realTime/60;
+				int minute = realTime%60;
+
+				time = hour+"시간 "+minute+"분 전 대화";
+			}
+			else{ // day로 표기
+				int day = realTime/1440;
+
+				time = day+"일 전 대화";
+			}
 
 		}
 		return time;

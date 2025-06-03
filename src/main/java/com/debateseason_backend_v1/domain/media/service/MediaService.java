@@ -2,6 +2,7 @@ package com.debateseason_backend_v1.domain.media.service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -15,6 +16,7 @@ import com.debateseason_backend_v1.domain.media.model.response.MediaContainer;
 import com.debateseason_backend_v1.domain.repository.entity.Media;
 import com.debateseason_backend_v1.domain.repository.MediaRepository;
 import com.debateseason_backend_v1.domain.youtubeLive.domain.YoutubeLive;
+import com.debateseason_backend_v1.domain.youtubeLive.domain.YoutubeLiveDto;
 import com.debateseason_backend_v1.domain.youtubeLive.domain.YoutubeMapper;
 import com.debateseason_backend_v1.domain.youtubeLive.infrastructure.YoutubeLiveEntity;
 import com.debateseason_backend_v1.domain.youtubeLive.infrastructure.YoutubeLiveRepository;
@@ -86,11 +88,22 @@ public class MediaService {
 
 		List<YoutubeLiveEntity> fetchedAllYoutubeLives = youtubeLiveRepository.findAll();
 
+		Map<String,YoutubeLive> youtubeLiveContainer = new HashMap<>();
+
+		for(YoutubeLiveEntity e : fetchedAllYoutubeLives) {
+
+			YoutubeLive youtubeLive = e.from(e);
+			youtubeLiveContainer.put(youtubeLive.getCategory(), youtubeLive);
+
+		}
+		/*
 		YoutubeMapper youtubeMapper = new YoutubeMapper();
-		Map<String,YoutubeLive> youtubeLiveContainer = youtubeMapper.toDomain(fetchedAllYoutubeLives);
+		List<YoutubeLiveDto> youtubeliveList = youtubeMapper.toDomain(fetchedAllYoutubeLives);
+
+		 */
 
 		MediaContainer mediaContainer = MediaContainer.builder()
-			.breakingNews(breakingNews)
+			//.breakingNews(breakingNews)
 
 			.youtubeLiveContainer(youtubeLiveContainer)
 			.items(mediaResponses)

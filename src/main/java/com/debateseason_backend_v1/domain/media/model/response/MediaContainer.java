@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.debateseason_backend_v1.domain.youtubeLive.domain.YoutubeLive;
+import com.debateseason_backend_v1.domain.youtubeLive.domain.YoutubeLiveDto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -18,7 +19,7 @@ import lombok.Setter;
 @Builder
 public class MediaContainer {
 
-	private List<BreakingNewsResponse> breakingNews;
+	//private List<BreakingNewsResponse> breakingNews;
 
 	//private MediaResponse mostRecentMedia;
 

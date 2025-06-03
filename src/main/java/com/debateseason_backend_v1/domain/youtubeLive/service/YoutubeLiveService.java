@@ -3,6 +3,7 @@ package com.debateseason_backend_v1.domain.youtubeLive.service;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -16,6 +17,7 @@ import com.debateseason_backend_v1.domain.chatroom.domain.ChatRoomMapper;
 import com.debateseason_backend_v1.domain.chatroom.model.response.chatroom.messages.Top5BestChatRoom;
 import com.debateseason_backend_v1.domain.repository.ChatRoomRepository;
 import com.debateseason_backend_v1.domain.youtubeLive.domain.YoutubeLive;
+import com.debateseason_backend_v1.domain.youtubeLive.domain.YoutubeLiveDto;
 import com.debateseason_backend_v1.domain.youtubeLive.domain.YoutubeMapper;
 import com.debateseason_backend_v1.domain.youtubeLive.infrastructure.YoutubeLiveEntity;
 import com.debateseason_backend_v1.domain.youtubeLive.infrastructure.YoutubeLiveRepository;
@@ -39,9 +41,10 @@ public class YoutubeLiveService {
 		List<YoutubeLiveEntity> fetchedAllYoutubeLives = youtubeLiveRepository.findAll();
 
 		YoutubeMapper youtubeMapper = new YoutubeMapper();
-		Map<String, YoutubeLive> youtubeLiveMap = youtubeMapper.toDomain(fetchedAllYoutubeLives);
+		List<YoutubeLiveDto> youtubeliveList = youtubeMapper.toDomain(fetchedAllYoutubeLives);
 
-		YoutubeLiveResponse youtubeLives = new YoutubeLiveResponse(youtubeLiveMap);
+		YoutubeLiveResponse youtubeLives = new YoutubeLiveResponse();
+		youtubeLives.setYoutubeLives(youtubeliveList);
 		return ApiResult.<YoutubeLiveResponse>builder()
 			.status(200)
 			.data(youtubeLives)
@@ -57,8 +60,17 @@ public class YoutubeLiveService {
 		// 1. id 값으로 YoutubeLive 상세보기
 		YoutubeLiveEntity youtubeLiveEntity = youtubeLiveRepository.findById(id);
 
-		YoutubeMapper youtubeMapper = new YoutubeMapper();
-		YoutubeLiveResponse youtubeLiveResponse =  new YoutubeLiveResponse(youtubeMapper.toDomain(youtubeLiveEntity));
+
+		YoutubeLiveDto youtubeLiveDto = YoutubeLiveDto.builder()
+			.id(youtubeLiveEntity.getId())
+			.title(youtubeLiveEntity.getTitle())
+			.supplier(youtubeLiveEntity.getSupplier())
+			.videoId(youtubeLiveEntity.getVideoId())
+			.category(youtubeLiveEntity.getCategory())
+			.createAt(youtubeLiveEntity.getCreatedAt())
+			.src(youtubeLiveEntity.getScr())
+			.build()
+			;
 
 		// 2. 토론방 인기 5개 가져오기
 		// chat_room_id(0), title(1), created_at(2), AGREE(3), DISAGREE(4)
@@ -91,7 +103,7 @@ public class YoutubeLiveService {
 			}
 		).toList();
 
-		YoutubeLiveDetail youtubeLiveDetail = new YoutubeLiveDetail(youtubeLiveResponse,top5BestChatRooms);
+		YoutubeLiveDetail youtubeLiveDetail = new YoutubeLiveDetail(youtubeLiveDto,top5BestChatRooms);
 
 		return ApiResult.<YoutubeLiveDetail>builder()
 			.status(200)

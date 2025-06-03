@@ -1,5 +1,6 @@
 package com.debateseason_backend_v1.domain.youtubeLive.domain;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,13 +24,22 @@ public class YoutubeMapper {
 	}
 
 	// 이거는 여러개
-	public Map<String,YoutubeLive> toDomain(List<YoutubeLiveEntity> jpaEntities){
-		Map<String,YoutubeLive> youtubeLiveContainer = new HashMap<>();
-
+	public List<YoutubeLiveDto> toDomain(List<YoutubeLiveEntity> jpaEntities){
+		List<YoutubeLiveDto> youtubeLiveContainer = new ArrayList<>();
 
 		for(YoutubeLiveEntity e : jpaEntities){
-			YoutubeLive youtubeLive = e.from(e);
-			youtubeLiveContainer.put(youtubeLive.getCategory(),youtubeLive);
+			YoutubeLiveDto youtubeLiveDto = YoutubeLiveDto.builder()
+				.id(e.getId())
+				.title(e.getTitle())
+				.supplier(e.getSupplier())
+				.videoId(e.getVideoId())
+				.category(e.getCategory())
+				.createAt(e.getCreatedAt())
+				.src(e.getScr())
+				.build()
+				;
+
+			youtubeLiveContainer.add(youtubeLiveDto);
 		}
 
 		return youtubeLiveContainer;

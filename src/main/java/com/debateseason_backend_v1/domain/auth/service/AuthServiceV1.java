@@ -1,5 +1,6 @@
 package com.debateseason_backend_v1.domain.auth.service;
 
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -14,7 +15,9 @@ import com.debateseason_backend_v1.domain.repository.entity.RefreshToken;
 import com.debateseason_backend_v1.security.jwt.JwtUtil;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -25,25 +28,26 @@ public class AuthServiceV1 {
 
 	@Transactional
 	public TokenReissueResponse reissueToken(TokenReissueServiceRequest request) {
+		try {
 
-		RefreshToken refreshToken = refreshTokenRepository.findByToken(request.refreshToken())
-			.orElseThrow(() -> new CustomException(ErrorCode.INVALID_REFRESH_TOKEN));
+			RefreshToken refreshToken = refreshTokenRepository.findByToken(request.refreshToken())
+				.orElseThrow(() -> new CustomException(ErrorCode.INVALID_REFRESH_TOKEN));
 
-		String newAccessToken = jwtUtil.createAccessToken(refreshToken.getUser().getId());
-		String newRefreshToken = jwtUtil.createRefreshToken(refreshToken.getUser().getId());
+			String newAccessToken = jwtUtil.createAccessToken(refreshToken.getUser().getId());
+			String newRefreshToken = jwtUtil.createRefreshToken(refreshToken.getUser().getId());
 
-		refreshTokenRepository.delete(refreshToken);
+			refreshToken.updateToken(newAccessToken);
 
-		RefreshToken token = RefreshToken.builder()
-			.token(newRefreshToken)
-			.user(refreshToken.getUser())
-			.build();
-		refreshTokenRepository.save(token);
+			return TokenReissueResponse.builder()
+				.accessToken(newAccessToken)
+				.refreshToken(newRefreshToken)
+				.build();
 
-		return TokenReissueResponse.builder()
-			.accessToken(newAccessToken)
-			.refreshToken(newRefreshToken)
-			.build();
+		} catch (ObjectOptimisticLockingFailureException e) {
+			log.warn("Refresh Token 재발급 중 동시성 충돌 발생: {}", request.refreshToken());
+			throw new CustomException(ErrorCode.INVALID_REFRESH_TOKEN);
+		}
+
 	}
 
 	public Long getCurrentUserId() {

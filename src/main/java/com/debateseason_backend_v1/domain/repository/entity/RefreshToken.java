@@ -3,6 +3,7 @@ package com.debateseason_backend_v1.domain.repository.entity;
 import java.time.LocalDateTime;
 
 import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import jakarta.persistence.Column;
@@ -15,6 +16,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -32,6 +34,9 @@ public class RefreshToken {
 	@Column(name = "refresh_token_id")
 	private Long id;
 
+	@Version
+	private Long version;
+
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "user_id", nullable = false)
 	private User user;
@@ -39,19 +44,23 @@ public class RefreshToken {
 	@Column(name = "token")
 	private String token;
 
-	@Column(name = "expiration_at")
-	private LocalDateTime expirationAt;
-
 	@CreatedDate
 	@Column(name = "created_at", updatable = false)
 	private LocalDateTime createdAt;
 
+	@LastModifiedDate
+	@Column(name = "update_at")
+	private LocalDateTime updatedAt;
+
 	@Builder
-	protected RefreshToken(User user, String token, LocalDateTime expirationAt) {
+	protected RefreshToken(User user, String token) {
 
 		this.user = user;
 		this.token = token;
-		this.expirationAt = expirationAt;
+	}
+
+	public void updateToken(String token) {
+		this.token = token;
 	}
 
 }

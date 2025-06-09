@@ -1,7 +1,5 @@
 package com.debateseason_backend_v1.domain.user.service;
 
-import java.time.LocalDateTime;
-
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -50,7 +48,12 @@ public class UserServiceV1 {
 		String newAccessToken = jwtUtil.createAccessToken(user.getId());
 		String newRefreshToken = jwtUtil.createRefreshToken(user.getId());
 
-		saveRefreshToken(user, newRefreshToken, jwtUtil.getRefreshTokenExpireTime());
+		RefreshToken refreshToken = RefreshToken.builder()
+			.token(newRefreshToken)
+			.user(user)
+			.build();
+
+		refreshTokenRepository.save(refreshToken);
 
 		boolean profileStatus = profileRepository.existsByUserId(user.getId());
 
@@ -102,19 +105,6 @@ public class UserServiceV1 {
 			.build();
 
 		return userRepository.save(user);
-	}
-
-	private void saveRefreshToken(User user, String refresh, Long expiredMs) {
-
-		LocalDateTime expiration = LocalDateTime.now().plusSeconds(expiredMs / 1000);
-
-		RefreshToken refreshToken = RefreshToken.builder()
-			.token(refresh)
-			.user(user)
-			.expirationAt(expiration)
-			.build();
-
-		refreshTokenRepository.save(refreshToken);
 	}
 
 }

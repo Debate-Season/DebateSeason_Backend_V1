@@ -48,7 +48,12 @@ public class UserServiceV2 {
 		String newAccessToken = jwtUtil.createAccessToken(user.getId());
 		String newRefreshToken = jwtUtil.createRefreshToken(user.getId());
 
-		saveRefreshToken(user, newRefreshToken, jwtUtil.getRefreshTokenExpireTime());
+		RefreshToken refreshToken = RefreshToken.builder()
+			.token(newRefreshToken)
+			.user(user)
+			.build();
+
+		refreshTokenRepository.save(refreshToken);
 
 		boolean profileStatus = profileRepository.existsByUserId(user.getId());
 
@@ -80,7 +85,6 @@ public class UserServiceV2 {
 		RefreshToken refreshToken = RefreshToken.builder()
 			.token(refresh)
 			.user(user)
-			.expirationAt(expiration)
 			.build();
 
 		refreshTokenRepository.save(refreshToken);

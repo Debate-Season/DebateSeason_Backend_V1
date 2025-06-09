@@ -72,6 +72,10 @@ public enum ErrorCode implements CodeInterface {
 	ALREADY_REPORTED(6001, HttpStatus.CONFLICT, "이미 신고된 메시지 입니다."),
 	REPORT_ALREADY_PROCESSED(6002, HttpStatus.CONFLICT, "이미 처리된 신고는 상태를 변경할 수 없습니다."),
 	SELF_REPORT_NOT_ALLOWED(6003, HttpStatus.BAD_REQUEST, "자신의 메시지는 신고할 수 없습니다."),
+
+	// 7000번대: 동시성 관련 에러
+	CONCURRENT_REQUEST(7000, HttpStatus.CONFLICT, "요청 처리 중 충돌이 발생했습니다. 잠시 후 다시 시도해주세요."),
+
 	NOT_FOUND_REPORT(404, HttpStatus.NOT_FOUND, "NOT_FOUND"),
 
 	// API 요청 에러
@@ -82,14 +86,14 @@ public enum ErrorCode implements CodeInterface {
 
 	// 400번대
 	NOT_FOUND_ISSUE(404, HttpStatus.NOT_FOUND, "주어진 id값에 해당하는 이슈방을 찾을 수 없습니다."),
-	NOT_FOUND_CHATROOM(404,HttpStatus.NOT_FOUND,"주어진 chatroomId로 해당하는 채팅방을 찾을 수 없습니다."),
+	NOT_FOUND_CHATROOM(404, HttpStatus.NOT_FOUND, "주어진 chatroomId로 해당하는 채팅방을 찾을 수 없습니다."),
 	NOT_FOUND_ISSUE_WITH_CATEGORY(400, HttpStatus.NOT_FOUND, "해당 category의 이슈방을 찾을 수 없습니다."),
 
 	// 페이지네이션 오류
-	PAGE_OUT_OF_RANGE(404,HttpStatus.NOT_FOUND,"검색범위를 넘어섰습니다. 내용을 불러올 수 없습니다."),
+	PAGE_OUT_OF_RANGE(404, HttpStatus.NOT_FOUND, "검색범위를 넘어섰습니다. 내용을 불러올 수 없습니다."),
 
 	// Media 관련 오류
-	MEDIA_NOT_FOUND(404,HttpStatus.NOT_FOUND,"요청하신 미디어는 존재하지 않습니다.");
+	MEDIA_NOT_FOUND(404, HttpStatus.NOT_FOUND, "요청하신 미디어는 존재하지 않습니다.");
 
 	private final Integer code;
 	private final HttpStatus httpStatus;

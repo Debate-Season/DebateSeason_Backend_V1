@@ -45,7 +45,7 @@ public class AuthServiceV1 {
 
 		} catch (ObjectOptimisticLockingFailureException e) {
 			log.warn("Refresh Token 재발급 중 동시성 충돌 발생: {}", request.refreshToken());
-			throw new CustomException(ErrorCode.INVALID_REFRESH_TOKEN, "요청 처리 중 충돌이 발생했습니다. 다시 시도해주세요.");
+			throw new CustomException(ErrorCode.INVALID_REFRESH_TOKEN);
 		}
 
 	}

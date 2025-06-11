@@ -36,7 +36,7 @@ public class AuthServiceV1 {
 			String newAccessToken = jwtUtil.createAccessToken(refreshToken.getUser().getId());
 			String newRefreshToken = jwtUtil.createRefreshToken(refreshToken.getUser().getId());
 
-			refreshToken.updateToken(newAccessToken);
+			refreshToken.updateToken(newRefreshToken);
 
 			return TokenReissueResponse.builder()
 				.accessToken(newAccessToken)

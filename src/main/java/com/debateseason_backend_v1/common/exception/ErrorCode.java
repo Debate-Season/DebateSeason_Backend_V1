@@ -42,6 +42,8 @@ public enum ErrorCode implements CodeInterface {
 	MISSING_REQUIRED_COMMUNITY(2012, HttpStatus.BAD_REQUEST, "커뮤니티 선택은 필수입니다."),
 	MISSING_REQUIRED_GENDER_TYPE(2013, HttpStatus.BAD_REQUEST, "성별은 선택은 필수입니다."),
 	MISSING_REQUIRED_AGE_RANGE(2014, HttpStatus.BAD_REQUEST, "연령대는 선택은 필수입니다."),
+	NOT_SUPPORTED_PROVINCE(2015, HttpStatus.BAD_REQUEST, "지원하지 않는 시도입니다."),
+	NOT_SUPPORTED_DISTRICT(2016, HttpStatus.BAD_REQUEST, "지원하지 않는 시군구입니다."),
 
 	// 3000번대 User(인증) 관련 에러
 	NOT_FOUND_USER(3000, HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다."),

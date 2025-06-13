@@ -1,7 +1,9 @@
 package com.debateseason_backend_v1.domain.profile.controller.request;
 
 import com.debateseason_backend_v1.domain.profile.enums.AgeRangeType;
+import com.debateseason_backend_v1.domain.profile.enums.DistrictType;
 import com.debateseason_backend_v1.domain.profile.enums.GenderType;
+import com.debateseason_backend_v1.domain.profile.enums.ProvinceType;
 import com.debateseason_backend_v1.domain.profile.service.request.ProfileUpdateServiceRequest;
 
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -10,8 +12,8 @@ import jakarta.validation.constraints.NotNull;
 
 @Schema(title = "프로필 수정 요청 DTO", description = "프로필 수정 요청")
 public record ProfileUpdateRequest(
-	@Schema(description = "사용자 색상", example = "RED")
-	String profileColor,
+	@Schema(description = "프로필 이미지", example = "RED")
+	String profileImage,
 
 	@Schema(description = "사용자 닉네임", example = "토론왕")
 	@NotBlank(message = "닉네임은 필수입니다.")
@@ -27,18 +29,34 @@ public record ProfileUpdateRequest(
 
 	@Schema(description = "연령대", example = "20대")
 	@NotNull(message = "연령대 선택은 필수입니다.")
-	AgeRangeType ageRange
+	AgeRangeType ageRange,
+
+	@Schema(description = "거주 시도 코드", example = "11")
+	ProvinceType residenceProvince,
+
+	@Schema(description = "거주 시·군·구 코드", example = "11030")
+	DistrictType residenceDistrict,
+
+	@Schema(description = "출신 시도 코드", example = "21")
+	ProvinceType hometownProvince,
+
+	@Schema(description = "출신 시·군·구 코드", example = "21010")
+	DistrictType hometownDistrict
 ) {
 
 	public ProfileUpdateServiceRequest toServiceRequest(Long userId) {
 
 		return ProfileUpdateServiceRequest.builder()
 			.userId(userId)
-			.profileColor(profileColor)
+			.profileImage(profileImage)
 			.nickname(nickname)
 			.communityId(communityId)
 			.gender(gender)
 			.ageRange(ageRange)
+			.residenceProvince(residenceProvince)
+			.residenceDistrict(residenceDistrict)
+			.hometownProvince(hometownProvince)
+			.hometownDistrict(hometownDistrict)
 			.build();
 	}
 

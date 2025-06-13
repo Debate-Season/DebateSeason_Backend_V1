@@ -5,6 +5,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.debateseason_backend_v1.common.exception.CustomException;
 import com.debateseason_backend_v1.common.exception.ErrorCode;
+import com.debateseason_backend_v1.domain.profile.domain.Region;
 import com.debateseason_backend_v1.domain.profile.enums.CommunityType;
 import com.debateseason_backend_v1.domain.profile.service.request.ProfileRegisterServiceRequest;
 import com.debateseason_backend_v1.domain.profile.service.request.ProfileUpdateServiceRequest;
@@ -30,13 +31,18 @@ public class ProfileServiceV1 {
 
 		validateProfileRegistration(request);
 
+		Region residence = Region.of(request.residenceProvince(), request.residenceDistrict());
+		Region hometown = Region.of(request.hometownProvince(), request.hometownDistrict());
+
 		Profile profile = Profile.builder()
 			.userId(request.userId())
-			.profileColor(request.profileColor())
+			.profileImage(request.profileImage())
 			.nickname(request.nickname())
 			.gender(request.gender())
 			.ageRange(request.ageRange())
 			.communityId(request.communityId())
+			.residence(residence)
+			.hometown(hometown)
 			.build();
 
 		profileRepository.save(profile);
@@ -60,8 +66,12 @@ public class ProfileServiceV1 {
 
 		validateProfileUpdate(request, profile);
 
+		Region residence = Region.of(request.residenceProvince(), request.residenceDistrict());
+		Region hometown = Region.of(request.hometownProvince(), request.hometownDistrict());
+
 		profile.update(
-			request.profileColor(), request.nickname(), request.communityId(), request.gender(), request.ageRange()
+			request.profileImage(), request.nickname(), request.communityId(), request.gender(), request.ageRange(),
+			residence, hometown
 		);
 	}
 

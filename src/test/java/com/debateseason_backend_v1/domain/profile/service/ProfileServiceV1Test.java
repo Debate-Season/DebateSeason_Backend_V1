@@ -16,8 +16,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.debateseason_backend_v1.common.exception.CustomException;
 import com.debateseason_backend_v1.common.exception.ErrorCode;
+import com.debateseason_backend_v1.domain.profile.domain.Region;
 import com.debateseason_backend_v1.domain.profile.enums.AgeRangeType;
+import com.debateseason_backend_v1.domain.profile.enums.DistrictType;
 import com.debateseason_backend_v1.domain.profile.enums.GenderType;
+import com.debateseason_backend_v1.domain.profile.enums.ProvinceType;
 import com.debateseason_backend_v1.domain.profile.service.request.ProfileRegisterServiceRequest;
 import com.debateseason_backend_v1.domain.profile.service.request.ProfileUpdateServiceRequest;
 import com.debateseason_backend_v1.domain.profile.service.response.ProfileResponse;
@@ -221,7 +224,7 @@ class ProfileServiceV1Test {
 			ProfileUpdateServiceRequest request = createUpdateRequest();
 			Profile profile = Profile.builder()
 				.userId(1L)
-				.profileColor("RED")
+				.profileImage("RED")
 				.nickname("기존닉네임")
 				.communityId(1L)
 				.gender(GenderType.MALE)
@@ -248,16 +251,20 @@ class ProfileServiceV1Test {
 			String sameNickname = "토론왕";
 			ProfileUpdateServiceRequest request = ProfileUpdateServiceRequest.builder()
 				.userId(1L)
-				.profileColor("RED")
+				.profileImage("RED")
 				.nickname(sameNickname)
 				.communityId(1L)
 				.gender(GenderType.MALE)
 				.ageRange(AgeRangeType.TWENTIES)
+				.hometownDistrict(DistrictType.YONGSAN)
+				.hometownProvince(ProvinceType.SEOUL)
+				.residenceDistrict(DistrictType.YONGSAN)
+				.residenceProvince(ProvinceType.SEOUL)
 				.build();
 
 			Profile profile = Profile.builder()
 				.userId(1L)
-				.profileColor("RED")
+				.profileImage("RED")
 				.nickname(sameNickname)
 				.communityId(1L)
 				.gender(GenderType.MALE)
@@ -332,33 +339,43 @@ class ProfileServiceV1Test {
 	private ProfileRegisterServiceRequest createRegisterRequest() {
 		return ProfileRegisterServiceRequest.builder()
 			.userId(1L)
-			.profileColor("RED")
+			.profileImage("RED")
 			.nickname("토론왕")
 			.communityId(1L)
 			.gender(GenderType.MALE)
 			.ageRange(AgeRangeType.TWENTIES)
+			.hometownDistrict(DistrictType.YONGSAN)
+			.hometownProvince(ProvinceType.SEOUL)
+			.residenceDistrict(DistrictType.YONGSAN)
+			.residenceProvince(ProvinceType.SEOUL)
 			.build();
 	}
 
 	private ProfileUpdateServiceRequest createUpdateRequest() {
 		return ProfileUpdateServiceRequest.builder()
 			.userId(1L)
-			.profileColor("BLUE")
+			.profileImage("BLUE")
 			.nickname("토론왕2")
 			.communityId(2L)
 			.gender(GenderType.FEMALE)
 			.ageRange(AgeRangeType.THIRTIES)
+			.hometownDistrict(DistrictType.YONGSAN)
+			.hometownProvince(ProvinceType.SEOUL)
+			.residenceDistrict(DistrictType.YONGSAN)
+			.residenceProvince(ProvinceType.SEOUL)
 			.build();
 	}
 
 	private Profile createProfile() {
 		return Profile.builder()
 			.userId(1L)
-			.profileColor("RED")
+			.profileImage("RED")
 			.nickname("토론왕")
 			.communityId(1L)
 			.gender(GenderType.MALE)
 			.ageRange(AgeRangeType.TWENTIES)
+			.hometown(Region.of(ProvinceType.SEOUL, DistrictType.YONGSAN))
+			.residence(Region.of(ProvinceType.SEOUL, DistrictType.YONGSAN))
 			.build();
 	}
 }

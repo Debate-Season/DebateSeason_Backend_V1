@@ -5,9 +5,12 @@ import static org.assertj.core.api.Assertions.*;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import com.debateseason_backend_v1.domain.profile.domain.Region;
 import com.debateseason_backend_v1.domain.profile.enums.AgeRangeType;
 import com.debateseason_backend_v1.domain.profile.enums.CommunityType;
+import com.debateseason_backend_v1.domain.profile.enums.DistrictType;
 import com.debateseason_backend_v1.domain.profile.enums.GenderType;
+import com.debateseason_backend_v1.domain.profile.enums.ProvinceType;
 
 class ProfileTest {
 
@@ -25,7 +28,7 @@ class ProfileTest {
 		// when
 		Profile profile = Profile.builder()
 			.userId(userId)
-			.profileColor(profileColor)
+			.profileImage(profileColor)
 			.nickname(nickname)
 			.communityId(communityId)
 			.gender(gender)
@@ -34,7 +37,7 @@ class ProfileTest {
 
 		// then
 		assertThat(profile.getUserId()).isEqualTo(userId);
-		assertThat(profile.getProfileColor()).isEqualTo(profileColor);
+		assertThat(profile.getProfileImage()).isEqualTo(profileColor);
 		assertThat(profile.getNickname()).isEqualTo(nickname);
 		assertThat(profile.getCommunityId()).isEqualTo(communityId);
 		assertThat(profile.getGender()).isEqualTo(gender);
@@ -47,24 +50,28 @@ class ProfileTest {
 		// given
 		Profile profile = Profile.builder()
 			.userId(1L)
-			.profileColor("RED")
+			.profileImage("RED")
 			.nickname("토론왕")
 			.communityId(1L)
 			.gender(GenderType.MALE)
 			.ageRange(AgeRangeType.TWENTIES)
+			.hometown(Region.of(ProvinceType.SEOUL, DistrictType.YONGSAN))
+			.residence(Region.of(ProvinceType.SEOUL, DistrictType.YONGSAN))
 			.build();
 
-		String newProfileColor = "BLUE";
+		String newProfileImage = "BLUE";
 		String newNickname = "토론마스터";
 		Long newCommunityId = 2L;
 		GenderType newGender = GenderType.FEMALE;
 		AgeRangeType newAgeRange = AgeRangeType.THIRTIES;
+		Region newHometown = Region.of(ProvinceType.BUSAN, DistrictType.JUNG_BUSAN);
+		Region newResidence = Region.of(ProvinceType.BUSAN, DistrictType.JUNG_BUSAN);
 
 		// when
-		profile.update(newProfileColor, newNickname, newCommunityId, newGender, newAgeRange);
+		profile.update(newProfileImage, newNickname, newCommunityId, newGender, newAgeRange, newHometown, newResidence);
 
 		// then
-		assertThat(profile.getProfileColor()).isEqualTo(newProfileColor);
+		assertThat(profile.getProfileImage()).isEqualTo(newProfileImage);
 		assertThat(profile.getNickname()).isEqualTo(newNickname);
 		assertThat(profile.getCommunityId()).isEqualTo(newCommunityId);
 		assertThat(profile.getGender()).isEqualTo(newGender);
@@ -77,11 +84,13 @@ class ProfileTest {
 		// given
 		Profile profile = Profile.builder()
 			.userId(1L)
-			.profileColor("RED")
+			.profileImage("RED")
 			.nickname("토론왕")
 			.communityId(1L)
 			.gender(GenderType.MALE)
 			.ageRange(AgeRangeType.TWENTIES)
+			.hometown(Region.of(ProvinceType.SEOUL, DistrictType.YONGSAN))
+			.residence(Region.of(ProvinceType.SEOUL, DistrictType.YONGSAN))
 			.build();
 
 		String anonymousNickname = "탈퇴한사용자";
@@ -101,11 +110,13 @@ class ProfileTest {
 		Long communityId = 1L; // DC_INSIDE
 		Profile profile = Profile.builder()
 			.userId(1L)
-			.profileColor("RED")
+			.profileImage("RED")
 			.nickname("토론왕")
 			.communityId(communityId)
 			.gender(GenderType.MALE)
 			.ageRange(AgeRangeType.TWENTIES)
+			.hometown(Region.of(ProvinceType.SEOUL, DistrictType.YONGSAN))
+			.residence(Region.of(ProvinceType.SEOUL, DistrictType.YONGSAN))
 			.build();
 
 		// when
@@ -123,11 +134,13 @@ class ProfileTest {
 		// given
 		Profile profile = Profile.builder()
 			.userId(1L)
-			.profileColor("RED")
+			.profileImage("RED")
 			.nickname("토론왕")
 			.communityId(null)
 			.gender(GenderType.MALE)
 			.ageRange(AgeRangeType.TWENTIES)
+			.hometown(Region.of(ProvinceType.SEOUL, DistrictType.YONGSAN))
+			.residence(Region.of(ProvinceType.SEOUL, DistrictType.YONGSAN))
 			.build();
 
 		// when

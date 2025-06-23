@@ -1,25 +1,21 @@
 package com.debateseason_backend_v1.domain.media.service;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.springframework.stereotype.Service;
 
-import com.debateseason_backend_v1.common.exception.CustomException;
 import com.debateseason_backend_v1.common.exception.ErrorCode;
 import com.debateseason_backend_v1.common.response.ApiResult;
-import com.debateseason_backend_v1.domain.media.model.response.BreakingNewsResponse;
+import com.debateseason_backend_v1.domain.media.infrastructure.entity.MediaEntityManager;
+import com.debateseason_backend_v1.domain.media.infrastructure.repository.MediaRepository;
 import com.debateseason_backend_v1.domain.media.model.response.MediaContainer;
-import com.debateseason_backend_v1.domain.repository.entity.Media;
-import com.debateseason_backend_v1.domain.repository.MediaRepository;
+import com.debateseason_backend_v1.domain.media.infrastructure.entity.MediaEntity;
 import com.debateseason_backend_v1.domain.youtubeLive.domain.YoutubeLive;
-import com.debateseason_backend_v1.domain.youtubeLive.domain.YoutubeLiveDto;
-import com.debateseason_backend_v1.domain.youtubeLive.domain.YoutubeMapper;
-import com.debateseason_backend_v1.domain.youtubeLive.infrastructure.YoutubeLiveEntity;
-import com.debateseason_backend_v1.domain.youtubeLive.infrastructure.YoutubeLiveRepository;
+import com.debateseason_backend_v1.domain.youtubeLive.infrastructure.entity.YoutubeLiveEntity;
+import com.debateseason_backend_v1.domain.youtubeLive.infrastructure.entity.YoutubeLiveEntityManger;
+import com.debateseason_backend_v1.domain.youtubeLive.infrastructure.repository.YoutubeLiveRepository;
 import com.debateseason_backend_v1.domain.media.model.response.MediaResponse;
 
 import jakarta.transaction.Transactional;
@@ -30,86 +26,29 @@ import lombok.RequiredArgsConstructor;
 public class MediaService {
 
 	private final MediaRepository mediaRepository;
-
 	private final YoutubeLiveRepository youtubeLiveRepository;
 
 	public ApiResult<MediaContainer> fetch(String type, String time){
 
-		// 속보 가져오기
-
-		List<BreakingNewsResponse> breakingNews = mediaRepository.findTop10BreakingNews().stream()
-			.map(
-				e->
-					BreakingNewsResponse.builder()
-						.title(e.getTitle())
-						.url(e.getUrl())
-						.build()
-			).toList()
-			;
-
-		List<Media> mediaList = null;
-
-		// 1-1. 최초 요청인 경우 -> 모두 가져오기
-		if( type == null && time == null){
-			mediaList = mediaRepository.getAllMedia(LocalDateTime.now().toString());
-		}
-		// 1-2. 모두 가져오기 커서 기반 페이지네이션
-		else if(type == null && time != null){
-			mediaList = mediaRepository.getAllMedia(time);
-
-		}
-		// 2-1. type( youtube, news, community )별 최초 요청
-		else if(type!= null && time == null){
-			mediaList = mediaRepository.getMediaByType(LocalDateTime.now().toString(),type);
-		}
-		// 2-2. type별 커서 기반 페이지네이션
-		else if(type!= null && time != null){
-			mediaList = mediaRepository.getMediaByType(time,type);
-		}
+		// 1. 미디어JpaEntityList
+		List<MediaEntity> mediaEntityList = mediaRepository.findMediaByTypeAndTimeCursor(type, time);
+		// MediaEntityManager
+		MediaEntityManager mediaEntityManager = new MediaEntityManager();
+		List<MediaResponse> mediaResponseList = mediaEntityManager.toMediaResponseList(mediaEntityList);
 
 
-
-		List<MediaResponse> mediaResponses = new ArrayList<>();
-
-		for(Media m:mediaList){
-			MediaResponse mediaResponse = MediaResponse.builder()
-				.id(m.getId())
-				.url(m.getUrl())// href
-				.src(m.getSrc())// 이미지 url
-				.title(m.getTitle())
-				.supplier(m.getMedia())
-				.outdated(m.getCreatedAt())
-				.build();
-
-			mediaResponses.add(mediaResponse);
-		}
-
-		// 유튜브 Live
-
+		// 2. 유튜브JpaEntityList
 		List<YoutubeLiveEntity> fetchedAllYoutubeLives = youtubeLiveRepository.findAll();
+		// YoutubeLiveEntityManger
+		YoutubeLiveEntityManger youtubeLiveEntityManger = new YoutubeLiveEntityManger();
+		Map<String, YoutubeLive> youtubeLiveMap = youtubeLiveEntityManger.toYoutubeLiveMap(fetchedAllYoutubeLives);
 
-		Map<String,YoutubeLive> youtubeLiveContainer = new HashMap<>();
-
-		for(YoutubeLiveEntity e : fetchedAllYoutubeLives) {
-
-			YoutubeLive youtubeLive = e.from(e);
-			youtubeLiveContainer.put(youtubeLive.getCategory(), youtubeLive);
-
-		}
-		/*
-		YoutubeMapper youtubeMapper = new YoutubeMapper();
-		List<YoutubeLiveDto> youtubeliveList = youtubeMapper.toDomain(fetchedAllYoutubeLives);
-
-		 */
 
 		MediaContainer mediaContainer = MediaContainer.builder()
-			//.breakingNews(breakingNews)
-
-			.youtubeLiveContainer(youtubeLiveContainer)
-			.items(mediaResponses)
+			.youtubeLiveContainer(youtubeLiveMap)
+			.items(mediaResponseList)
 			.build()
 			;
-
 
 		return ApiResult.<MediaContainer>builder()
 			.status(200)
@@ -123,14 +62,11 @@ public class MediaService {
 	// Dirty-checking
 	@Transactional
 	public ApiResult<Object> updateMediaViewCount(Long id){
-		Media media = mediaRepository.findById(id)
-			.orElseThrow(
-				()-> new CustomException(ErrorCode.MEDIA_NOT_FOUND)
-			);
+		MediaEntity mediaEntity = mediaRepository.findById(id);
 
-		int count = media.getCount()+1;
+		int count = mediaEntity.getCount()+1;
 
-		media.setCount(count);
+		mediaEntity.setCount(count);
 
 		return ApiResult.builder()
 			.status(200)

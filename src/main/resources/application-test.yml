@@ -41,3 +41,6 @@ jwt:
 
 
 stomp-connect-url: "/ws-stomp"
+
+# 유튜브 라이브 api key ( dummy ) -> 할당량 아껴야 함.
+youtube_live-api-key : "dummy"

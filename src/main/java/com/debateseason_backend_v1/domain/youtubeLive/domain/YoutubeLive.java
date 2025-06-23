@@ -2,7 +2,7 @@ package com.debateseason_backend_v1.domain.youtubeLive.domain;
 
 import java.time.LocalDateTime;
 
-import com.debateseason_backend_v1.crolling.youtubelive.domain.TmpYoutubeLiveDto;
+
 import com.fasterxml.jackson.annotation.JsonFormat;
 
 import lombok.AllArgsConstructor;

@@ -87,3 +87,6 @@ swagger-base-url: "https://debate-season.click/prod"
 
 #stomp 연결 환경분리
 stomp-connect-url: "/ws-stomp"
+
+# 유튜브 라이브 api key (실제 값)
+youtube_live-api-key : "AIzaSyCdEG_MS81NpdlsAJOQwmzS21u7L_K-r0M"

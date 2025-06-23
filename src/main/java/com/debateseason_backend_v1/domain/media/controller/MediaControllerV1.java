@@ -11,7 +11,7 @@ import com.debateseason_backend_v1.common.response.ApiResult;
 import com.debateseason_backend_v1.domain.media.docs.MediaControllerV1Docs;
 import com.debateseason_backend_v1.domain.media.model.response.MediaContainer;
 import com.debateseason_backend_v1.domain.media.service.MediaService;
-import com.debateseason_backend_v1.domain.media.model.MediaType;
+import com.debateseason_backend_v1.domain.media.domain.MediaType;
 
 import lombok.RequiredArgsConstructor;
 

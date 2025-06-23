@@ -36,4 +36,9 @@ public class MediaResponse {
 
 	@Schema(description = "src",example = "https://mimgnews.pstatic.net/image/origin/052/2025/03/29/2172771.jpg?type=nf212_140&ut=1743244864000")
 	private String src;
+
+	@Schema(description = "type",example = "news")
+	private String type;
+
+
 }

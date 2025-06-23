@@ -34,22 +34,16 @@ spring:
 
 
 logging.level:
-
   root: info
+
   # Database & ORM
   org.hibernate.SQL: debug
   org.hibernate.orm.jdbc.bind: trace  # 파라미터 바인딩 확인용
 
   # WebSocket & STOMP 디버깅용
-  # org.springframework.web.socket: debug
+  org.springframework.web.socket: debug
   org.springframework.messaging: debug
   org.springframework.web.socket.messaging: debug
-
-  org.springframework.messaging.simp: trace
-  org.springframework.web.socket: trace
-
-  org.apache.http: DEBUG
-  org.apache.http.wire: DEBUG
 
 server:
   port: 8080
@@ -69,3 +63,4 @@ stomp-connect-url: "/ws-stomp"
 
 # 유튜브 라이브 api key ( dummy ) -> 할당량 아껴야 함.
 youtube_live-api-key : "dummy"
+

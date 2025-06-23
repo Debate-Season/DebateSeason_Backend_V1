@@ -60,7 +60,7 @@ public class MbcNews {
 			params.add("relevanceLanguage", "ko");
 			params.add("videoEmbeddable", "true");
 			//params.add("videoCategoryId", "25"); news는 25번
-			params.add("channelId","UC5YM8Ln-4iMBR9ZEqcDN5kw");
+			params.add("channelId","UCF4Wxdo3inmxP-Y59wXDsFw");
 			params.add("key", key); // 보통 실제 서비스에서는 보안상 환경변수로 관리합니다.
 
 			WebClient webClient =

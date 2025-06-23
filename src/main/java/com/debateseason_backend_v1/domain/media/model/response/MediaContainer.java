@@ -19,10 +19,6 @@ import lombok.Setter;
 @Builder
 public class MediaContainer {
 
-	//private List<BreakingNewsResponse> breakingNews;
-
-	//private MediaResponse mostRecentMedia;
-
 	private Map<String,YoutubeLive> youtubeLiveContainer;
 
 	private List<MediaResponse> items;

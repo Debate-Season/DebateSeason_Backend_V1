@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.debateseason_backend_v1.domain.youtubeLive.infrastructure.YoutubeLiveEntity;
+import com.debateseason_backend_v1.domain.youtubeLive.infrastructure.entity.YoutubeLiveEntity;
 
 public class YoutubeMapper {
 

@@ -26,7 +26,7 @@ import com.debateseason_backend_v1.domain.issue.model.response.IssueBriefRespons
 import com.debateseason_backend_v1.domain.chat.infrastructure.chat.ChatJpaRepository;
 import com.debateseason_backend_v1.domain.repository.ChatRoomRepository;
 import com.debateseason_backend_v1.domain.repository.IssueRepository;
-import com.debateseason_backend_v1.domain.repository.MediaRepository;
+import com.debateseason_backend_v1.domain.media.infrastructure.repository.MediaJpaRepository;
 import com.debateseason_backend_v1.domain.repository.UserChatRoomRepository;
 import com.debateseason_backend_v1.domain.repository.UserRepository;
 import com.debateseason_backend_v1.domain.repository.entity.ChatRoom;
@@ -49,7 +49,7 @@ public class ChatRoomServiceV1 {
 	private final IssueRepository issueRepository; // 혹시나 Service쓰면, 나중에 순환참조 발생할 것 같아서 Repository로 함.
 	private final UserChatRoomRepository userChatRoomRepository;
 	private final ChatJpaRepository chatRepository;
-	private final MediaRepository mediaRepository;
+	private final MediaJpaRepository mediaJpaRepository;
 
 	// 1. 채팅방 저장하기
 	public ApiResult<Object> save(ChatRoomRequest chatRoomRequest, long issueId) {
@@ -331,7 +331,7 @@ public class ChatRoomServiceV1 {
 	public ApiResult<ResponseOnlyHome> findVotedChatRoom(Long userId,Long pageChatRoomId){
 
 		// 0. 속보 가져오기
-		List<BreakingNewsResponse> breakingNews = mediaRepository.findTop10BreakingNews().stream()
+		List<BreakingNewsResponse> breakingNews = mediaJpaRepository.findTop10BreakingNews().stream()
 			.map(
 				e->
 					BreakingNewsResponse.builder()

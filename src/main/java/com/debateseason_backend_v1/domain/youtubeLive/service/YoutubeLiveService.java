@@ -3,9 +3,7 @@ package com.debateseason_backend_v1.domain.youtubeLive.service;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
@@ -14,13 +12,11 @@ import com.debateseason_backend_v1.common.exception.ErrorCode;
 import com.debateseason_backend_v1.common.response.ApiResult;
 import com.debateseason_backend_v1.domain.chat.application.repository.ChatRepository;
 import com.debateseason_backend_v1.domain.chatroom.domain.ChatRoomMapper;
-import com.debateseason_backend_v1.domain.chatroom.model.response.chatroom.messages.Top5BestChatRoom;
 import com.debateseason_backend_v1.domain.repository.ChatRoomRepository;
-import com.debateseason_backend_v1.domain.youtubeLive.domain.YoutubeLive;
 import com.debateseason_backend_v1.domain.youtubeLive.domain.YoutubeLiveDto;
 import com.debateseason_backend_v1.domain.youtubeLive.domain.YoutubeMapper;
-import com.debateseason_backend_v1.domain.youtubeLive.infrastructure.YoutubeLiveEntity;
-import com.debateseason_backend_v1.domain.youtubeLive.infrastructure.YoutubeLiveRepository;
+import com.debateseason_backend_v1.domain.youtubeLive.infrastructure.entity.YoutubeLiveEntity;
+import com.debateseason_backend_v1.domain.youtubeLive.infrastructure.repository.YoutubeLiveRepository;
 import com.debateseason_backend_v1.domain.youtubeLive.model.response.YoutubeLiveDetail;
 import com.debateseason_backend_v1.domain.youtubeLive.model.response.YoutubeLiveResponse;
 

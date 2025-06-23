@@ -41,8 +41,11 @@ public class RefreshToken {
 	@JoinColumn(name = "user_id", nullable = false)
 	private User user;
 
-	@Column(name = "token")
-	private String token;
+	@Column(name = "current_token", unique = true, nullable = false)
+	private String currentToken;
+
+	@Column(name = "previou_token", unique = true, nullable = false)
+	private String previousToken;
 
 	@CreatedDate
 	@Column(name = "created_at", updatable = false)
@@ -53,14 +56,15 @@ public class RefreshToken {
 	private LocalDateTime updatedAt;
 
 	@Builder
-	protected RefreshToken(User user, String token) {
-
+	protected RefreshToken(User user, String currentToken, String previousToken) {
 		this.user = user;
-		this.token = token;
+		this.currentToken = currentToken;
+		this.previousToken = previousToken;
 	}
 
-	public void updateToken(String token) {
-		this.token = token;
+	public void updateToken(String newToken) {
+		this.previousToken = this.currentToken;
+		this.currentToken = newToken;
 	}
 
 }

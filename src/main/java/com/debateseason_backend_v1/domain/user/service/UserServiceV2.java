@@ -49,7 +49,8 @@ public class UserServiceV2 {
 		String newRefreshToken = jwtUtil.createRefreshToken(user.getId());
 
 		RefreshToken refreshToken = RefreshToken.builder()
-			.token(newRefreshToken)
+			.currentToken(newRefreshToken)
+			.previousToken(newRefreshToken)
 			.user(user)
 			.build();
 
@@ -78,15 +79,4 @@ public class UserServiceV2 {
 		return userRepository.save(user);
 	}
 
-	private void saveRefreshToken(User user, String refresh, Long expiredMs) {
-
-		LocalDateTime expiration = LocalDateTime.now().plusSeconds(expiredMs / 1000);
-
-		RefreshToken refreshToken = RefreshToken.builder()
-			.token(refresh)
-			.user(user)
-			.build();
-
-		refreshTokenRepository.save(refreshToken);
-	}
 }

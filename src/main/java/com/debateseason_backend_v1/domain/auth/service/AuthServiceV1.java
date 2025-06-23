@@ -1,5 +1,7 @@
 package com.debateseason_backend_v1.domain.auth.service;
 
+import java.time.LocalDateTime;
+
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -30,8 +32,19 @@ public class AuthServiceV1 {
 	public TokenReissueResponse reissueToken(TokenReissueServiceRequest request) {
 		try {
 
-			RefreshToken refreshToken = refreshTokenRepository.findByToken(request.refreshToken())
+			RefreshToken refreshToken = refreshTokenRepository.findByCurrentTokenOrPreviousToken(request.refreshToken())
 				.orElseThrow(() -> new CustomException(ErrorCode.INVALID_REFRESH_TOKEN));
+
+			if(
+				refreshToken.getPreviousToken().equals(request.refreshToken())
+				&& refreshToken.getUpdatedAt().isAfter(LocalDateTime.now().minusSeconds(30))
+			) {
+				String accessToken = jwtUtil.createAccessToken(refreshToken.getUser().getId());
+				return TokenReissueResponse.builder()
+					.accessToken(accessToken)
+					.refreshToken(refreshToken.getCurrentToken())
+					.build();
+			}
 
 			String newAccessToken = jwtUtil.createAccessToken(refreshToken.getUser().getId());
 			String newRefreshToken = jwtUtil.createRefreshToken(refreshToken.getUser().getId());

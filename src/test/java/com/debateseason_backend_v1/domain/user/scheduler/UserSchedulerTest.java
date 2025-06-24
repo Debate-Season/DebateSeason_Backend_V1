@@ -21,12 +21,12 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import com.debateseason_backend_v1.common.component.UuidShortener;
 import com.debateseason_backend_v1.domain.repository.ProfileRepository;
-import com.debateseason_backend_v1.domain.repository.UserRepository;
+import com.debateseason_backend_v1.domain.user.infrastructure.UserJpaRepository;
 import com.debateseason_backend_v1.domain.repository.entity.Profile;
-import com.debateseason_backend_v1.domain.repository.entity.User;
+import com.debateseason_backend_v1.domain.user.infrastructure.UserEntity;
 import com.debateseason_backend_v1.domain.profile.enums.AgeRangeType;
 import com.debateseason_backend_v1.domain.profile.enums.GenderType;
-import com.debateseason_backend_v1.domain.user.enums.SocialType;
+import com.debateseason_backend_v1.domain.user.domain.SocialType;
 
 @ActiveProfiles("test")
 @ExtendWith(MockitoExtension.class)
@@ -36,7 +36,7 @@ class UserSchedulerTest {
 	private UuidShortener uuidShortener;
 
 	@Mock
-	private UserRepository userRepository;
+	private UserJpaRepository userRepository;
 
 	@Mock
 	private ProfileRepository profileRepository;
@@ -51,9 +51,9 @@ class UserSchedulerTest {
 		LocalDateTime now = LocalDateTime.of(2024, 1, 21, 0, 0);
 		LocalDateTime cutoffDate = now.minusDays(5);
 
-		User user1 = createUser(1L, "old-id-1", true, now.minusDays(6));
-		User user2 = createUser(2L, "old-id-2", true, now.minusDays(7));
-		List<User> expiredUsers = Arrays.asList(user1, user2);
+		UserEntity user1 = createUser(1L, "old-id-1", true, now.minusDays(6));
+		UserEntity user2 = createUser(2L, "old-id-2", true, now.minusDays(7));
+		List<UserEntity> expiredUsers = Arrays.asList(user1, user2);
 
 		Profile profile1 = createProfile(1L, 1L, "old-nickname-1");
 		Profile profile2 = createProfile(2L, 2L, "old-nickname-2");
@@ -93,8 +93,8 @@ class UserSchedulerTest {
 		LocalDateTime now = LocalDateTime.of(2024, 1, 21, 0, 0);
 		LocalDateTime cutoffDate = now.minusDays(5);
 
-		User user = createUser(1L, "old-id", true, now.minusDays(6));
-		List<User> expiredUsers = Collections.singletonList(user);
+		UserEntity user = createUser(1L, "old-id", true, now.minusDays(6));
+		List<UserEntity> expiredUsers = Collections.singletonList(user);
 
 		when(userRepository.findByIsDeletedTrueAndUpdatedAtBefore(any(LocalDateTime.class)))
 			.thenReturn(expiredUsers);
@@ -135,8 +135,8 @@ class UserSchedulerTest {
 		verify(uuidShortener, never()).shortenUuid();
 	}
 
-	private User createUser(Long id, String identifier, boolean isDeleted, LocalDateTime updatedAt) {
-		User user = User.builder()
+	private UserEntity createUser(Long id, String identifier, boolean isDeleted, LocalDateTime updatedAt) {
+		UserEntity user = UserEntity.builder()
 			.socialType(SocialType.KAKAO)
 			.externalId(identifier)
 			.build();

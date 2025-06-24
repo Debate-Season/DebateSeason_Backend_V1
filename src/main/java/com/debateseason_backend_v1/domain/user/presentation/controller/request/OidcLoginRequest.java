@@ -1,7 +1,7 @@
-package com.debateseason_backend_v1.domain.user.controller.request;
+package com.debateseason_backend_v1.domain.user.presentation.controller.request;
 
-import com.debateseason_backend_v1.domain.user.enums.SocialType;
-import com.debateseason_backend_v1.domain.user.service.request.OidcLoginServiceRequest;
+import com.debateseason_backend_v1.domain.user.domain.SocialType;
+import com.debateseason_backend_v1.domain.user.application.service.request.OidcLoginServiceRequest;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;

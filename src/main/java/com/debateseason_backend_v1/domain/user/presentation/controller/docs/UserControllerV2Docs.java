@@ -1,12 +1,12 @@
-package com.debateseason_backend_v1.domain.user.controller.docs;
+package com.debateseason_backend_v1.domain.user.presentation.controller.docs;
 
 import org.springframework.web.bind.annotation.RequestBody;
 
 import com.debateseason_backend_v1.common.exception.ErrorCode;
 import com.debateseason_backend_v1.common.response.ApiResult;
 import com.debateseason_backend_v1.common.swagger.ApiErrorCode;
-import com.debateseason_backend_v1.domain.user.controller.request.OidcLoginRequest;
-import com.debateseason_backend_v1.domain.user.service.response.LoginResponse;
+import com.debateseason_backend_v1.domain.user.presentation.controller.request.OidcLoginRequest;
+import com.debateseason_backend_v1.domain.user.application.service.response.LoginResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;

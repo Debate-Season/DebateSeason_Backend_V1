@@ -10,7 +10,7 @@ import com.auth0.jwt.exceptions.JWTDecodeException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.debateseason_backend_v1.common.exception.CustomException;
 import com.debateseason_backend_v1.common.exception.ErrorCode;
-import com.debateseason_backend_v1.domain.user.enums.SocialType;
+import com.debateseason_backend_v1.domain.user.domain.SocialType;
 
 @Component
 public class OidcProviderFactory {

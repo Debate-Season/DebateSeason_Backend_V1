@@ -15,10 +15,10 @@ import org.springframework.test.context.ActiveProfiles;
 
 import com.debateseason_backend_v1.domain.auth.service.request.TokenReissueServiceRequest;
 import com.debateseason_backend_v1.domain.repository.RefreshTokenRepository;
-import com.debateseason_backend_v1.domain.repository.UserRepository;
+import com.debateseason_backend_v1.domain.user.infrastructure.UserJpaRepository;
 import com.debateseason_backend_v1.domain.repository.entity.RefreshToken;
-import com.debateseason_backend_v1.domain.repository.entity.User;
-import com.debateseason_backend_v1.domain.user.enums.SocialType;
+import com.debateseason_backend_v1.domain.user.infrastructure.UserEntity;
+import com.debateseason_backend_v1.domain.user.domain.SocialType;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -28,7 +28,7 @@ public class TokenReissueConcurrencyTest {
 	private AuthServiceV1 authService;
 
 	@Autowired
-	private UserRepository userRepository;
+	private UserJpaRepository userRepository;
 
 	@Autowired
 	private RefreshTokenRepository refreshTokenRepository;
@@ -37,7 +37,7 @@ public class TokenReissueConcurrencyTest {
 	@DisplayName("동일한 리프레시 토큰으로 동시에 재발급 요청 시, 한 번만 성공해야 한다")
 	void reissueToken_concurrency_test() throws InterruptedException {
 		// given
-		User testUser = userRepository.save(User.builder()
+		UserEntity testUser = userRepository.save(UserEntity.builder()
 			.socialType(SocialType.KAKAO)
 			.externalId("concurrency_test_user")
 			.build());

@@ -1,4 +1,4 @@
-package com.debateseason_backend_v1.domain.repository.entity;
+package com.debateseason_backend_v1.domain.user.infrastructure;
 
 import java.time.LocalDateTime;
 
@@ -6,7 +6,7 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import com.debateseason_backend_v1.domain.user.enums.SocialType;
+import com.debateseason_backend_v1.domain.user.domain.SocialType;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -27,7 +27,7 @@ import lombok.NoArgsConstructor;
 @Table(name = "users")
 @EntityListeners(AuditingEntityListener.class)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class User {
+public class UserEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -53,7 +53,7 @@ public class User {
 	private LocalDateTime updatedAt;
 
 	@Builder
-	private User(SocialType socialType, String externalId) {
+	private UserEntity(SocialType socialType, String externalId) {
 
 		this.socialType = socialType;
 		this.identifier = externalId;

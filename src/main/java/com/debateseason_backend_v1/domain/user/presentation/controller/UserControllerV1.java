@@ -1,4 +1,4 @@
-package com.debateseason_backend_v1.domain.user.controller;
+package com.debateseason_backend_v1.domain.user.presentation.controller;
 
 import java.util.List;
 
@@ -13,11 +13,11 @@ import com.debateseason_backend_v1.common.response.ApiResult;
 import com.debateseason_backend_v1.common.response.VoidApiResult;
 import com.debateseason_backend_v1.domain.issue.model.response.IssueBriefResponse;
 import com.debateseason_backend_v1.domain.issue.service.IssueServiceV1;
-import com.debateseason_backend_v1.domain.user.controller.docs.UserControllerV1Docs;
-import com.debateseason_backend_v1.domain.user.controller.request.LogoutRequest;
-import com.debateseason_backend_v1.domain.user.controller.request.SocialLoginRequest;
-import com.debateseason_backend_v1.domain.user.service.UserServiceV1;
-import com.debateseason_backend_v1.domain.user.service.response.LoginResponse;
+import com.debateseason_backend_v1.domain.user.presentation.controller.docs.UserControllerV1Docs;
+import com.debateseason_backend_v1.domain.user.presentation.controller.request.LogoutRequest;
+import com.debateseason_backend_v1.domain.user.presentation.controller.request.SocialLoginRequest;
+import com.debateseason_backend_v1.domain.user.application.service.UserServiceV1;
+import com.debateseason_backend_v1.domain.user.application.service.response.LoginResponse;
 import com.debateseason_backend_v1.security.CustomUserDetails;
 
 import io.swagger.v3.oas.annotations.Operation;

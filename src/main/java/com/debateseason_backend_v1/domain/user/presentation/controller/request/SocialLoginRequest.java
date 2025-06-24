@@ -1,7 +1,7 @@
 package com.debateseason_backend_v1.domain.user.presentation.controller.request;
 
 import com.debateseason_backend_v1.domain.user.application.service.request.SocialLoginServiceRequest;
-import com.debateseason_backend_v1.domain.user.domain.OAuthProvider;
+import com.debateseason_backend_v1.domain.user.domain.SocialType;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
@@ -16,13 +16,13 @@ public record SocialLoginRequest(
 
 	@Schema(description = "로그인 요청 소셜 타입", example = "kakao")
 	@NotNull(message = "소셜 타입은 필수입니다.")
-	OAuthProvider OAuthProvider
+	SocialType socialType
 ) {
 
 	public SocialLoginServiceRequest toServiceRequest() {
 		return SocialLoginServiceRequest.builder()
 			.identifier(identifier)
-			.OAuthProvider(OAuthProvider)
+			.socialType(socialType)
 			.build();
 	}
 

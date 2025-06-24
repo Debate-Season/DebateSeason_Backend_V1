@@ -10,11 +10,11 @@ import com.debateseason_backend_v1.domain.repository.ProfileRepository;
 import com.debateseason_backend_v1.domain.repository.RefreshTokenRepository;
 import com.debateseason_backend_v1.domain.repository.entity.RefreshToken;
 import com.debateseason_backend_v1.domain.terms.service.TermsServiceV1;
+import com.debateseason_backend_v1.domain.user.application.UserRepository;
 import com.debateseason_backend_v1.domain.user.application.service.request.LogoutServiceRequest;
 import com.debateseason_backend_v1.domain.user.application.service.request.SocialLoginServiceRequest;
 import com.debateseason_backend_v1.domain.user.application.service.response.LoginResponse;
-import com.debateseason_backend_v1.domain.user.infrastructure.UserEntity;
-import com.debateseason_backend_v1.domain.user.infrastructure.UserJpaRepository;
+import com.debateseason_backend_v1.domain.user.domain.User;
 import com.debateseason_backend_v1.security.jwt.JwtUtil;
 
 import lombok.RequiredArgsConstructor;
@@ -28,41 +28,36 @@ public class UserServiceV1 {
 
 	private final JwtUtil jwtUtil;
 	private final TermsServiceV1 termsService;
-	private final UserJpaRepository userRepository;
+	private final UserRepository userRepository;
 	private final ProfileRepository profileRepository;
 	private final RefreshTokenRepository refreshTokenRepository;
 
 	@Transactional
 	public LoginResponse socialLogin(SocialLoginServiceRequest request) {
 
-		UserEntity user = userRepository.findByOAuthProviderAndIdentifier(
-				request.OAuthProvider(),
-				request.identifier()
-			)
-			.orElseGet(() -> createNewUser(request));
+		User user = userRepository.findByIdentifier(request.identifier());
 
-		if (user.isDeleted()) {
-			user.restore();
+		if (user == User.EMPTY) {
+			user = User.create(request.identifier(), request.socialType());
+		} else {
+			user.login();
 		}
 
-		String newAccessToken = jwtUtil.createAccessToken(user.getId());
-		String newRefreshToken = jwtUtil.createRefreshToken(user.getId());
+		user = userRepository.save(user);
 
-		RefreshToken refreshToken = RefreshToken.builder()
-			.token(newRefreshToken)
-			.user(user)
-			.build();
+		String accessToken = jwtUtil.createAccessToken(user.getId());
+		String refreshToken = jwtUtil.createRefreshToken(user.getId());
+		RefreshToken token = RefreshToken.create(user.getId(), refreshToken);
 
-		refreshTokenRepository.save(refreshToken);
+		refreshTokenRepository.save(token);
 
 		boolean profileStatus = profileRepository.existsByUserId(user.getId());
-
 		boolean termsStatus = termsService.hasAgreedToAllRequiredTerms(user.getId());
 
 		return LoginResponse.builder()
-			.accessToken(newAccessToken)
-			.refreshToken(newRefreshToken)
-			.socialType(request.OAuthProvider().getDescription())
+			.accessToken(accessToken)
+			.refreshToken(refreshToken)
+			.socialType(request.socialType().getDescription())
 			.profileStatus(profileStatus)
 			.termsStatus(termsStatus)
 			.build();
@@ -89,22 +84,13 @@ public class UserServiceV1 {
 	@Transactional
 	public void withdraw(Long userId) {
 
-		UserEntity user = userRepository.findById(userId)
+		User user = userRepository.findById(userId)
 			.orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_USER));
 
 		user.withdraw();
 
+		userRepository.save(user);
 		refreshTokenRepository.deleteAllByUserId(user.getId());
-	}
-
-	private UserEntity createNewUser(SocialLoginServiceRequest request) {
-
-		UserEntity user = UserEntity.builder()
-			.OAuthProvider(request.OAuthProvider())
-			.externalId(request.identifier())
-			.build();
-
-		return userRepository.save(user);
 	}
 
 }

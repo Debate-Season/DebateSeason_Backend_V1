@@ -19,10 +19,10 @@ class UserTest {
 		public void userCreationTest() {
 			// given
 			String providerId = "provider123";
-			OAuthProvider oAuthProvider = OAuthProvider.KAKAO;
+			SocialType socialType = SocialType.KAKAO;
 
 			// when
-			User user = User.create(providerId, oAuthProvider);
+			User user = User.create(providerId, socialType);
 
 			// then
 			assertNotNull(user);
@@ -36,7 +36,7 @@ class UserTest {
 		@DisplayName("ACTIVE 상태의 사용자 로그인 성공")
 		public void loginActiveUserTest() {
 			// given
-			User user = User.create("provider123", OAuthProvider.KAKAO);
+			User user = User.create("provider123", SocialType.KAKAO);
 
 			// when & then
 			// 예외가 발생하지 않아야 함
@@ -47,7 +47,7 @@ class UserTest {
 		@DisplayName("WITHDRAWAL_PENDING 상태의 사용자 로그인 성공")
 		public void loginWithdrawalPendingUserTest() {
 			// given
-			User user = User.create("provider123", OAuthProvider.KAKAO);
+			User user = User.create("provider123", SocialType.KAKAO);
 			user.withdraw(); // WITHDRAWAL_PENDING 상태로 변경
 
 			// when & then
@@ -59,7 +59,7 @@ class UserTest {
 		@DisplayName("WITHDRAWAL 상태의 사용자 로그인 시 예외 발생")
 		public void loginWithdrawalUserTest() {
 			// given
-			User user = User.create("provider123", OAuthProvider.KAKAO);
+			User user = User.create("provider123", SocialType.KAKAO);
 			user.withdraw(); // WITHDRAWAL_PENDING 상태로 변경
 			user.anonymize("uuid123"); // WITHDRAWAL 상태로 변경
 
@@ -76,7 +76,7 @@ class UserTest {
 		@DisplayName("ACTIVE 상태의 사용자 탈퇴 요청 성공")
 		public void withdrawActiveUserTest() {
 			// given
-			User user = User.create("provider123", OAuthProvider.KAKAO);
+			User user = User.create("provider123", SocialType.KAKAO);
 
 			// when & then
 			assertDoesNotThrow(user::withdraw);
@@ -86,7 +86,7 @@ class UserTest {
 		@DisplayName("WITHDRAWAL_PENDING 상태의 사용자 탈퇴 요청 시 예외 발생")
 		public void withdrawWithdrawalPendingUserTest() {
 			// given
-			User user = User.create("provider123", OAuthProvider.KAKAO);
+			User user = User.create("provider123", SocialType.KAKAO);
 			user.withdraw(); // WITHDRAWAL_PENDING 상태로 변경
 
 			// when & then
@@ -98,7 +98,7 @@ class UserTest {
 		@DisplayName("WITHDRAWAL 상태의 사용자 탈퇴 요청 시 예외 발생")
 		public void withdrawWithdrawalUserTest() {
 			// given
-			User user = User.create("provider123", OAuthProvider.KAKAO);
+			User user = User.create("provider123", SocialType.KAKAO);
 			user.withdraw();
 			user.anonymize("uuid123");
 
@@ -117,7 +117,7 @@ class UserTest {
 			// given
 			String providerId = "provider123";
 			String uuid = "uuid123";
-			User user = User.create(providerId, OAuthProvider.KAKAO);
+			User user = User.create(providerId, SocialType.KAKAO);
 			user.withdraw();
 
 			// when & then
@@ -128,7 +128,7 @@ class UserTest {
 		@DisplayName("ACTIVE 상태의 사용자 익명화 시 예외 발생")
 		public void anonymizeActiveUserTest() {
 			// given
-			User user = User.create("provider123", OAuthProvider.KAKAO);
+			User user = User.create("provider123", SocialType.KAKAO);
 
 			// when & then
 			CustomException exception = assertThrows(CustomException.class, () -> {
@@ -141,7 +141,7 @@ class UserTest {
 		@DisplayName("WITHDRAWAL 상태의 사용자 익명화 시 예외 발생")
 		public void anonymizeWithdrawalUserTest() {
 			// given
-			User user = User.create("provider123", OAuthProvider.KAKAO);
+			User user = User.create("provider123", SocialType.KAKAO);
 			user.withdraw();
 			user.anonymize("uuid123");
 

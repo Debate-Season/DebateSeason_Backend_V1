@@ -9,9 +9,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.debateseason_backend_v1.common.component.UuidShortener;
 import com.debateseason_backend_v1.domain.repository.ProfileRepository;
-import com.debateseason_backend_v1.domain.user.infrastructure.UserJpaRepository;
 import com.debateseason_backend_v1.domain.repository.entity.Profile;
-import com.debateseason_backend_v1.domain.user.infrastructure.UserEntity;
+import com.debateseason_backend_v1.domain.user.application.UserRepository;
+import com.debateseason_backend_v1.domain.user.domain.User;
+import com.debateseason_backend_v1.domain.user.domain.UserStatus;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,7 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 public class UserScheduler {
 
 	private final UuidShortener uuidShortener;
-	private final UserJpaRepository userRepository;
+	private final UserRepository userRepository;
 	private final ProfileRepository profileRepository;
 
 	@Scheduled(cron = "0 0 0 * * *") // 매일 자정 실행
@@ -32,21 +33,26 @@ public class UserScheduler {
 
 		LocalDateTime cutoffDate = LocalDateTime.now().minusDays(5);
 
-		List<UserEntity> expiredUsers = userRepository.findByIsDeletedTrueAndUpdatedAtBefore(cutoffDate);
+		List<User> expiredUsers = userRepository.findByStatus(UserStatus.WITHDRAWAL_PENDING);
 
-		for (UserEntity user : expiredUsers) {
+		for (User user : expiredUsers) {
 			String uuid = uuidShortener.shortenUuid();
 			log.info("회원 ID: {} 익명화 처리 중", user.getId());
 
-			user.anonymize(uuid);
+			if (user.canAnonymizeBySchedule()) {
+				user.anonymize(uuid);
 
-			Profile profile = profileRepository.findByUserId(user.getId())
-				.orElse(null);
+				Profile profile = profileRepository.findByUserId(user.getId())
+					.orElse(null);
 
-			if (profile != null) {
-				profile.anonymize("탈퇴회원#" + uuid);
-				log.info("회원 ID: {}의 프로필 익명화 완료", user.getId());
+				if (profile != null) {
+					profile.anonymize("탈퇴회원#" + uuid);
+					log.info("회원 ID: {}의 프로필 익명화 완료", user.getId());
+				}
 			}
+
+			userRepository.save(user);
+
 		}
 
 		log.info("총 {}명의 탈퇴 회원 익명화 처리 완료", expiredUsers.size());

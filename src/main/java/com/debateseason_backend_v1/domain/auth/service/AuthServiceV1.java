@@ -33,8 +33,8 @@ public class AuthServiceV1 {
 			RefreshToken refreshToken = refreshTokenRepository.findByToken(request.refreshToken())
 				.orElseThrow(() -> new CustomException(ErrorCode.INVALID_REFRESH_TOKEN));
 
-			String newAccessToken = jwtUtil.createAccessToken(refreshToken.getUser().getId());
-			String newRefreshToken = jwtUtil.createRefreshToken(refreshToken.getUser().getId());
+			String newAccessToken = jwtUtil.createAccessToken(refreshToken.getUserId());
+			String newRefreshToken = jwtUtil.createRefreshToken(refreshToken.getUserId());
 
 			refreshToken.updateToken(newRefreshToken);
 

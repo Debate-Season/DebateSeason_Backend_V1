@@ -7,8 +7,8 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.debateseason_backend_v1.domain.profile.enums.CommunityType;
 import com.debateseason_backend_v1.domain.profile.application.service.response.CommunityResponse;
+import com.debateseason_backend_v1.domain.profile.domain.CommunityType;
 
 import lombok.RequiredArgsConstructor;
 

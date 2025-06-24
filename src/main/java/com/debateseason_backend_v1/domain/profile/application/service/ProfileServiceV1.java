@@ -5,14 +5,14 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.debateseason_backend_v1.common.exception.CustomException;
 import com.debateseason_backend_v1.common.exception.ErrorCode;
-import com.debateseason_backend_v1.domain.profile.domain.Region;
-import com.debateseason_backend_v1.domain.profile.enums.CommunityType;
 import com.debateseason_backend_v1.domain.profile.application.service.request.ProfileRegisterServiceRequest;
 import com.debateseason_backend_v1.domain.profile.application.service.request.ProfileUpdateServiceRequest;
 import com.debateseason_backend_v1.domain.profile.application.service.response.ProfileResponse;
-import com.debateseason_backend_v1.domain.profile.validator.ProfileValidator;
-import com.debateseason_backend_v1.domain.profile.infrastructure.ProfileJpaRepository;
+import com.debateseason_backend_v1.domain.profile.domain.CommunityType;
+import com.debateseason_backend_v1.domain.profile.domain.Region;
 import com.debateseason_backend_v1.domain.profile.infrastructure.ProfileEntity;
+import com.debateseason_backend_v1.domain.profile.infrastructure.ProfileJpaRepository;
+import com.debateseason_backend_v1.domain.profile.validator.ProfileValidator;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

@@ -5,10 +5,10 @@ import java.time.LocalDateTime;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import com.debateseason_backend_v1.domain.profile.domain.AgeRangeType;
+import com.debateseason_backend_v1.domain.profile.domain.CommunityType;
+import com.debateseason_backend_v1.domain.profile.domain.GenderType;
 import com.debateseason_backend_v1.domain.profile.domain.Region;
-import com.debateseason_backend_v1.domain.profile.enums.AgeRangeType;
-import com.debateseason_backend_v1.domain.profile.enums.CommunityType;
-import com.debateseason_backend_v1.domain.profile.enums.GenderType;
 
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.AttributeOverrides;
@@ -97,7 +97,6 @@ public class ProfileEntity {
 		String profileImage, String nickname, Long communityId, GenderType gender, AgeRangeType ageRange,
 		Region residence, Region hometown
 	) {
-
 		this.profileImage = profileImage;
 		this.nickname = nickname;
 		this.communityId = communityId;

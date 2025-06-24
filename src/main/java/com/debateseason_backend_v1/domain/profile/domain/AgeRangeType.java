@@ -1,4 +1,4 @@
-package com.debateseason_backend_v1.domain.profile.enums;
+package com.debateseason_backend_v1.domain.profile.domain;
 
 import java.util.Arrays;
 
@@ -22,7 +22,8 @@ public enum AgeRangeType {
 	SIXTIES("60대", 60, 69),
 	SEVENTIES("70대", 70, 79),
 	EIGHTIES("80대", 80, 89),
-	OVER_NINETY("90대 이상", 90, 120);
+	OVER_NINETY("90대 이상", 90, 120),
+	UNDEFINED("무응답", 0, 0);
 
 	private final String description;
 	private final int minAge;

@@ -17,17 +17,17 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import com.debateseason_backend_v1.common.exception.CustomException;
 import com.debateseason_backend_v1.common.exception.ErrorCode;
 import com.debateseason_backend_v1.domain.profile.application.service.ProfileServiceV1;
-import com.debateseason_backend_v1.domain.profile.domain.Region;
-import com.debateseason_backend_v1.domain.profile.enums.AgeRangeType;
-import com.debateseason_backend_v1.domain.profile.enums.DistrictType;
-import com.debateseason_backend_v1.domain.profile.enums.GenderType;
-import com.debateseason_backend_v1.domain.profile.enums.ProvinceType;
 import com.debateseason_backend_v1.domain.profile.application.service.request.ProfileRegisterServiceRequest;
 import com.debateseason_backend_v1.domain.profile.application.service.request.ProfileUpdateServiceRequest;
 import com.debateseason_backend_v1.domain.profile.application.service.response.ProfileResponse;
-import com.debateseason_backend_v1.domain.profile.validator.ProfileValidator;
-import com.debateseason_backend_v1.domain.profile.infrastructure.ProfileJpaRepository;
+import com.debateseason_backend_v1.domain.profile.domain.AgeRangeType;
+import com.debateseason_backend_v1.domain.profile.domain.DistrictType;
+import com.debateseason_backend_v1.domain.profile.domain.GenderType;
+import com.debateseason_backend_v1.domain.profile.domain.ProvinceType;
+import com.debateseason_backend_v1.domain.profile.domain.Region;
 import com.debateseason_backend_v1.domain.profile.infrastructure.ProfileEntity;
+import com.debateseason_backend_v1.domain.profile.infrastructure.ProfileJpaRepository;
+import com.debateseason_backend_v1.domain.profile.validator.ProfileValidator;
 
 @ExtendWith(MockitoExtension.class)
 class ProfileServiceV1Test {

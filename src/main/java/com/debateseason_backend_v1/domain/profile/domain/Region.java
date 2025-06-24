@@ -2,8 +2,6 @@ package com.debateseason_backend_v1.domain.profile.domain;
 
 import com.debateseason_backend_v1.common.exception.CustomException;
 import com.debateseason_backend_v1.common.exception.ErrorCode;
-import com.debateseason_backend_v1.domain.profile.enums.DistrictType;
-import com.debateseason_backend_v1.domain.profile.enums.ProvinceType;
 
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.EnumType;
@@ -41,4 +39,10 @@ public class Region {
 			.build();
 	}
 
+	public static Region anonymize() {
+		return Region.builder()
+			.provinceType(ProvinceType.UNDEFINED)
+			.districtType(DistrictType.UNDEFINED)
+			.build();
+	}
 }

@@ -1,4 +1,4 @@
-package com.debateseason_backend_v1.domain.profile.enums;
+package com.debateseason_backend_v1.domain.profile.domain;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -70,7 +70,7 @@ public enum CommunityType {
 	}
 
 	public static boolean isValidId(Long id) {
-		
+
 		return ID_MAP.containsKey(id);
 	}
 

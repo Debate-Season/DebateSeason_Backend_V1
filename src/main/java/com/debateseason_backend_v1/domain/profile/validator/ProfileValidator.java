@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 
 import com.debateseason_backend_v1.common.exception.CustomException;
 import com.debateseason_backend_v1.common.exception.ErrorCode;
-import com.debateseason_backend_v1.domain.profile.enums.CommunityType;
+import com.debateseason_backend_v1.domain.profile.domain.CommunityType;
 import com.debateseason_backend_v1.domain.profile.infrastructure.ProfileJpaRepository;
 
 import lombok.RequiredArgsConstructor;

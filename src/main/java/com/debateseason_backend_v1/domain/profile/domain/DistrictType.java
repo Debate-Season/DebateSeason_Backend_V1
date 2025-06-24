@@ -1,4 +1,4 @@
-package com.debateseason_backend_v1.domain.profile.enums;
+package com.debateseason_backend_v1.domain.profile.domain;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -13,6 +13,9 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public enum DistrictType {
+
+	// 무응답
+	UNDEFINED("무응답", "무응답", ProvinceType.UNDEFINED),
 
 	// 서울특별시
 	JONGNO("11010", "종로구", ProvinceType.SEOUL),

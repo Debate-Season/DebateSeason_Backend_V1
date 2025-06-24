@@ -1,9 +1,9 @@
 package com.debateseason_backend_v1.domain.profile.application.service.request;
 
-import com.debateseason_backend_v1.domain.profile.enums.AgeRangeType;
-import com.debateseason_backend_v1.domain.profile.enums.DistrictType;
-import com.debateseason_backend_v1.domain.profile.enums.GenderType;
-import com.debateseason_backend_v1.domain.profile.enums.ProvinceType;
+import com.debateseason_backend_v1.domain.profile.domain.AgeRangeType;
+import com.debateseason_backend_v1.domain.profile.domain.DistrictType;
+import com.debateseason_backend_v1.domain.profile.domain.GenderType;
+import com.debateseason_backend_v1.domain.profile.domain.ProvinceType;
 
 import lombok.Builder;
 

@@ -1,10 +1,10 @@
 package com.debateseason_backend_v1.domain.profile.presetaion.controller.request;
 
-import com.debateseason_backend_v1.domain.profile.enums.AgeRangeType;
-import com.debateseason_backend_v1.domain.profile.enums.DistrictType;
-import com.debateseason_backend_v1.domain.profile.enums.GenderType;
-import com.debateseason_backend_v1.domain.profile.enums.ProvinceType;
 import com.debateseason_backend_v1.domain.profile.application.service.request.ProfileRegisterServiceRequest;
+import com.debateseason_backend_v1.domain.profile.domain.AgeRangeType;
+import com.debateseason_backend_v1.domain.profile.domain.DistrictType;
+import com.debateseason_backend_v1.domain.profile.domain.GenderType;
+import com.debateseason_backend_v1.domain.profile.domain.ProvinceType;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;

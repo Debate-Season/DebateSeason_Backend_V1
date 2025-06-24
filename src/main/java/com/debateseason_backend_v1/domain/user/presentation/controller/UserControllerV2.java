@@ -1,4 +1,4 @@
-package com.debateseason_backend_v1.domain.user.controller;
+package com.debateseason_backend_v1.domain.user.presentation.controller;
 
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -6,10 +6,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.debateseason_backend_v1.common.response.ApiResult;
-import com.debateseason_backend_v1.domain.user.controller.docs.UserControllerV2Docs;
-import com.debateseason_backend_v1.domain.user.controller.request.OidcLoginRequest;
-import com.debateseason_backend_v1.domain.user.service.UserServiceV2;
-import com.debateseason_backend_v1.domain.user.service.response.LoginResponse;
+import com.debateseason_backend_v1.domain.user.presentation.controller.docs.UserControllerV2Docs;
+import com.debateseason_backend_v1.domain.user.presentation.controller.request.OidcLoginRequest;
+import com.debateseason_backend_v1.domain.user.application.service.UserServiceV2;
+import com.debateseason_backend_v1.domain.user.application.service.response.LoginResponse;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

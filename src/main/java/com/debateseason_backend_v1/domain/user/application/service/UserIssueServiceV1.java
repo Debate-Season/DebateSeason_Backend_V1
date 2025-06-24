@@ -1,13 +1,13 @@
-package com.debateseason_backend_v1.domain.user.service;
+package com.debateseason_backend_v1.domain.user.application.service;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.debateseason_backend_v1.domain.repository.IssueRepository;
 import com.debateseason_backend_v1.domain.repository.UserIssueRepository;
-import com.debateseason_backend_v1.domain.repository.UserRepository;
+import com.debateseason_backend_v1.domain.user.infrastructure.UserJpaRepository;
 import com.debateseason_backend_v1.domain.repository.entity.Issue;
-import com.debateseason_backend_v1.domain.repository.entity.User;
+import com.debateseason_backend_v1.domain.user.infrastructure.UserEntity;
 import com.debateseason_backend_v1.domain.repository.entity.UserIssue;
 import com.debateseason_backend_v1.domain.user.dto.UserIssueDTO;
 
@@ -21,7 +21,7 @@ public class UserIssueServiceV1 {
 	// User와 Issue를 조회한다, -> UserIssue에 등록을 한다.
 
 	//
-	private final UserRepository userRepository;
+	private final UserJpaRepository userRepository;
 	private final IssueRepository issueRepository;
 	//
 	private final UserIssueRepository userIssueRepository;
@@ -33,7 +33,7 @@ public class UserIssueServiceV1 {
 		Long issueId = userIssueDTO.getIssueId();
 
 		// 이 부분 나중에 GlobalExceptionHandler 만들어서 예외처리 할 예정 <- 수정해야 할 부분
-		User user = userRepository.findById(userId).orElseThrow(
+		UserEntity user = userRepository.findById(userId).orElseThrow(
 			() -> new RuntimeException("There is no user : " + userId)
 		);
 		Issue issue = issueRepository.findById(issueId).orElseThrow(

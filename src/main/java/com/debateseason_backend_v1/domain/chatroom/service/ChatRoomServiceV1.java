@@ -28,10 +28,10 @@ import com.debateseason_backend_v1.domain.repository.ChatRoomRepository;
 import com.debateseason_backend_v1.domain.repository.IssueRepository;
 import com.debateseason_backend_v1.domain.media.infrastructure.repository.MediaJpaRepository;
 import com.debateseason_backend_v1.domain.repository.UserChatRoomRepository;
-import com.debateseason_backend_v1.domain.repository.UserRepository;
+import com.debateseason_backend_v1.domain.user.infrastructure.UserJpaRepository;
 import com.debateseason_backend_v1.domain.repository.entity.ChatRoom;
 import com.debateseason_backend_v1.domain.repository.entity.Issue;
-import com.debateseason_backend_v1.domain.repository.entity.User;
+import com.debateseason_backend_v1.domain.user.infrastructure.UserEntity;
 import com.debateseason_backend_v1.domain.repository.entity.UserChatRoom;
 import com.debateseason_backend_v1.domain.media.model.response.BreakingNewsResponse;
 
@@ -44,7 +44,7 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 public class ChatRoomServiceV1 {
 
-	private final UserRepository userRepository;
+	private final UserJpaRepository userRepository;
 	private final ChatRoomRepository chatRoomRepository;
 	private final IssueRepository issueRepository; // 혹시나 Service쓰면, 나중에 순환참조 발생할 것 같아서 Repository로 함.
 	private final UserChatRoomRepository userChatRoomRepository;
@@ -90,7 +90,7 @@ public class ChatRoomServiceV1 {
 		);
 
 		// 2. User 가져오기
-		User user = userRepository.findById(userId).orElseThrow(
+		UserEntity user = userRepository.findById(userId).orElseThrow(
 			() -> new CustomException(ErrorCode.NOT_FOUND_USER)
 		);
 

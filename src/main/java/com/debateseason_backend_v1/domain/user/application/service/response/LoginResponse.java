@@ -1,4 +1,4 @@
-package com.debateseason_backend_v1.domain.user.service.response;
+package com.debateseason_backend_v1.domain.user.application.service.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;

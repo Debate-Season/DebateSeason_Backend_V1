@@ -61,6 +61,9 @@ public enum ErrorCode implements CodeInterface {
 	JWKS_RATE_LIMIT_REACHED(3011, HttpStatus.TOO_MANY_REQUESTS, "JWKS 서버 요청 제한에 도달했습니다."),
 	JWKS_RETRIEVAL_FAILED(3012, HttpStatus.INTERNAL_SERVER_ERROR, "JWKS 조회 중 오류가 발생했습니다."),
 	PUBLIC_KEY_EXTRACTION_FAILED(3013, HttpStatus.INTERNAL_SERVER_ERROR, "공개키 추출에 실패했습니다."),
+	NOT_LOGINABLE(3015, HttpStatus.UNAUTHORIZED, "로그인이 불가능한 사용자입니다."),
+	NOT_WITHDRAWABLE(3016, HttpStatus.UNAUTHORIZED, "탈퇴가 불가능한 사용자입니다."),
+	NOT_ANONYMIZABLE(3017, HttpStatus.UNAUTHORIZED, "암호화가 불가능한 사용자입니다."),
 
 	//4000번대 Chat 관련 에러,
 	VALUE_OUT_OF_RANGE(4003, HttpStatus.BAD_REQUEST, "메시지 값을 확인해 주세요"),

@@ -1,4 +1,4 @@
-package com.debateseason_backend_v1.domain.repository.entity;
+package com.debateseason_backend_v1.domain.user.infrastructure;
 
 import java.time.LocalDateTime;
 
@@ -6,7 +6,10 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import com.debateseason_backend_v1.domain.user.enums.SocialType;
+import com.debateseason_backend_v1.domain.user.domain.SocialType;
+import com.debateseason_backend_v1.domain.user.domain.User;
+import com.debateseason_backend_v1.domain.user.domain.UserMappingData;
+import com.debateseason_backend_v1.domain.user.domain.UserStatus;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -27,22 +30,23 @@ import lombok.NoArgsConstructor;
 @Table(name = "users")
 @EntityListeners(AuditingEntityListener.class)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class User {
+public class UserEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "user_id")
 	private Long id;
 
-	@Enumerated(EnumType.STRING)
-	@Column(name = "social_type")
-	private SocialType socialType;
-
-	@Column(name = "identifier")
+	@Column(name = "identifier", unique = true, nullable = false)
 	private String identifier;
 
-	@Column(name = "is_deleted")
-	private boolean isDeleted = false;
+	@Enumerated(EnumType.STRING)
+	@Column(name = "social_type", nullable = false)
+	private SocialType socialType;
+
+	@Enumerated(EnumType.STRING)
+	@Column(name = "status", nullable = false)
+	private UserStatus status;
 
 	@CreatedDate
 	@Column(name = "created_at", updatable = false)
@@ -53,25 +57,31 @@ public class User {
 	private LocalDateTime updatedAt;
 
 	@Builder
-	private User(SocialType socialType, String externalId) {
-
+	private UserEntity(Long id, String identifier, SocialType socialType, UserStatus status) {
+		this.id = id;
+		this.identifier = identifier;
 		this.socialType = socialType;
-		this.identifier = externalId;
+		this.status = status;
 	}
 
-	public void withdraw() {
+	public static UserEntity from(User user) {
+		UserMappingData data = user.getMappingData();
 
-		this.isDeleted = true;
+		return UserEntity.builder()
+			.id(data.id())
+			.identifier(data.identifier())
+			.socialType(data.socialType())
+			.status(data.status())
+			.build();
 	}
 
-	public void restore() {
-
-		this.isDeleted = false;
+	public User toModel() {
+		return User.builder()
+			.id(id)
+			.identifier(identifier)
+			.socialType(socialType)
+			.status(status)
+			.updatedAt(updatedAt)
+			.build();
 	}
-
-	public void anonymize(String uuid) {
-
-		this.identifier = uuid;
-	}
-
 }

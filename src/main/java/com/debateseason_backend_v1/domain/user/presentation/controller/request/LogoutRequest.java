@@ -1,6 +1,6 @@
-package com.debateseason_backend_v1.domain.user.controller.request;
+package com.debateseason_backend_v1.domain.user.presentation.controller.request;
 
-import com.debateseason_backend_v1.domain.user.service.request.LogoutServiceRequest;
+import com.debateseason_backend_v1.domain.user.application.service.request.LogoutServiceRequest;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;

@@ -1,4 +1,4 @@
-package com.debateseason_backend_v1.domain.profile.service.response;
+package com.debateseason_backend_v1.domain.profile.application.service.response;
 
 import com.debateseason_backend_v1.domain.profile.enums.CommunityType;
 

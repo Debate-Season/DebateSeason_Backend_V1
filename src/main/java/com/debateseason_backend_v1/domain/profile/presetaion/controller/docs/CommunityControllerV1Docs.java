@@ -1,4 +1,4 @@
-package com.debateseason_backend_v1.domain.profile.controller.docs;
+package com.debateseason_backend_v1.domain.profile.presetaion.controller.docs;
 
 import java.util.List;
 
@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import com.debateseason_backend_v1.common.exception.ErrorCode;
 import com.debateseason_backend_v1.common.response.ApiResult;
 import com.debateseason_backend_v1.common.swagger.ApiErrorCode;
-import com.debateseason_backend_v1.domain.profile.service.response.CommunityResponse;
+import com.debateseason_backend_v1.domain.profile.application.service.response.CommunityResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;

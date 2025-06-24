@@ -1,4 +1,4 @@
-package com.debateseason_backend_v1.domain.repository.entity;
+package com.debateseason_backend_v1.domain.profile.infrastructure;
 
 import java.time.LocalDateTime;
 
@@ -32,7 +32,7 @@ import lombok.NoArgsConstructor;
 @Table(name = "profile")
 @EntityListeners(AuditingEntityListener.class)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Profile {
+public class ProfileEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -78,7 +78,7 @@ public class Profile {
 	private LocalDateTime updatedAt;
 
 	@Builder
-	private Profile(
+	private ProfileEntity(
 		Long userId, String profileImage, String nickname, Long communityId, GenderType gender, AgeRangeType ageRange,
 		Region residence, Region hometown
 	) {

@@ -15,13 +15,13 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.debateseason_backend_v1.common.exception.CustomException;
 import com.debateseason_backend_v1.common.exception.ErrorCode;
-import com.debateseason_backend_v1.domain.repository.ProfileRepository;
+import com.debateseason_backend_v1.domain.profile.infrastructure.ProfileJpaRepository;
 
 @ExtendWith(MockitoExtension.class)
 class ProfileValidatorTest {
 
 	@Mock
-	private ProfileRepository profileRepository;
+	private ProfileJpaRepository profileRepository;
 
 	@InjectMocks
 	private ProfileValidator profileValidator;

@@ -1,4 +1,4 @@
-package com.debateseason_backend_v1.domain.profile.service;
+package com.debateseason_backend_v1.domain.profile.application.service;
 
 import java.util.Arrays;
 import java.util.Comparator;
@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.debateseason_backend_v1.domain.profile.enums.CommunityType;
-import com.debateseason_backend_v1.domain.profile.service.response.CommunityResponse;
+import com.debateseason_backend_v1.domain.profile.application.service.response.CommunityResponse;
 
 import lombok.RequiredArgsConstructor;
 

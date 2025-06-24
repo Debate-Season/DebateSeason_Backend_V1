@@ -16,23 +16,24 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.debateseason_backend_v1.common.exception.CustomException;
 import com.debateseason_backend_v1.common.exception.ErrorCode;
+import com.debateseason_backend_v1.domain.profile.application.service.ProfileServiceV1;
 import com.debateseason_backend_v1.domain.profile.domain.Region;
 import com.debateseason_backend_v1.domain.profile.enums.AgeRangeType;
 import com.debateseason_backend_v1.domain.profile.enums.DistrictType;
 import com.debateseason_backend_v1.domain.profile.enums.GenderType;
 import com.debateseason_backend_v1.domain.profile.enums.ProvinceType;
-import com.debateseason_backend_v1.domain.profile.service.request.ProfileRegisterServiceRequest;
-import com.debateseason_backend_v1.domain.profile.service.request.ProfileUpdateServiceRequest;
-import com.debateseason_backend_v1.domain.profile.service.response.ProfileResponse;
+import com.debateseason_backend_v1.domain.profile.application.service.request.ProfileRegisterServiceRequest;
+import com.debateseason_backend_v1.domain.profile.application.service.request.ProfileUpdateServiceRequest;
+import com.debateseason_backend_v1.domain.profile.application.service.response.ProfileResponse;
 import com.debateseason_backend_v1.domain.profile.validator.ProfileValidator;
-import com.debateseason_backend_v1.domain.repository.ProfileRepository;
-import com.debateseason_backend_v1.domain.repository.entity.Profile;
+import com.debateseason_backend_v1.domain.profile.infrastructure.ProfileJpaRepository;
+import com.debateseason_backend_v1.domain.profile.infrastructure.ProfileEntity;
 
 @ExtendWith(MockitoExtension.class)
 class ProfileServiceV1Test {
 
 	@Mock
-	private ProfileRepository profileRepository;
+	private ProfileJpaRepository profileRepository;
 
 	@Mock
 	private ProfileValidator profileValidator;
@@ -55,7 +56,7 @@ class ProfileServiceV1Test {
 			doNothing().when(profileValidator).validateNicknameExists(anyString());
 			doNothing().when(profileValidator).validateSupportedCommunity(anyLong());
 
-			given(profileRepository.save(any(Profile.class))).willAnswer(invocation -> invocation.getArgument(0));
+			given(profileRepository.save(any(ProfileEntity.class))).willAnswer(invocation -> invocation.getArgument(0));
 
 			// when & then
 			profileService.register(request);
@@ -64,7 +65,7 @@ class ProfileServiceV1Test {
 			verify(profileValidator).validateNicknamePattern(request.nickname());
 			verify(profileValidator).validateNicknameExists(request.nickname());
 			verify(profileValidator).validateSupportedCommunity(request.communityId());
-			verify(profileRepository, times(1)).save(any(Profile.class));
+			verify(profileRepository, times(1)).save(any(ProfileEntity.class));
 		}
 
 		@Test
@@ -81,7 +82,7 @@ class ProfileServiceV1Test {
 				.isInstanceOf(CustomException.class)
 				.hasFieldOrPropertyWithValue("codeInterface", ErrorCode.ALREADY_EXIST_PROFILE);
 
-			verify(profileRepository, times(0)).save(any(Profile.class));
+			verify(profileRepository, times(0)).save(any(ProfileEntity.class));
 		}
 
 		@Test
@@ -99,7 +100,7 @@ class ProfileServiceV1Test {
 				.isInstanceOf(CustomException.class)
 				.hasFieldOrPropertyWithValue("codeInterface", ErrorCode.INVALID_NICKNAME_PATTERN);
 
-			verify(profileRepository, times(0)).save(any(Profile.class));
+			verify(profileRepository, times(0)).save(any(ProfileEntity.class));
 		}
 
 		@Test
@@ -118,7 +119,7 @@ class ProfileServiceV1Test {
 				.isInstanceOf(CustomException.class)
 				.hasFieldOrPropertyWithValue("codeInterface", ErrorCode.DUPLICATE_NICKNAME);
 
-			verify(profileRepository, times(0)).save(any(Profile.class));
+			verify(profileRepository, times(0)).save(any(ProfileEntity.class));
 		}
 
 		@Test
@@ -138,7 +139,7 @@ class ProfileServiceV1Test {
 				.isInstanceOf(CustomException.class)
 				.hasFieldOrPropertyWithValue("codeInterface", ErrorCode.NOT_SUPPORTED_COMMUNITY);
 
-			verify(profileRepository, times(0)).save(any(Profile.class));
+			verify(profileRepository, times(0)).save(any(ProfileEntity.class));
 		}
 	}
 
@@ -151,7 +152,7 @@ class ProfileServiceV1Test {
 		void getProfileByUserId() {
 			// given
 			Long userId = 1L;
-			Profile profile = createProfile();
+			ProfileEntity profile = createProfile();
 
 			given(profileRepository.findByUserId(userId)).willReturn(Optional.of(profile));
 
@@ -190,7 +191,7 @@ class ProfileServiceV1Test {
 		void updateProfileWithValidInfo() {
 			// given
 			ProfileUpdateServiceRequest request = createUpdateRequest();
-			Profile profile = createProfile();
+			ProfileEntity profile = createProfile();
 
 			given(profileRepository.findByUserId(request.userId())).willReturn(Optional.of(profile));
 			doNothing().when(profileValidator).validateSupportedCommunity(anyLong());
@@ -222,7 +223,7 @@ class ProfileServiceV1Test {
 		void validateNicknameWhenChanged() {
 			// given
 			ProfileUpdateServiceRequest request = createUpdateRequest();
-			Profile profile = Profile.builder()
+			ProfileEntity profile = ProfileEntity.builder()
 				.userId(1L)
 				.profileImage("RED")
 				.nickname("기존닉네임")
@@ -262,7 +263,7 @@ class ProfileServiceV1Test {
 				.residenceProvince(ProvinceType.SEOUL)
 				.build();
 
-			Profile profile = Profile.builder()
+			ProfileEntity profile = ProfileEntity.builder()
 				.userId(1L)
 				.profileImage("RED")
 				.nickname(sameNickname)
@@ -366,8 +367,8 @@ class ProfileServiceV1Test {
 			.build();
 	}
 
-	private Profile createProfile() {
-		return Profile.builder()
+	private ProfileEntity createProfile() {
+		return ProfileEntity.builder()
 			.userId(1L)
 			.profileImage("RED")
 			.nickname("토론왕")

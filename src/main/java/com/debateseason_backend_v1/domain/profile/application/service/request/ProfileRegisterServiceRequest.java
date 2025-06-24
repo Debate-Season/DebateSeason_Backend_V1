@@ -1,4 +1,4 @@
-package com.debateseason_backend_v1.domain.profile.service.request;
+package com.debateseason_backend_v1.domain.profile.application.service.request;
 
 import com.debateseason_backend_v1.domain.profile.enums.AgeRangeType;
 import com.debateseason_backend_v1.domain.profile.enums.DistrictType;
@@ -8,7 +8,7 @@ import com.debateseason_backend_v1.domain.profile.enums.ProvinceType;
 import lombok.Builder;
 
 @Builder
-public record ProfileUpdateServiceRequest(
+public record ProfileRegisterServiceRequest(
 	Long userId,
 	String profileImage,
 	String nickname,

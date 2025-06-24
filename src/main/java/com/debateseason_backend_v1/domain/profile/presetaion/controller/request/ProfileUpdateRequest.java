@@ -1,17 +1,17 @@
-package com.debateseason_backend_v1.domain.profile.controller.request;
+package com.debateseason_backend_v1.domain.profile.presetaion.controller.request;
 
 import com.debateseason_backend_v1.domain.profile.enums.AgeRangeType;
 import com.debateseason_backend_v1.domain.profile.enums.DistrictType;
 import com.debateseason_backend_v1.domain.profile.enums.GenderType;
 import com.debateseason_backend_v1.domain.profile.enums.ProvinceType;
-import com.debateseason_backend_v1.domain.profile.service.request.ProfileRegisterServiceRequest;
+import com.debateseason_backend_v1.domain.profile.application.service.request.ProfileUpdateServiceRequest;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
-@Schema(title = "프로필 등록 요청 DTO", description = "프로필 등록 요청")
-public record ProfileRegisterRequest(
+@Schema(title = "프로필 수정 요청 DTO", description = "프로필 수정 요청")
+public record ProfileUpdateRequest(
 	@Schema(description = "프로필 이미지", example = "RED")
 	String profileImage,
 
@@ -44,9 +44,9 @@ public record ProfileRegisterRequest(
 	DistrictType hometownDistrict
 ) {
 
-	public ProfileRegisterServiceRequest toServiceRequest(Long userId) {
+	public ProfileUpdateServiceRequest toServiceRequest(Long userId) {
 
-		return ProfileRegisterServiceRequest.builder()
+		return ProfileUpdateServiceRequest.builder()
 			.userId(userId)
 			.profileImage(profileImage)
 			.nickname(nickname)

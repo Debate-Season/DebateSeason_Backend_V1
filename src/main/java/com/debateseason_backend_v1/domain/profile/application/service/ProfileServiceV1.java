@@ -1,4 +1,4 @@
-package com.debateseason_backend_v1.domain.profile.service;
+package com.debateseason_backend_v1.domain.profile.application.service;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -7,12 +7,12 @@ import com.debateseason_backend_v1.common.exception.CustomException;
 import com.debateseason_backend_v1.common.exception.ErrorCode;
 import com.debateseason_backend_v1.domain.profile.domain.Region;
 import com.debateseason_backend_v1.domain.profile.enums.CommunityType;
-import com.debateseason_backend_v1.domain.profile.service.request.ProfileRegisterServiceRequest;
-import com.debateseason_backend_v1.domain.profile.service.request.ProfileUpdateServiceRequest;
-import com.debateseason_backend_v1.domain.profile.service.response.ProfileResponse;
+import com.debateseason_backend_v1.domain.profile.application.service.request.ProfileRegisterServiceRequest;
+import com.debateseason_backend_v1.domain.profile.application.service.request.ProfileUpdateServiceRequest;
+import com.debateseason_backend_v1.domain.profile.application.service.response.ProfileResponse;
 import com.debateseason_backend_v1.domain.profile.validator.ProfileValidator;
-import com.debateseason_backend_v1.domain.repository.ProfileRepository;
-import com.debateseason_backend_v1.domain.repository.entity.Profile;
+import com.debateseason_backend_v1.domain.profile.infrastructure.ProfileJpaRepository;
+import com.debateseason_backend_v1.domain.profile.infrastructure.ProfileEntity;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,7 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 @Transactional(readOnly = true)
 public class ProfileServiceV1 {
 
-	private final ProfileRepository profileRepository;
+	private final ProfileJpaRepository profileRepository;
 	private final ProfileValidator profileValidator;
 
 	@Transactional
@@ -34,7 +34,7 @@ public class ProfileServiceV1 {
 		Region residence = Region.of(request.residenceProvince(), request.residenceDistrict());
 		Region hometown = Region.of(request.hometownProvince(), request.hometownDistrict());
 
-		Profile profile = Profile.builder()
+		ProfileEntity profile = ProfileEntity.builder()
 			.userId(request.userId())
 			.profileImage(request.profileImage())
 			.nickname(request.nickname())
@@ -50,7 +50,7 @@ public class ProfileServiceV1 {
 
 	public ProfileResponse getProfileByUserId(Long userId) {
 
-		Profile profile = profileRepository.findByUserId(userId)
+		ProfileEntity profile = profileRepository.findByUserId(userId)
 			.orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_PROFILE));
 
 		CommunityType communityType = CommunityType.findById(profile.getCommunityId());
@@ -61,7 +61,7 @@ public class ProfileServiceV1 {
 	@Transactional
 	public void update(ProfileUpdateServiceRequest request) {
 
-		Profile profile = profileRepository.findByUserId(request.userId())
+		ProfileEntity profile = profileRepository.findByUserId(request.userId())
 			.orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_PROFILE));
 
 		validateProfileUpdate(request, profile);
@@ -89,7 +89,7 @@ public class ProfileServiceV1 {
 		profileValidator.validateSupportedCommunity(request.communityId());
 	}
 
-	private void validateProfileUpdate(ProfileUpdateServiceRequest request, Profile profile) {
+	private void validateProfileUpdate(ProfileUpdateServiceRequest request, ProfileEntity profile) {
 
 		if (!profile.getNickname().equals(request.nickname())) {
 			profileValidator.validateNicknamePattern(request.nickname());

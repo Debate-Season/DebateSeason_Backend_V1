@@ -3,7 +3,7 @@ package com.debateseason_backend_v1.domain.user.application.service;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.debateseason_backend_v1.domain.repository.ProfileRepository;
+import com.debateseason_backend_v1.domain.profile.infrastructure.ProfileJpaRepository;
 import com.debateseason_backend_v1.domain.repository.RefreshTokenRepository;
 import com.debateseason_backend_v1.domain.repository.entity.RefreshToken;
 import com.debateseason_backend_v1.domain.terms.service.TermsServiceV1;
@@ -23,7 +23,7 @@ public class UserServiceV2 {
 	private final JwtUtil jwtUtil;
 	private final TermsServiceV1 termsService;
 	private final UserRepository userRepository;
-	private final ProfileRepository profileRepository;
+	private final ProfileJpaRepository profileRepository;
 	private final OidcProviderFactory oidcProviderFactory;
 	private final RefreshTokenRepository refreshTokenRepository;
 

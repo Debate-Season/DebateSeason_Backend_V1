@@ -8,8 +8,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.debateseason_backend_v1.common.component.UuidShortener;
-import com.debateseason_backend_v1.domain.repository.ProfileRepository;
-import com.debateseason_backend_v1.domain.repository.entity.Profile;
+import com.debateseason_backend_v1.domain.profile.infrastructure.ProfileJpaRepository;
+import com.debateseason_backend_v1.domain.profile.infrastructure.ProfileEntity;
 import com.debateseason_backend_v1.domain.user.application.UserRepository;
 import com.debateseason_backend_v1.domain.user.domain.User;
 import com.debateseason_backend_v1.domain.user.domain.UserStatus;
@@ -24,7 +24,7 @@ public class UserScheduler {
 
 	private final UuidShortener uuidShortener;
 	private final UserRepository userRepository;
-	private final ProfileRepository profileRepository;
+	private final ProfileJpaRepository profileRepository;
 
 	@Scheduled(cron = "0 0 0 * * *") // 매일 자정 실행
 	@Transactional
@@ -42,7 +42,7 @@ public class UserScheduler {
 			if (user.canAnonymizeBySchedule()) {
 				user.anonymize(uuid);
 
-				Profile profile = profileRepository.findByUserId(user.getId())
+				ProfileEntity profile = profileRepository.findByUserId(user.getId())
 					.orElse(null);
 
 				if (profile != null) {

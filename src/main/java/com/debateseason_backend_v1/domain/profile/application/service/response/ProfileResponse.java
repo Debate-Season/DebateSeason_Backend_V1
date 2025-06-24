@@ -1,9 +1,9 @@
-package com.debateseason_backend_v1.domain.profile.service.response;
+package com.debateseason_backend_v1.domain.profile.application.service.response;
 
 import com.debateseason_backend_v1.domain.profile.enums.AgeRangeType;
 import com.debateseason_backend_v1.domain.profile.enums.CommunityType;
 import com.debateseason_backend_v1.domain.profile.enums.GenderType;
-import com.debateseason_backend_v1.domain.repository.entity.Profile;
+import com.debateseason_backend_v1.domain.profile.infrastructure.ProfileEntity;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
@@ -39,7 +39,7 @@ public record ProfileResponse(
 	String hometownDistrict
 ) {
 
-	public static ProfileResponse of(Profile profile, CommunityType communityType) {
+	public static ProfileResponse of(ProfileEntity profile, CommunityType communityType) {
 
 		return ProfileResponse.builder()
 			.profileImage(profile.getProfileImage())

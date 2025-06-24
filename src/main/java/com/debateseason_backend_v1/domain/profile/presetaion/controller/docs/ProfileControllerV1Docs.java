@@ -1,4 +1,4 @@
-package com.debateseason_backend_v1.domain.profile.controller.docs;
+package com.debateseason_backend_v1.domain.profile.presetaion.controller.docs;
 
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -8,9 +8,9 @@ import com.debateseason_backend_v1.common.exception.ErrorCode;
 import com.debateseason_backend_v1.common.response.ApiResult;
 import com.debateseason_backend_v1.common.response.VoidApiResult;
 import com.debateseason_backend_v1.common.swagger.ApiErrorCode;
-import com.debateseason_backend_v1.domain.profile.controller.request.ProfileRegisterRequest;
-import com.debateseason_backend_v1.domain.profile.controller.request.ProfileUpdateRequest;
-import com.debateseason_backend_v1.domain.profile.service.response.ProfileResponse;
+import com.debateseason_backend_v1.domain.profile.presetaion.controller.request.ProfileRegisterRequest;
+import com.debateseason_backend_v1.domain.profile.presetaion.controller.request.ProfileUpdateRequest;
+import com.debateseason_backend_v1.domain.profile.application.service.response.ProfileResponse;
 import com.debateseason_backend_v1.security.CustomUserDetails;
 
 import io.swagger.v3.oas.annotations.Operation;

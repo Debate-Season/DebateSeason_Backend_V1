@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 import com.debateseason_backend_v1.common.exception.CustomException;
 import com.debateseason_backend_v1.common.exception.ErrorCode;
 import com.debateseason_backend_v1.domain.profile.enums.CommunityType;
-import com.debateseason_backend_v1.domain.repository.ProfileRepository;
+import com.debateseason_backend_v1.domain.profile.infrastructure.ProfileJpaRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -17,7 +17,7 @@ import lombok.RequiredArgsConstructor;
 public class ProfileValidator {
 
 	private static final Pattern NICKNAME_PATTERN = Pattern.compile("^[가-힣a-zA-Z]{1,8}$");
-	private final ProfileRepository profileRepository;
+	private final ProfileJpaRepository profileRepository;
 
 	public void validateProfileExists(Long userId) {
 

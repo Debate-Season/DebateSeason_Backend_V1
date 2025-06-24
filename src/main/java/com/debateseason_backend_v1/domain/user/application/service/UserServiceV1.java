@@ -6,7 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.debateseason_backend_v1.common.enums.TokenType;
 import com.debateseason_backend_v1.common.exception.CustomException;
 import com.debateseason_backend_v1.common.exception.ErrorCode;
-import com.debateseason_backend_v1.domain.repository.ProfileRepository;
+import com.debateseason_backend_v1.domain.profile.infrastructure.ProfileJpaRepository;
 import com.debateseason_backend_v1.domain.repository.RefreshTokenRepository;
 import com.debateseason_backend_v1.domain.repository.entity.RefreshToken;
 import com.debateseason_backend_v1.domain.terms.service.TermsServiceV1;
@@ -29,7 +29,7 @@ public class UserServiceV1 {
 	private final JwtUtil jwtUtil;
 	private final TermsServiceV1 termsService;
 	private final UserRepository userRepository;
-	private final ProfileRepository profileRepository;
+	private final ProfileJpaRepository profileRepository;
 	private final RefreshTokenRepository refreshTokenRepository;
 
 	@Transactional

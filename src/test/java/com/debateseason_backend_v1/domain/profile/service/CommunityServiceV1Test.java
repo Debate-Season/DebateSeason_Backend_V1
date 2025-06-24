@@ -8,8 +8,9 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import com.debateseason_backend_v1.domain.profile.application.service.CommunityServiceV1;
 import com.debateseason_backend_v1.domain.profile.enums.CommunityType;
-import com.debateseason_backend_v1.domain.profile.service.response.CommunityResponse;
+import com.debateseason_backend_v1.domain.profile.application.service.response.CommunityResponse;
 
 class CommunityServiceV1Test {
 

@@ -24,12 +24,12 @@ import com.debateseason_backend_v1.domain.profile.enums.CommunityType;
 import com.debateseason_backend_v1.domain.chat.infrastructure.chat.ChatJpaRepository;
 import com.debateseason_backend_v1.domain.repository.ChatRoomRepository;
 import com.debateseason_backend_v1.domain.repository.IssueRepository;
-import com.debateseason_backend_v1.domain.repository.ProfileRepository;
+import com.debateseason_backend_v1.domain.profile.infrastructure.ProfileJpaRepository;
 import com.debateseason_backend_v1.domain.repository.UserChatRoomRepository;
 import com.debateseason_backend_v1.domain.repository.UserIssueRepository;
 import com.debateseason_backend_v1.domain.user.infrastructure.UserJpaRepository;
 import com.debateseason_backend_v1.domain.repository.entity.Issue;
-import com.debateseason_backend_v1.domain.repository.entity.Profile;
+import com.debateseason_backend_v1.domain.profile.infrastructure.ProfileEntity;
 import com.debateseason_backend_v1.domain.user.infrastructure.UserEntity;
 import com.debateseason_backend_v1.domain.repository.entity.UserIssue;
 import com.debateseason_backend_v1.domain.user.dto.UserDTO;
@@ -48,7 +48,7 @@ public class IssueServiceV1 {
 	private final UserChatRoomRepository userChatRoomRepository;
 	private final UserJpaRepository userRepository;
 
-	private final ProfileRepository profileRepository;
+	private final ProfileJpaRepository profileRepository;
 	private final ChatJpaRepository chatRepository;
 
 	private final ChatRoomRepository chatRoomRepository;
@@ -105,7 +105,7 @@ public class IssueServiceV1 {
 			bookMarks = (Long)obj[2];
 		}
 
-		Profile profile = profileRepository.findByUserId(userId).orElseThrow(
+		ProfileEntity profile = profileRepository.findByUserId(userId).orElseThrow(
 			() -> new CustomException(ErrorCode.NOT_FOUND_PROFILE)
 		);
 

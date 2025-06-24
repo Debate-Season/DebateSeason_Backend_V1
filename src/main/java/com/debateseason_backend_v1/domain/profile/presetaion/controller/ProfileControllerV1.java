@@ -1,4 +1,4 @@
-package com.debateseason_backend_v1.domain.profile.controller;
+package com.debateseason_backend_v1.domain.profile.presetaion.controller;
 
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -11,11 +11,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.debateseason_backend_v1.common.response.ApiResult;
 import com.debateseason_backend_v1.common.response.VoidApiResult;
-import com.debateseason_backend_v1.domain.profile.controller.docs.ProfileControllerV1Docs;
-import com.debateseason_backend_v1.domain.profile.controller.request.ProfileRegisterRequest;
-import com.debateseason_backend_v1.domain.profile.controller.request.ProfileUpdateRequest;
-import com.debateseason_backend_v1.domain.profile.service.ProfileServiceV1;
-import com.debateseason_backend_v1.domain.profile.service.response.ProfileResponse;
+import com.debateseason_backend_v1.domain.profile.presetaion.controller.docs.ProfileControllerV1Docs;
+import com.debateseason_backend_v1.domain.profile.presetaion.controller.request.ProfileRegisterRequest;
+import com.debateseason_backend_v1.domain.profile.presetaion.controller.request.ProfileUpdateRequest;
+import com.debateseason_backend_v1.domain.profile.application.service.ProfileServiceV1;
+import com.debateseason_backend_v1.domain.profile.application.service.response.ProfileResponse;
 import com.debateseason_backend_v1.security.CustomUserDetails;
 
 import jakarta.validation.Valid;

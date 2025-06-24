@@ -1,4 +1,4 @@
-package com.debateseason_backend_v1.domain.profile.service.response;
+package com.debateseason_backend_v1.domain.profile.application.service.response;
 
 import lombok.Builder;
 

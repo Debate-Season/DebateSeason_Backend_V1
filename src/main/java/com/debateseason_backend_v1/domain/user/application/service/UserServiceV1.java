@@ -8,13 +8,13 @@ import com.debateseason_backend_v1.common.exception.CustomException;
 import com.debateseason_backend_v1.common.exception.ErrorCode;
 import com.debateseason_backend_v1.domain.repository.ProfileRepository;
 import com.debateseason_backend_v1.domain.repository.RefreshTokenRepository;
-import com.debateseason_backend_v1.domain.user.infrastructure.UserJpaRepository;
 import com.debateseason_backend_v1.domain.repository.entity.RefreshToken;
-import com.debateseason_backend_v1.domain.user.infrastructure.UserEntity;
 import com.debateseason_backend_v1.domain.terms.service.TermsServiceV1;
 import com.debateseason_backend_v1.domain.user.application.service.request.LogoutServiceRequest;
 import com.debateseason_backend_v1.domain.user.application.service.request.SocialLoginServiceRequest;
 import com.debateseason_backend_v1.domain.user.application.service.response.LoginResponse;
+import com.debateseason_backend_v1.domain.user.infrastructure.UserEntity;
+import com.debateseason_backend_v1.domain.user.infrastructure.UserJpaRepository;
 import com.debateseason_backend_v1.security.jwt.JwtUtil;
 
 import lombok.RequiredArgsConstructor;
@@ -35,8 +35,8 @@ public class UserServiceV1 {
 	@Transactional
 	public LoginResponse socialLogin(SocialLoginServiceRequest request) {
 
-		UserEntity user = userRepository.findBySocialTypeAndIdentifier(
-				request.socialType(),
+		UserEntity user = userRepository.findByOAuthProviderAndIdentifier(
+				request.OAuthProvider(),
 				request.identifier()
 			)
 			.orElseGet(() -> createNewUser(request));
@@ -62,7 +62,7 @@ public class UserServiceV1 {
 		return LoginResponse.builder()
 			.accessToken(newAccessToken)
 			.refreshToken(newRefreshToken)
-			.socialType(request.socialType().getDescription())
+			.socialType(request.OAuthProvider().getDescription())
 			.profileStatus(profileStatus)
 			.termsStatus(termsStatus)
 			.build();
@@ -100,7 +100,7 @@ public class UserServiceV1 {
 	private UserEntity createNewUser(SocialLoginServiceRequest request) {
 
 		UserEntity user = UserEntity.builder()
-			.socialType(request.socialType())
+			.OAuthProvider(request.OAuthProvider())
 			.externalId(request.identifier())
 			.build();
 

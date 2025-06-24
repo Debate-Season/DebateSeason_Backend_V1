@@ -15,10 +15,10 @@ import org.springframework.test.context.ActiveProfiles;
 
 import com.debateseason_backend_v1.domain.auth.service.request.TokenReissueServiceRequest;
 import com.debateseason_backend_v1.domain.repository.RefreshTokenRepository;
-import com.debateseason_backend_v1.domain.user.infrastructure.UserJpaRepository;
 import com.debateseason_backend_v1.domain.repository.entity.RefreshToken;
+import com.debateseason_backend_v1.domain.user.domain.OAuthProvider;
 import com.debateseason_backend_v1.domain.user.infrastructure.UserEntity;
-import com.debateseason_backend_v1.domain.user.domain.SocialType;
+import com.debateseason_backend_v1.domain.user.infrastructure.UserJpaRepository;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -38,7 +38,7 @@ public class TokenReissueConcurrencyTest {
 	void reissueToken_concurrency_test() throws InterruptedException {
 		// given
 		UserEntity testUser = userRepository.save(UserEntity.builder()
-			.socialType(SocialType.KAKAO)
+			.OAuthProvider(OAuthProvider.KAKAO)
 			.externalId("concurrency_test_user")
 			.build());
 

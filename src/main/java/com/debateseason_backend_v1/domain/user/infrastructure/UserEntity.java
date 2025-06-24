@@ -6,7 +6,7 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import com.debateseason_backend_v1.domain.user.domain.SocialType;
+import com.debateseason_backend_v1.domain.user.domain.OAuthProvider;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -36,7 +36,7 @@ public class UserEntity {
 
 	@Enumerated(EnumType.STRING)
 	@Column(name = "social_type")
-	private SocialType socialType;
+	private OAuthProvider OAuthProvider;
 
 	@Column(name = "identifier")
 	private String identifier;
@@ -53,9 +53,9 @@ public class UserEntity {
 	private LocalDateTime updatedAt;
 
 	@Builder
-	private UserEntity(SocialType socialType, String externalId) {
+	private UserEntity(OAuthProvider OAuthProvider, String externalId) {
 
-		this.socialType = socialType;
+		this.OAuthProvider = OAuthProvider;
 		this.identifier = externalId;
 	}
 

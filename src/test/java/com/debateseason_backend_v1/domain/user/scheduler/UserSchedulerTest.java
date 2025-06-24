@@ -20,13 +20,13 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import com.debateseason_backend_v1.common.component.UuidShortener;
-import com.debateseason_backend_v1.domain.repository.ProfileRepository;
-import com.debateseason_backend_v1.domain.user.infrastructure.UserJpaRepository;
-import com.debateseason_backend_v1.domain.repository.entity.Profile;
-import com.debateseason_backend_v1.domain.user.infrastructure.UserEntity;
 import com.debateseason_backend_v1.domain.profile.enums.AgeRangeType;
 import com.debateseason_backend_v1.domain.profile.enums.GenderType;
-import com.debateseason_backend_v1.domain.user.domain.SocialType;
+import com.debateseason_backend_v1.domain.repository.ProfileRepository;
+import com.debateseason_backend_v1.domain.repository.entity.Profile;
+import com.debateseason_backend_v1.domain.user.domain.OAuthProvider;
+import com.debateseason_backend_v1.domain.user.infrastructure.UserEntity;
+import com.debateseason_backend_v1.domain.user.infrastructure.UserJpaRepository;
 
 @ActiveProfiles("test")
 @ExtendWith(MockitoExtension.class)
@@ -137,7 +137,7 @@ class UserSchedulerTest {
 
 	private UserEntity createUser(Long id, String identifier, boolean isDeleted, LocalDateTime updatedAt) {
 		UserEntity user = UserEntity.builder()
-			.socialType(SocialType.KAKAO)
+			.OAuthProvider(OAuthProvider.KAKAO)
 			.externalId(identifier)
 			.build();
 

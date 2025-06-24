@@ -7,14 +7,14 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.debateseason_backend_v1.domain.repository.ProfileRepository;
 import com.debateseason_backend_v1.domain.repository.RefreshTokenRepository;
-import com.debateseason_backend_v1.domain.user.infrastructure.UserJpaRepository;
 import com.debateseason_backend_v1.domain.repository.entity.RefreshToken;
-import com.debateseason_backend_v1.domain.user.infrastructure.UserEntity;
 import com.debateseason_backend_v1.domain.terms.service.TermsServiceV1;
-import com.debateseason_backend_v1.domain.user.component.provider.OidcProviderFactory;
-import com.debateseason_backend_v1.domain.user.domain.SocialType;
 import com.debateseason_backend_v1.domain.user.application.service.request.OidcLoginServiceRequest;
 import com.debateseason_backend_v1.domain.user.application.service.response.LoginResponse;
+import com.debateseason_backend_v1.domain.user.component.provider.OidcProviderFactory;
+import com.debateseason_backend_v1.domain.user.domain.OAuthProvider;
+import com.debateseason_backend_v1.domain.user.infrastructure.UserEntity;
+import com.debateseason_backend_v1.domain.user.infrastructure.UserJpaRepository;
 import com.debateseason_backend_v1.security.jwt.JwtUtil;
 
 import lombok.RequiredArgsConstructor;
@@ -33,13 +33,13 @@ public class UserServiceV2 {
 	@Transactional
 	public LoginResponse socialLogin(OidcLoginServiceRequest request) {
 
-		String userIdentifier = oidcProviderFactory.extractUserId(request.socialType(), request.idToken());
+		String userIdentifier = oidcProviderFactory.extractUserId(request.OAuthProvider(), request.idToken());
 
-		UserEntity user = userRepository.findBySocialTypeAndIdentifier(
-				request.socialType(),
+		UserEntity user = userRepository.findByOAuthProviderAndIdentifier(
+				request.OAuthProvider(),
 				userIdentifier
 			)
-			.orElseGet(() -> createNewUser(request.socialType(), userIdentifier));
+			.orElseGet(() -> createNewUser(request.OAuthProvider(), userIdentifier));
 
 		if (user.isDeleted()) {
 			user.restore();
@@ -62,16 +62,16 @@ public class UserServiceV2 {
 		return LoginResponse.builder()
 			.accessToken(newAccessToken)
 			.refreshToken(newRefreshToken)
-			.socialType(request.socialType().getDescription())
+			.socialType(request.OAuthProvider().getDescription())
 			.profileStatus(profileStatus)
 			.termsStatus(termsStatus)
 			.build();
 	}
 
-	private UserEntity createNewUser(SocialType socialType, String userIdentifier) {
+	private UserEntity createNewUser(OAuthProvider OAuthProvider, String userIdentifier) {
 
 		UserEntity user = UserEntity.builder()
-			.socialType(socialType)
+			.OAuthProvider(OAuthProvider)
 			.externalId(userIdentifier)
 			.build();
 

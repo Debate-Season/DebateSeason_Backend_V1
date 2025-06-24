@@ -12,7 +12,7 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public enum SocialType {
+public enum OAuthProvider {
 
 	KAKAO("kakao", "https://kauth.kakao.com", "https://kauth.kakao.com/.well-known/jwks.json"),
 	APPLE("apple", "https://appleid.apple.com", "https://appleid.apple.com/auth/keys");
@@ -27,7 +27,7 @@ public enum SocialType {
 	}
 
 	@JsonCreator
-	public static SocialType from(String description) {
+	public static OAuthProvider from(String description) {
 		return Arrays.stream(values())
 			.filter(type -> type.getDescription().equals(description))
 			.findFirst()

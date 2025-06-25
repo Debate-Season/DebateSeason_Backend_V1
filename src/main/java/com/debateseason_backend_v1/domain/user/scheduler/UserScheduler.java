@@ -8,8 +8,10 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.debateseason_backend_v1.common.component.UuidShortener;
-import com.debateseason_backend_v1.domain.repository.ProfileRepository;
-import com.debateseason_backend_v1.domain.repository.entity.Profile;
+import com.debateseason_backend_v1.common.exception.CustomException;
+import com.debateseason_backend_v1.common.exception.ErrorCode;
+import com.debateseason_backend_v1.domain.profile.application.service.ProfileRepository;
+import com.debateseason_backend_v1.domain.profile.domain.Profile;
 import com.debateseason_backend_v1.domain.user.application.UserRepository;
 import com.debateseason_backend_v1.domain.user.domain.User;
 import com.debateseason_backend_v1.domain.user.domain.UserStatus;
@@ -31,8 +33,6 @@ public class UserScheduler {
 	public void anonymizeExpiredUsers() {
 		log.info("탈퇴 회원 익명화 처리 시작: {}", LocalDateTime.now());
 
-		LocalDateTime cutoffDate = LocalDateTime.now().minusDays(5);
-
 		List<User> expiredUsers = userRepository.findByStatus(UserStatus.WITHDRAWAL_PENDING);
 
 		for (User user : expiredUsers) {
@@ -43,16 +43,14 @@ public class UserScheduler {
 				user.anonymize(uuid);
 
 				Profile profile = profileRepository.findByUserId(user.getId())
-					.orElse(null);
+					.orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_PROFILE));
 
-				if (profile != null) {
-					profile.anonymize("탈퇴회원#" + uuid);
-					log.info("회원 ID: {}의 프로필 익명화 완료", user.getId());
-				}
+				profile.anonymize(uuid);
+				log.info("회원 ID: {}의 프로필 익명화 완료", user.getId());
+
+				userRepository.save(user);
+				profileRepository.save(profile);
 			}
-
-			userRepository.save(user);
-
 		}
 
 		log.info("총 {}명의 탈퇴 회원 익명화 처리 완료", expiredUsers.size());

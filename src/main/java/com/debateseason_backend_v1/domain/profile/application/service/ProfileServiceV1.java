@@ -15,7 +15,6 @@ import com.debateseason_backend_v1.domain.profile.domain.CommunityType;
 import com.debateseason_backend_v1.domain.profile.domain.Nickname;
 import com.debateseason_backend_v1.domain.profile.domain.Profile;
 import com.debateseason_backend_v1.domain.profile.domain.Region;
-import com.debateseason_backend_v1.domain.profile.validator.ProfileValidator;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,7 +26,6 @@ import lombok.extern.slf4j.Slf4j;
 public class ProfileServiceV1 {
 
 	private final ProfileRepository profileRepository;
-	private final ProfileValidator profileValidator;
 
 	@Transactional
 	public void create(ProfileCreateServiceRequest request) {

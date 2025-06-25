@@ -16,6 +16,11 @@ public class ProfileRepositoryImpl implements ProfileRepository {
 	private final ProfileJpaRepository profileJpaRepository;
 
 	@Override
+	public void save(Profile profile) {
+		profileJpaRepository.save(ProfileEntity.from(profile));
+	}
+
+	@Override
 	public boolean existsByUserId(Long userId) {
 		return profileJpaRepository.existsByUserId(userId);
 	}

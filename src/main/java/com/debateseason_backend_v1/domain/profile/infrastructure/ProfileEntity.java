@@ -10,7 +10,6 @@ import com.debateseason_backend_v1.domain.profile.domain.CommunityType;
 import com.debateseason_backend_v1.domain.profile.domain.GenderType;
 import com.debateseason_backend_v1.domain.profile.domain.Nickname;
 import com.debateseason_backend_v1.domain.profile.domain.Profile;
-import com.debateseason_backend_v1.domain.profile.domain.ProfileMappingData;
 import com.debateseason_backend_v1.domain.profile.domain.Region;
 
 import jakarta.persistence.AttributeOverride;
@@ -97,42 +96,25 @@ public class ProfileEntity {
 		this.hometown = hometown;
 	}
 
-	public void update(
-		String profileImage, String nickname, Long communityId, GenderType gender, AgeRangeType ageRange,
-		Region residence, Region hometown
-	) {
-		this.profileImage = profileImage;
-		this.nickname = nickname;
-		this.communityId = communityId;
-		this.gender = gender;
-		this.ageRange = ageRange;
-		this.residence = residence;
-		this.hometown = hometown;
-	}
-
-	public void anonymize(String anonymousNickname) {
-
-		this.nickname = anonymousNickname;
-		this.gender = GenderType.UNDEFINED;
-	}
-
 	public CommunityType getCommunityType() {
-
 		return communityId != null ? CommunityType.findById(communityId) : null;
 	}
 
 	public static ProfileEntity from(Profile profile) {
-		ProfileMappingData data = profile.getMappingData();
 		return ProfileEntity.builder()
-			.id(data.id())
-			.userId(data.userId())
-			.communityId(data.communityId())
-			.profileImage(data.profileImage())
-			.nickname(data.nickname().value())
-			.gender(data.gender())
-			.ageRange(data.ageRange())
-			.residence(Region.of(data.residence().getProvinceType(), data.residence().getDistrictType()))
-			.hometown(Region.of(data.hometown().getProvinceType(), data.hometown().getDistrictType()))
+			.id(profile.getId())
+			.userId(profile.getUserId())
+			.communityId(profile.getCommunityId())
+			.profileImage(profile.getProfileImage())
+			.nickname(profile.getNickname().value())
+			.gender(profile.getGender())
+			.ageRange(profile.getAgeRange())
+			.residence(
+				Region.of(profile.getResidence().getProvinceType(), profile.getResidence().getDistrictType())
+			)
+			.hometown(
+				Region.of(profile.getHometown().getProvinceType(), profile.getHometown().getDistrictType())
+			)
 			.build();
 	}
 

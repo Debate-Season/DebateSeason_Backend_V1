@@ -1,7 +1,9 @@
 package com.debateseason_backend_v1.domain.profile.domain;
 
 import lombok.Builder;
+import lombok.Getter;
 
+@Getter
 public class Profile {
 	private Long id;
 	private Long userId;
@@ -35,14 +37,14 @@ public class Profile {
 	}
 
 	public static Profile create(
-		Long userId, Long communityId, String nickname, GenderType gender,
+		Long userId, Long communityId, Nickname nickname, GenderType gender,
 		AgeRangeType ageRange, Region residence, Region hometown) {
 
 		return Profile.builder()
 			.profileImage("RED")
 			.userId(userId)
 			.communityId(communityId)
-			.nickname(Nickname.of(nickname))
+			.nickname(nickname)
 			.gender(gender)
 			.ageRange(ageRange)
 			.residence(residence)
@@ -51,10 +53,12 @@ public class Profile {
 	}
 
 	public void update(
-		String nickname, GenderType gender, AgeRangeType ageRange,
+		Long communityId, Nickname nickname,
+		GenderType gender, AgeRangeType ageRange,
 		Region residence, Region hometown
 	) {
-		this.nickname = Nickname.of(nickname);
+		this.communityId = communityId;
+		this.nickname = nickname;
 		this.gender = gender;
 		this.ageRange = ageRange;
 		this.residence = residence;
@@ -74,21 +78,7 @@ public class Profile {
 	}
 
 	public CommunityType getCommunityType() {
-		return communityId != null ? CommunityType.findById(communityId) : null;
-	}
-
-	public ProfileMappingData getMappingData() {
-		return ProfileMappingData.builder()
-			.id(id)
-			.userId(userId)
-			.communityId(communityId)
-			.profileImage(profileImage)
-			.nickname(nickname)
-			.gender(gender)
-			.ageRange(ageRange)
-			.residence(residence)
-			.hometown(hometown)
-			.build();
+		return CommunityType.findById(communityId);
 	}
 
 }

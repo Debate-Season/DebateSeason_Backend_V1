@@ -10,7 +10,6 @@ import lombok.Builder;
 @Builder
 public record ProfileRegisterServiceRequest(
 	Long userId,
-	String profileImage,
 	String nickname,
 	Long communityId,
 	GenderType gender,

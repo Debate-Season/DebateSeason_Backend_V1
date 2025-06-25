@@ -3,7 +3,7 @@ package com.debateseason_backend_v1.domain.profile.application.service.response;
 import com.debateseason_backend_v1.domain.profile.domain.AgeRangeType;
 import com.debateseason_backend_v1.domain.profile.domain.CommunityType;
 import com.debateseason_backend_v1.domain.profile.domain.GenderType;
-import com.debateseason_backend_v1.domain.profile.infrastructure.ProfileEntity;
+import com.debateseason_backend_v1.domain.profile.domain.Profile;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
@@ -39,11 +39,11 @@ public record ProfileResponse(
 	String hometownDistrict
 ) {
 
-	public static ProfileResponse of(ProfileEntity profile, CommunityType communityType) {
+	public static ProfileResponse of(Profile profile, CommunityType communityType) {
 
 		return ProfileResponse.builder()
 			.profileImage(profile.getProfileImage())
-			.nickname(profile.getNickname())
+			.nickname(profile.getNickname().value())
 			.gender(profile.getGender())
 			.ageRange(profile.getAgeRange())
 			.residenceProvince(profile.getResidence().getProvinceType().getCode())

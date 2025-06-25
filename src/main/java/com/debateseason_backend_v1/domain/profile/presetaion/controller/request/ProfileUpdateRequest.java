@@ -12,8 +12,6 @@ import jakarta.validation.constraints.NotNull;
 
 @Schema(title = "프로필 수정 요청 DTO", description = "프로필 수정 요청")
 public record ProfileUpdateRequest(
-	@Schema(description = "프로필 이미지", example = "RED")
-	String profileImage,
 
 	@Schema(description = "사용자 닉네임", example = "토론왕")
 	@NotBlank(message = "닉네임은 필수입니다.")
@@ -48,7 +46,6 @@ public record ProfileUpdateRequest(
 
 		return ProfileUpdateServiceRequest.builder()
 			.userId(userId)
-			.profileImage(profileImage)
 			.nickname(nickname)
 			.communityId(communityId)
 			.gender(gender)

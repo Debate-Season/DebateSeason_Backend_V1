@@ -8,6 +8,9 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import com.debateseason_backend_v1.domain.profile.domain.AgeRangeType;
 import com.debateseason_backend_v1.domain.profile.domain.CommunityType;
 import com.debateseason_backend_v1.domain.profile.domain.GenderType;
+import com.debateseason_backend_v1.domain.profile.domain.Nickname;
+import com.debateseason_backend_v1.domain.profile.domain.Profile;
+import com.debateseason_backend_v1.domain.profile.domain.ProfileMappingData;
 import com.debateseason_backend_v1.domain.profile.domain.Region;
 
 import jakarta.persistence.AttributeOverride;
@@ -79,10 +82,11 @@ public class ProfileEntity {
 
 	@Builder
 	private ProfileEntity(
-		Long userId, String profileImage, String nickname, Long communityId, GenderType gender, AgeRangeType ageRange,
+		Long id, Long userId, String profileImage, String nickname, Long communityId, GenderType gender,
+		AgeRangeType ageRange,
 		Region residence, Region hometown
 	) {
-
+		this.id = id;
 		this.userId = userId;
 		this.profileImage = profileImage;
 		this.nickname = nickname;
@@ -117,4 +121,32 @@ public class ProfileEntity {
 		return communityId != null ? CommunityType.findById(communityId) : null;
 	}
 
+	public static ProfileEntity from(Profile profile) {
+		ProfileMappingData data = profile.getMappingData();
+		return ProfileEntity.builder()
+			.id(data.id())
+			.userId(data.userId())
+			.communityId(data.communityId())
+			.profileImage(data.profileImage())
+			.nickname(data.nickname().value())
+			.gender(data.gender())
+			.ageRange(data.ageRange())
+			.residence(Region.of(data.residence().getProvinceType(), data.residence().getDistrictType()))
+			.hometown(Region.of(data.hometown().getProvinceType(), data.hometown().getDistrictType()))
+			.build();
+	}
+
+	public Profile toModel() {
+		return Profile.builder()
+			.id(id)
+			.userId(userId)
+			.communityId(communityId)
+			.profileImage(profileImage)
+			.nickname(Nickname.of(nickname))
+			.gender(gender)
+			.ageRange(ageRange)
+			.residence(residence)
+			.hometown(hometown)
+			.build();
+	}
 }

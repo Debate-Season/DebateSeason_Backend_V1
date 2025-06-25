@@ -76,5 +76,19 @@ public class Profile {
 	public CommunityType getCommunityType() {
 		return communityId != null ? CommunityType.findById(communityId) : null;
 	}
-	
+
+	public ProfileMappingData getMappingData() {
+		return ProfileMappingData.builder()
+			.id(id)
+			.userId(userId)
+			.communityId(communityId)
+			.profileImage(profileImage)
+			.nickname(nickname)
+			.gender(gender)
+			.ageRange(ageRange)
+			.residence(residence)
+			.hometown(hometown)
+			.build();
+	}
+
 }

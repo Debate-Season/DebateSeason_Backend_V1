@@ -8,7 +8,7 @@ import com.debateseason_backend_v1.common.exception.ErrorCode;
 public record Nickname(
 	String value
 ) {
-	private static final Pattern NICKNAME_PATTERN = Pattern.compile("^[가-힣a-zA-Z0-9]{1,8}$");
+	private static final Pattern NICKNAME_PATTERN = Pattern.compile("^[가-힣a-zA-Z]{1,8}$");
 
 	public Nickname {
 		if (value == null) {

@@ -1,6 +1,6 @@
 package com.debateseason_backend_v1.domain.profile.presetaion.controller.request;
 
-import com.debateseason_backend_v1.domain.profile.application.service.request.ProfileRegisterServiceRequest;
+import com.debateseason_backend_v1.domain.profile.application.service.request.ProfileCreateServiceRequest;
 import com.debateseason_backend_v1.domain.profile.domain.AgeRangeType;
 import com.debateseason_backend_v1.domain.profile.domain.DistrictType;
 import com.debateseason_backend_v1.domain.profile.domain.GenderType;
@@ -11,9 +11,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 @Schema(title = "프로필 등록 요청 DTO", description = "프로필 등록 요청")
-public record ProfileRegisterRequest(
-	// @Schema(description = "프로필 이미지", example = "RED")
-	// String profileImage,
+public record ProfileCreateRequest(
 
 	@Schema(description = "사용자 닉네임", example = "토론왕")
 	@NotBlank(message = "닉네임은 필수입니다.")
@@ -44,9 +42,9 @@ public record ProfileRegisterRequest(
 	DistrictType hometownDistrict
 ) {
 
-	public ProfileRegisterServiceRequest toServiceRequest(Long userId) {
+	public ProfileCreateServiceRequest toServiceRequest(Long userId) {
 
-		return ProfileRegisterServiceRequest.builder()
+		return ProfileCreateServiceRequest.builder()
 			.userId(userId)
 			.nickname(nickname)
 			.communityId(communityId)

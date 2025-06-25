@@ -7,7 +7,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.debateseason_backend_v1.common.exception.CustomException;
 import com.debateseason_backend_v1.common.exception.ErrorCode;
-import com.debateseason_backend_v1.domain.profile.application.service.request.ProfileRegisterServiceRequest;
+import com.debateseason_backend_v1.domain.profile.application.service.request.ProfileCreateServiceRequest;
+import com.debateseason_backend_v1.domain.profile.application.service.request.ProfileImageRegisterServiceRequest;
 import com.debateseason_backend_v1.domain.profile.application.service.request.ProfileUpdateServiceRequest;
 import com.debateseason_backend_v1.domain.profile.application.service.response.ProfileResponse;
 import com.debateseason_backend_v1.domain.profile.domain.CommunityType;
@@ -29,7 +30,7 @@ public class ProfileServiceV1 {
 	private final ProfileValidator profileValidator;
 
 	@Transactional
-	public void register(ProfileRegisterServiceRequest request) {
+	public void create(ProfileCreateServiceRequest request) {
 
 		if (profileRepository.existsByUserId(request.userId())) {
 			throw new CustomException(ErrorCode.ALREADY_EXIST_PROFILE);
@@ -47,6 +48,17 @@ public class ProfileServiceV1 {
 			Region.of(request.residenceProvince(), request.residenceDistrict()),
 			Region.of(request.hometownProvince(), request.hometownDistrict())
 		);
+
+		profileRepository.save(profile);
+	}
+
+	@Transactional
+	public void createProfileImage(ProfileImageRegisterServiceRequest request) {
+
+		Profile profile = profileRepository.findByUserId(request.userId())
+			.orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_PROFILE));
+
+		profile.updateProfileImage(request.profileImage());
 
 		profileRepository.save(profile);
 	}

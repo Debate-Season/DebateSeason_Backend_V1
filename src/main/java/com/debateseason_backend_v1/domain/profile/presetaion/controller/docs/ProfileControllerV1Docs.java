@@ -8,9 +8,9 @@ import com.debateseason_backend_v1.common.exception.ErrorCode;
 import com.debateseason_backend_v1.common.response.ApiResult;
 import com.debateseason_backend_v1.common.response.VoidApiResult;
 import com.debateseason_backend_v1.common.swagger.ApiErrorCode;
-import com.debateseason_backend_v1.domain.profile.presetaion.controller.request.ProfileRegisterRequest;
-import com.debateseason_backend_v1.domain.profile.presetaion.controller.request.ProfileUpdateRequest;
 import com.debateseason_backend_v1.domain.profile.application.service.response.ProfileResponse;
+import com.debateseason_backend_v1.domain.profile.presetaion.controller.request.ProfileCreateRequest;
+import com.debateseason_backend_v1.domain.profile.presetaion.controller.request.ProfileUpdateRequest;
 import com.debateseason_backend_v1.security.CustomUserDetails;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -44,7 +44,7 @@ public interface ProfileControllerV1Docs {
 		ErrorCode.DUPLICATE_NICKNAME,
 	})
 	public VoidApiResult registerProfile(
-		@RequestBody ProfileRegisterRequest request,
+		@RequestBody ProfileCreateRequest request,
 		@AuthenticationPrincipal CustomUserDetails userDetails
 	);
 

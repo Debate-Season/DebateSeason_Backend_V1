@@ -21,7 +21,7 @@ class ProfileTest {
 
 		// when & then
 		assertThatCode(() -> {
-			Profile.create(userId, communityId, nickname, gender, ageRange, residence, hometown);
+			Profile.create(userId, communityId, Nickname.of(nickname), gender, ageRange, residence, hometown);
 		}).doesNotThrowAnyException();
 	}
 
@@ -30,12 +30,13 @@ class ProfileTest {
 	void updateProfile() {
 		// given
 		Profile profile = Profile.create(
-			1L, 1L, "토론왕", GenderType.MALE, AgeRangeType.TWENTIES,
+			1L, 1L, Nickname.of("토론왕"), GenderType.MALE, AgeRangeType.TWENTIES,
 			Region.of(ProvinceType.SEOUL, DistrictType.YONGSAN),
 			Region.of(ProvinceType.SEOUL, DistrictType.YONGSAN)
 		);
 
-		String newNickname = "토론마스터";
+		Long communityId = 2L;
+		Nickname nickname = Nickname.of("토론마스터");
 		GenderType newGender = GenderType.FEMALE;
 		AgeRangeType newAgeRange = AgeRangeType.THIRTIES;
 		Region newResidence = Region.of(ProvinceType.BUSAN, DistrictType.JUNG_BUSAN);
@@ -43,7 +44,7 @@ class ProfileTest {
 
 		// when & then
 		assertThatCode(() -> {
-			profile.update(newNickname, newGender, newAgeRange, newResidence, newHometown);
+			profile.update(communityId, nickname, newGender, newAgeRange, newResidence, newHometown);
 		}).doesNotThrowAnyException();
 	}
 
@@ -52,7 +53,7 @@ class ProfileTest {
 	void anonymizeProfile() {
 		// given
 		Profile profile = Profile.create(
-			1L, 1L, "토론왕", GenderType.MALE, AgeRangeType.TWENTIES,
+			1L, 1L, Nickname.of("토론왕"), GenderType.MALE, AgeRangeType.TWENTIES,
 			Region.of(ProvinceType.SEOUL, DistrictType.YONGSAN),
 			Region.of(ProvinceType.SEOUL, DistrictType.YONGSAN)
 		);
@@ -70,7 +71,7 @@ class ProfileTest {
 	void updateProfileImage() {
 		// given
 		Profile profile = Profile.create(
-			1L, 1L, "토론왕", GenderType.MALE, AgeRangeType.TWENTIES,
+			1L, 1L, Nickname.of("토론왕"), GenderType.MALE, AgeRangeType.TWENTIES,
 			Region.of(ProvinceType.SEOUL, DistrictType.YONGSAN),
 			Region.of(ProvinceType.SEOUL, DistrictType.YONGSAN)
 		);
@@ -89,7 +90,7 @@ class ProfileTest {
 		// given
 		Long communityId = 1L; // DC_INSIDE
 		Profile profile = Profile.create(
-			1L, communityId, "토론왕", GenderType.MALE, AgeRangeType.TWENTIES,
+			1L, communityId, Nickname.of("토론왕"), GenderType.MALE, AgeRangeType.TWENTIES,
 			Region.of(ProvinceType.SEOUL, DistrictType.YONGSAN),
 			Region.of(ProvinceType.SEOUL, DistrictType.YONGSAN)
 		);
@@ -104,69 +105,12 @@ class ProfileTest {
 	}
 
 	@Test
-	@DisplayName("communityId가 null이면 getCommunityType도 null을 반환한다")
-	void getCommunityTypeReturnsNullForNullCommunityId() {
-		// given
-		Profile profile = Profile.create(
-			1L, null, "토론왕", GenderType.MALE, AgeRangeType.TWENTIES,
-			Region.of(ProvinceType.SEOUL, DistrictType.YONGSAN),
-			Region.of(ProvinceType.SEOUL, DistrictType.YONGSAN)
-		);
-
-		// when
-		CommunityType communityType = profile.getCommunityType();
-
-		// then
-		assertThat(communityType).isNull();
-	}
-
-	@Test
-	@DisplayName("잘못된 닉네임으로 프로필을 생성하면 예외가 발생한다")
-	void createProfileWithInvalidNickname() {
-		// given
-		Long userId = 1L;
-		Long communityId = 1L;
-		String invalidNickname = ""; // 빈 문자열
-		GenderType gender = GenderType.MALE;
-		AgeRangeType ageRange = AgeRangeType.TWENTIES;
-		Region residence = Region.of(ProvinceType.SEOUL, DistrictType.YONGSAN);
-		Region hometown = Region.of(ProvinceType.BUSAN, DistrictType.JUNG_BUSAN);
-
-		// when & then
-		assertThatThrownBy(() -> {
-			Profile.create(userId, communityId, invalidNickname, gender, ageRange, residence, hometown);
-		}).isInstanceOf(Exception.class);
-	}
-
-	@Test
-	@DisplayName("잘못된 닉네임으로 프로필을 업데이트하면 예외가 발생한다")
-	void updateProfileWithInvalidNickname() {
-		// given
-		Profile profile = Profile.create(
-			1L, 1L, "토론왕", GenderType.MALE, AgeRangeType.TWENTIES,
-			Region.of(ProvinceType.SEOUL, DistrictType.YONGSAN),
-			Region.of(ProvinceType.SEOUL, DistrictType.YONGSAN)
-		);
-
-		String invalidNickname = ""; // 빈 문자열
-		GenderType newGender = GenderType.FEMALE;
-		AgeRangeType newAgeRange = AgeRangeType.THIRTIES;
-		Region newResidence = Region.of(ProvinceType.BUSAN, DistrictType.JUNG_BUSAN);
-		Region newHometown = Region.of(ProvinceType.BUSAN, DistrictType.JUNG_BUSAN);
-
-		// when & then
-		assertThatThrownBy(() -> {
-			profile.update(invalidNickname, newGender, newAgeRange, newResidence, newHometown);
-		}).isInstanceOf(Exception.class);
-	}
-
-	@Test
 	@DisplayName("잘못된 지역 관계로 프로필을 생성하면 예외가 발생한다")
 	void createProfileWithInvalidRegion() {
 		// given
 		Long userId = 1L;
 		Long communityId = 1L;
-		String nickname = "토론왕";
+		Nickname nickname = Nickname.of("토론왕");
 		GenderType gender = GenderType.MALE;
 		AgeRangeType ageRange = AgeRangeType.TWENTIES;
 

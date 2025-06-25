@@ -8,7 +8,7 @@ import com.debateseason_backend_v1.domain.profile.domain.ProvinceType;
 import lombok.Builder;
 
 @Builder
-public record ProfileRegisterServiceRequest(
+public record ProfileCreateServiceRequest(
 	Long userId,
 	String nickname,
 	Long communityId,

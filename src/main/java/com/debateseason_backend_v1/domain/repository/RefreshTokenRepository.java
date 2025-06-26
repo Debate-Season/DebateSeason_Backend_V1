@@ -15,15 +15,15 @@ import jakarta.persistence.LockModeType;
 public interface RefreshTokenRepository extends JpaRepository<RefreshToken, Long> {
 
 	@Lock(LockModeType.PESSIMISTIC_WRITE)
-	@Query("SELECT rt FROM RefreshToken rt WHERE rt.token = :token")
-	Optional<RefreshToken> findByToken(@Param("token") String token);
+	@Query("SELECT rt FROM RefreshToken rt WHERE rt.currentToken = :token OR rt.previousToken = :token")
+	Optional<RefreshToken> findByCurrentTokenOrPreviousToken(@Param("token") String token);
 
-	void deleteByToken(String token);
+	void deleteByCurrentToken(String token);
 
 	@Modifying
 	@Query("DELETE FROM RefreshToken rt WHERE rt.userId = :userId")
 	void deleteAllByUserId(Long userId);
 
-	boolean existsByToken(String token);
+	boolean existsByCurrentToken(String token);
 
 }

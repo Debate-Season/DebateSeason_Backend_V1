@@ -32,14 +32,14 @@ public class RefreshToken {
 	@Column(name = "refresh_token_id")
 	private Long id;
 
-	@Version
-	private Long version;
-
 	@JoinColumn(name = "user_id", nullable = false)
 	private Long userId;
 
-	@Column(name = "token")
-	private String token;
+	@Column(name = "current_token", unique = true, nullable = false)
+	private String currentToken;
+
+	@Column(name = "previou_token", unique = true, nullable = false)
+	private String previousToken;
 
 	@CreatedDate
 	@Column(name = "created_at", updatable = false)
@@ -50,20 +50,22 @@ public class RefreshToken {
 	private LocalDateTime updatedAt;
 
 	@Builder
-	private RefreshToken(Long userId, String token) {
-		this.userId = userId;
-		this.token = token;
+	private RefreshToken(Long userId, String currentToken, String previousToken) {
+		this.userId = userId ;
+		this.currentToken = currentToken;
+		this.previousToken = previousToken;
 	}
 
-	public static RefreshToken create(Long userId, String token) {
+	public static RefreshToken create(Long userId, String currentToken, String previousToken) {
 		return RefreshToken.builder()
 			.userId(userId)
-			.token(token)
+			.currentToken(currentToken)
+			.previousToken(previousToken)
 			.build();
 	}
 
-	public void updateToken(String token) {
-		this.token = token;
+	public void update(String newToken) {
+		this.previousToken = this.currentToken;
+		this.currentToken = newToken;
 	}
-
 }

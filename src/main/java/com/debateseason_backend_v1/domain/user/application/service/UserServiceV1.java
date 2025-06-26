@@ -47,7 +47,7 @@ public class UserServiceV1 {
 
 		String accessToken = jwtUtil.createAccessToken(user.getId());
 		String refreshToken = jwtUtil.createRefreshToken(user.getId());
-		RefreshToken token = RefreshToken.create(user.getId(), refreshToken);
+		RefreshToken token = RefreshToken.create(user.getId(), refreshToken, refreshToken);
 
 		refreshTokenRepository.save(token);
 
@@ -66,7 +66,7 @@ public class UserServiceV1 {
 	@Transactional
 	public void logout(LogoutServiceRequest request) {
 
-		if (!refreshTokenRepository.existsByToken(request.refreshToken())) {
+		if (!refreshTokenRepository.existsByCurrentToken(request.refreshToken())) {
 			throw new CustomException(ErrorCode.INVALID_REFRESH_TOKEN);
 		}
 
@@ -78,7 +78,7 @@ public class UserServiceV1 {
 			throw new CustomException(ErrorCode.INVALID_REFRESH_TOKEN);
 		}
 
-		refreshTokenRepository.deleteByToken(request.refreshToken());
+		refreshTokenRepository.deleteByCurrentToken(request.refreshToken());
 	}
 
 	@Transactional

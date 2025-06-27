@@ -77,8 +77,10 @@ public class ProfileServiceV1 {
 		Profile profile = profileRepository.findByUserId(request.userId())
 			.orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_PROFILE));
 
-		if (profileRepository.existsByNickname(request.nickname())) {
-			throw new CustomException(ErrorCode.DUPLICATE_NICKNAME);
+		if(!profile.getNickname().value().equals(request.nickname())){
+			if (profileRepository.existsByNickname(request.nickname())) {
+				throw new CustomException(ErrorCode.DUPLICATE_NICKNAME);
+			}
 		}
 
 		validateSupportedCommunity(request.communityId());

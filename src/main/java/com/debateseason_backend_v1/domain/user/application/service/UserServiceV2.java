@@ -44,7 +44,7 @@ public class UserServiceV2 {
 
 		String accessToken = jwtUtil.createAccessToken(user.getId());
 		String refreshToken = jwtUtil.createRefreshToken(user.getId());
-		RefreshToken token = RefreshToken.create(user.getId(), refreshToken);
+		RefreshToken token = RefreshToken.create(user.getId(), refreshToken, refreshToken);
 
 		refreshTokenRepository.save(token);
 

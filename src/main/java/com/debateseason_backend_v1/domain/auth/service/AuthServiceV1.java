@@ -1,6 +1,7 @@
 package com.debateseason_backend_v1.domain.auth.service;
 
-import org.springframework.orm.ObjectOptimisticLockingFailureException;
+import java.time.LocalDateTime;
+
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -28,26 +29,29 @@ public class AuthServiceV1 {
 
 	@Transactional
 	public TokenReissueResponse reissueToken(TokenReissueServiceRequest request) {
-		try {
+		RefreshToken refreshToken = refreshTokenRepository.findByCurrentTokenOrPreviousToken(request.refreshToken())
+			.orElseThrow(() -> new CustomException(ErrorCode.INVALID_REFRESH_TOKEN));
 
-			RefreshToken refreshToken = refreshTokenRepository.findByToken(request.refreshToken())
-				.orElseThrow(() -> new CustomException(ErrorCode.INVALID_REFRESH_TOKEN));
-
-			String newAccessToken = jwtUtil.createAccessToken(refreshToken.getUserId());
-			String newRefreshToken = jwtUtil.createRefreshToken(refreshToken.getUserId());
-
-			refreshToken.updateToken(newRefreshToken);
-
+		if (
+			refreshToken.getPreviousToken().equals(request.refreshToken()) &&
+				refreshToken.getUpdatedAt().isAfter(LocalDateTime.now().minusSeconds(10))
+		) {
+			String accessToken = jwtUtil.createAccessToken(refreshToken.getUserId());
 			return TokenReissueResponse.builder()
-				.accessToken(newAccessToken)
-				.refreshToken(newRefreshToken)
+				.accessToken(accessToken)
+				.refreshToken(refreshToken.getCurrentToken())
 				.build();
-
-		} catch (ObjectOptimisticLockingFailureException e) {
-			log.warn("Refresh Token 재발급 중 동시성 충돌 발생: {}", request.refreshToken());
-			throw new CustomException(ErrorCode.INVALID_REFRESH_TOKEN);
 		}
 
+		String newAccessToken = jwtUtil.createAccessToken(refreshToken.getUserId());
+		String newRefreshToken = jwtUtil.createRefreshToken(refreshToken.getUserId());
+
+		refreshToken.update(newRefreshToken);
+
+		return TokenReissueResponse.builder()
+			.accessToken(newAccessToken)
+			.refreshToken(newRefreshToken)
+			.build();
 	}
 
 	public Long getCurrentUserId() {

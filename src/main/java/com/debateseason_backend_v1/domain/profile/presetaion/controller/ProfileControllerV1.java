@@ -41,7 +41,7 @@ public class ProfileControllerV1 implements ProfileControllerV1Docs {
 		return VoidApiResult.success("프로필 등록이 완료되었습니다.");
 	}
 
-	@PostMapping("/image")
+	@PatchMapping("/image")
 	public VoidApiResult registerProfileImage(
 		@Valid @RequestBody ProfileImageRegisterRequest request,
 		@AuthenticationPrincipal CustomUserDetails userDetails

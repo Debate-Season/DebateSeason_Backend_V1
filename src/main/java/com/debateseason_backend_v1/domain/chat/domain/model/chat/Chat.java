@@ -17,6 +17,8 @@ import java.util.Set;
 @Getter
 public class Chat implements ReportTarget {
 
+    public static final String REPORTED_MESSAGE_CONTENT = "신고된 메시지 입니다.";
+
     private final Long id;
 
     private final ChatRoom chatRoomId;
@@ -35,7 +37,6 @@ public class Chat implements ReportTarget {
 
     private final LocalDateTime timeStamp;
 
-    private final String REPORTED_MESSAGE_CONTENT = "신고된 메시지 입니다.";
     @Override
     public Report reportBy(Long chatId, Long reporterId, Set<ReportReasonType> reportReasonTypes, String description) {
         guardSelfReport(reporterId);
@@ -63,11 +64,11 @@ public class Chat implements ReportTarget {
                 .chatRoomId(chat.chatRoomId)
                 .userId(chat.userId)
                 .messageType(chat.messageType)
-                .content(chat.REPORTED_MESSAGE_CONTENT)
-                .sender(sender)
-                .opinionType(opinionType)
-                .userCommunity(userCommunity)
-                .timeStamp(timeStamp)
+                .content(REPORTED_MESSAGE_CONTENT)
+                .sender(chat.sender)
+                .opinionType(chat.opinionType)
+                .userCommunity(chat.userCommunity)
+                .timeStamp(chat.timeStamp)
                 .build();
     }
 

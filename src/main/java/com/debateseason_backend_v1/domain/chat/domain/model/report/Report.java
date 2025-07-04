@@ -2,6 +2,7 @@ package com.debateseason_backend_v1.domain.chat.domain.model.report;
 
 import com.debateseason_backend_v1.common.exception.CustomException;
 import com.debateseason_backend_v1.common.exception.ErrorCode;
+import lombok.Builder;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
@@ -22,18 +23,36 @@ public class Report {
     private String adminComment;
     private Long processedById;
 
-    private Report (Long targetId, Long reporterId,ReportTargetType targetType, Set<ReportReasonType> reportReasonTypes, String description) {
+    @Builder
+    private Report(Long targetId, Long reporterId, ReportTargetType targetType,
+                   Set<ReportReasonType> reportReasonTypes, String description,
+                   ReportStatus status, LocalDateTime processAt,
+                   String adminComment, Long processedById) {
+
+        validateCreationArguments(targetId, targetType, reportReasonTypes);
+
         this.targetId = targetId;
         this.reporterId = reporterId;
         this.targetType = targetType;
         this.reportReasonTypes = reportReasonTypes;
         this.description = description;
         this.createdAt = LocalDateTime.now();
+        //테스트용 필드
+        this.status = status != null ? status : ReportStatus.NONE;
+        this.processAt = processAt;
+        this.adminComment = adminComment;
+        this.processedById = processedById;
     }
 
     public static Report create (Long targetId, Long reporterId,ReportTargetType targetType, Set<ReportReasonType> reportReasonTypes, String description) {
         validateCreationArguments(targetId, targetType, reportReasonTypes);
-        return  new Report(targetId,reporterId,targetType, reportReasonTypes, description);
+        return  Report.builder()
+                .targetId(targetId)
+                .reporterId(reporterId)
+                .targetType(targetType)
+                .reportReasonTypes(reportReasonTypes)
+                .description(description)
+                .build();
     };
 
     //신고를 접수 한다.

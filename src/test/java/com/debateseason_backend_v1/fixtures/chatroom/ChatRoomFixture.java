@@ -11,8 +11,8 @@ public class ChatRoomFixture {
         return ChatRoom.builder()
                 .id(1L)
                 .issue(IssueFixture.create())
-                .title("title")
-                .content("content")
+                .title("testRoom")
+                .content("testContent")
                 .createdAt(LocalDateTime.now())
                 .build();
     }

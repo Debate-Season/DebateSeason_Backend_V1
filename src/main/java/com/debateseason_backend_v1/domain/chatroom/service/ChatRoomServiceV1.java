@@ -121,6 +121,7 @@ public class ChatRoomServiceV1 {
 
 	// 3. 채팅방 단건 불러오기
 	// Opinion값 같이 넘겨주면 될 듯하다. 없으면 null
+	@Transactional
 	public ApiResult<ChatRoomResponse> fetch(Long userId,Long chatRoomId) { //,String type
 
 		// 우선 해당 채팅방이 유효한지 먼저 파악부터 해야한다.

@@ -45,6 +45,7 @@ public enum ErrorCode implements CodeInterface {
 	NOT_SUPPORTED_PROVINCE(2015, HttpStatus.BAD_REQUEST, "지원하지 않는 시도입니다."),
 	NOT_SUPPORTED_DISTRICT(2016, HttpStatus.BAD_REQUEST, "지원하지 않는 시군구입니다."),
 	INVALID_DISTRICT_PROVINCE_RELATION(2017, HttpStatus.BAD_REQUEST, "선택한 시군구가 해당 시도에 속하지 않습니다."),
+	REQUIRED_NICKNAME(2018, HttpStatus.BAD_REQUEST, "닉네임은 필수입니다."),
 
 	// 3000번대 User(인증) 관련 에러
 	NOT_FOUND_USER(3000, HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다."),
@@ -61,6 +62,9 @@ public enum ErrorCode implements CodeInterface {
 	JWKS_RATE_LIMIT_REACHED(3011, HttpStatus.TOO_MANY_REQUESTS, "JWKS 서버 요청 제한에 도달했습니다."),
 	JWKS_RETRIEVAL_FAILED(3012, HttpStatus.INTERNAL_SERVER_ERROR, "JWKS 조회 중 오류가 발생했습니다."),
 	PUBLIC_KEY_EXTRACTION_FAILED(3013, HttpStatus.INTERNAL_SERVER_ERROR, "공개키 추출에 실패했습니다."),
+	NOT_LOGINABLE(3015, HttpStatus.UNAUTHORIZED, "로그인이 불가능한 사용자입니다."),
+	NOT_WITHDRAWABLE(3016, HttpStatus.UNAUTHORIZED, "탈퇴가 불가능한 사용자입니다."),
+	NOT_ANONYMIZABLE(3017, HttpStatus.UNAUTHORIZED, "암호화가 불가능한 사용자입니다."),
 
 	//4000번대 Chat 관련 에러,
 	VALUE_OUT_OF_RANGE(4003, HttpStatus.BAD_REQUEST, "메시지 값을 확인해 주세요"),

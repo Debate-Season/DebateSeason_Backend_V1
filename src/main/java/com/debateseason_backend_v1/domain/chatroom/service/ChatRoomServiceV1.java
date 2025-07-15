@@ -22,15 +22,15 @@ import com.debateseason_backend_v1.domain.chatroom.model.response.chatroom.Respo
 import com.debateseason_backend_v1.domain.chatroom.model.response.chatroom.messages.TeamScore;
 import com.debateseason_backend_v1.domain.chatroom.model.response.chatroom.messages.Top5BestChatRoom;
 
-import com.debateseason_backend_v1.domain.issue.model.response.IssueBriefResponse;
+import com.debateseason_backend_v1.domain.issue.infrastructure.entity.IssueEntity;
+import com.debateseason_backend_v1.domain.issue.mapper.IssueRoomBriefMapper;
 import com.debateseason_backend_v1.domain.chat.infrastructure.chat.ChatJpaRepository;
 import com.debateseason_backend_v1.domain.repository.ChatRoomRepository;
-import com.debateseason_backend_v1.domain.repository.IssueRepository;
+import com.debateseason_backend_v1.domain.issue.infrastructure.repository.IssueJpaRepository;
 import com.debateseason_backend_v1.domain.media.infrastructure.repository.MediaJpaRepository;
 import com.debateseason_backend_v1.domain.repository.UserChatRoomRepository;
 import com.debateseason_backend_v1.domain.user.infrastructure.UserJpaRepository;
 import com.debateseason_backend_v1.domain.repository.entity.ChatRoom;
-import com.debateseason_backend_v1.domain.repository.entity.Issue;
 import com.debateseason_backend_v1.domain.user.infrastructure.UserEntity;
 import com.debateseason_backend_v1.domain.repository.entity.UserChatRoom;
 import com.debateseason_backend_v1.domain.media.model.response.BreakingNewsResponse;
@@ -46,7 +46,7 @@ public class ChatRoomServiceV1 {
 
 	private final UserJpaRepository userRepository;
 	private final ChatRoomRepository chatRoomRepository;
-	private final IssueRepository issueRepository; // 혹시나 Service쓰면, 나중에 순환참조 발생할 것 같아서 Repository로 함.
+	private final IssueJpaRepository issueJpaRepository; // 혹시나 Service쓰면, 나중에 순환참조 발생할 것 같아서 Repository로 함.
 	private final UserChatRoomRepository userChatRoomRepository;
 	private final ChatJpaRepository chatRepository;
 	private final MediaJpaRepository mediaJpaRepository;
@@ -55,16 +55,16 @@ public class ChatRoomServiceV1 {
 	public ApiResult<Object> save(ChatRoomRequest chatRoomRequest, long issueId) {
 
 		// 1. Issue 찾기
-		Issue issue ;
+		IssueEntity issueEntity;
 
-		issue = issueRepository.findById(issueId).orElseThrow(
+		issueEntity = issueJpaRepository.findById(issueId).orElseThrow(
 			() -> new CustomException(ErrorCode.NOT_FOUND_ISSUE)
 		);
 
 		// 2 ChatRoom 엔티티 생성
 		// 무조건 title, content 둘 다 값이 있는 경우를 말한다.
 		ChatRoom chatRoom = ChatRoom.builder()
-			.issue(issue)
+			.issueEntity(issueEntity)
 			.title(chatRoomRequest.getTitle())
 			.content(chatRoomRequest.getContent())
 			.build();
@@ -386,12 +386,12 @@ public class ChatRoomServiceV1 {
 		// issue_id, COUNT(ch.chat_room_id)
 
 		// 최상위 5개의 이슈 id를 가져옴
-		List<Long> issueIds = issueRepository.findTop5ActiveIssuesByCountingChats().stream().map(
+		List<Long> issueIds = issueJpaRepository.findTop5ActiveIssuesByCountingChats().stream().map(
 			e-> (Long)e[0]
 		).toList();
 
 		// ui1.issue_id, ui1.title, ui1.created_at, ui1.chat_room_count, COUNT(ui2.issue_id) AS bookmarks
-		List<IssueBriefResponse> top5BestIssueRooms = issueRepository.findIssuesWithBookmarksOrderByCreatedDate(issueIds).stream().map(
+		List<IssueRoomBriefMapper> top5BestIssueRooms = issueJpaRepository.findIssuesWithBookmarksOrderByCreatedDate(issueIds).stream().map(
 			e->{
 				Long issueId = (Long)e[0];
 				String title = (String)e[1];
@@ -403,7 +403,7 @@ public class ChatRoomServiceV1 {
 				Long chatRoomCount = (Long)e[3];
 				Long bookMarksCount = (Long)e[4];
 
-				return IssueBriefResponse.builder()
+				return IssueRoomBriefMapper.builder()
 					.issueId(issueId)
 					.title(title)
 					//.createdAt(createdAt)

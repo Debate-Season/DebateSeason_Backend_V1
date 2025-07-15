@@ -1,21 +1,16 @@
-package com.debateseason_backend_v1.domain.repository.entity;
+package com.debateseason_backend_v1.domain.issue.infrastructure.entity;
 
 import java.time.LocalDateTime;
 
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import com.debateseason_backend_v1.domain.issue.infrastructure.entity.IssueEntity;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -28,22 +23,22 @@ import lombok.Setter;
 @Getter
 @Setter
 @Builder
+@Table(name = "issue")
 @Entity
-@Table(name = "chat_room")
-@EntityListeners(AuditingEntityListener.class)
-public class ChatRoom {
+@EntityListeners(AuditingEntityListener.class) // 이걸 붙여야 @CreatedDate가 활성화되서 자동으로 날짜 입력
+public class IssueEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "chat_room_id")
+	@Column(name = "issue_id")
 	private Long id;
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "issue_id", nullable = false)
-	private IssueEntity issueEntity;
-
 	private String title;
-	private String content;
+
+	@Column(name = "major_category")
+	private String majorCategory;
+
+	private String middleCategory;
 
 	@CreatedDate
 	@Column(name = "created_at", updatable = false)

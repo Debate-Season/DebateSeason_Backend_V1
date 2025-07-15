@@ -21,7 +21,7 @@ import com.debateseason_backend_v1.domain.youtubeLive.scheduler.mapper.YouTubeSe
 import com.debateseason_backend_v1.domain.youtubeLive.domain.YoutubeLive;
 import com.debateseason_backend_v1.domain.youtubeLive.domain.YoutubeLiveDto;
 import com.debateseason_backend_v1.domain.youtubeLive.infrastructure.entity.YoutubeLiveEntity;
-import com.debateseason_backend_v1.domain.youtubeLive.infrastructure.repository.YoutubeLiveRepository;
+import com.debateseason_backend_v1.domain.youtubeLive.application.repository.YoutubeLiveRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 

@@ -11,8 +11,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.debateseason_backend_v1.common.response.ApiResult;
 import com.debateseason_backend_v1.common.response.VoidApiResult;
-import com.debateseason_backend_v1.domain.issue.model.response.IssueBriefResponse;
-import com.debateseason_backend_v1.domain.issue.service.IssueServiceV1;
+import com.debateseason_backend_v1.domain.issue.mapper.IssueRoomBriefMapper;
+import com.debateseason_backend_v1.domain.issue.application.service.IssueServiceV1;
 import com.debateseason_backend_v1.domain.user.presentation.controller.docs.UserControllerV1Docs;
 import com.debateseason_backend_v1.domain.user.presentation.controller.request.LogoutRequest;
 import com.debateseason_backend_v1.domain.user.presentation.controller.request.SocialLoginRequest;
@@ -67,7 +67,7 @@ public class UserControllerV1 implements UserControllerV1Docs {
 		summary = "이슈방 전체를 불러옵니다(수정가능)  ",
 		description = " ")
 	@GetMapping("/home")
-	public ApiResult<List<IssueBriefResponse>> indexPage(
+	public ApiResult<List<IssueRoomBriefMapper>> indexPage(
 		//@RequestParam(name = "page", required = false) Long page,
 		@AuthenticationPrincipal CustomUserDetails principal
 	) {
@@ -76,7 +76,7 @@ public class UserControllerV1 implements UserControllerV1Docs {
 
 		// 활성도가 가장 높은 토론방 5개 표시
 
-		return issueServiceV1.fetchAll();
+		return issueServiceV1.fetchV1();
 	}
 
 }

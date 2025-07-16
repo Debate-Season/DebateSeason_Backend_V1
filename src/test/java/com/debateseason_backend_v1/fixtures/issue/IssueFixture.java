@@ -1,13 +1,13 @@
 package com.debateseason_backend_v1.fixtures.issue;
 
-import com.debateseason_backend_v1.domain.repository.entity.Issue;
+import com.debateseason_backend_v1.domain.issue.infrastructure.entity.IssueEntity;
 
 import java.time.LocalDateTime;
 
 public class IssueFixture {
 
-    public static Issue create() {
-        return Issue.builder()
+    public static IssueEntity create() {
+        return IssueEntity.builder()
                 .id(1L)
                 .title("title")
                 .majorCategory("major category")

@@ -53,7 +53,7 @@ src/main/java/com/debateseason_backend_v1/
 ├── domain/             # 도메인별 로직
 │   ├── chat/           # 채팅 관련
 │   ├── chatroom/       # 토론방 관련
-│   ├── issue/          # 이슈 관련
+│   ├── issueEntity/          # 이슈 관련
 │   ├── profile/        # 사용자 프로필 관련
 │   └── user/           # 사용자 인증 관련
 ├── security/           # 보안 관련 (JWT 등)

@@ -7,6 +7,7 @@ import org.springframework.stereotype.Repository;
 
 import com.debateseason_backend_v1.common.exception.CustomException;
 import com.debateseason_backend_v1.common.exception.ErrorCode;
+import com.debateseason_backend_v1.domain.media.application.repository.MediaRepository;
 import com.debateseason_backend_v1.domain.media.infrastructure.entity.MediaEntity;
 
 import lombok.RequiredArgsConstructor;

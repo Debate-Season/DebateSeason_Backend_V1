@@ -3,10 +3,10 @@ package com.debateseason_backend_v1.domain.user.application.service;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import com.debateseason_backend_v1.domain.repository.IssueRepository;
+import com.debateseason_backend_v1.domain.issue.infrastructure.repository.IssueJpaRepository;
 import com.debateseason_backend_v1.domain.repository.UserIssueRepository;
 import com.debateseason_backend_v1.domain.user.infrastructure.UserJpaRepository;
-import com.debateseason_backend_v1.domain.repository.entity.Issue;
+import com.debateseason_backend_v1.domain.issue.infrastructure.entity.IssueEntity;
 import com.debateseason_backend_v1.domain.user.infrastructure.UserEntity;
 import com.debateseason_backend_v1.domain.repository.entity.UserIssue;
 import com.debateseason_backend_v1.domain.user.dto.UserIssueDTO;
@@ -22,7 +22,7 @@ public class UserIssueServiceV1 {
 
 	//
 	private final UserJpaRepository userRepository;
-	private final IssueRepository issueRepository;
+	private final IssueJpaRepository issueJpaRepository;
 	//
 	private final UserIssueRepository userIssueRepository;
 
@@ -36,13 +36,13 @@ public class UserIssueServiceV1 {
 		UserEntity user = userRepository.findById(userId).orElseThrow(
 			() -> new RuntimeException("There is no user : " + userId)
 		);
-		Issue issue = issueRepository.findById(issueId).orElseThrow(
+		IssueEntity issueEntity = issueJpaRepository.findById(issueId).orElseThrow(
 			() -> new RuntimeException("There is no relevant issue : " + issueId)
 		);
 
 		UserIssue userIssue = UserIssue.builder()
 			.user(user)
-			.issue(issue)
+			.issueEntity(issueEntity)
 			.build();
 
 		userIssueRepository.save(userIssue);

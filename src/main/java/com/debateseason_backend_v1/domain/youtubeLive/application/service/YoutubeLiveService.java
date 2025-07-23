@@ -1,16 +1,14 @@
 package com.debateseason_backend_v1.domain.youtubeLive.application.service;
 
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
 import com.debateseason_backend_v1.common.exception.ErrorCode;
 import com.debateseason_backend_v1.common.response.ApiResult;
-import com.debateseason_backend_v1.domain.chat.application.repository.ChatRepository;
+import com.debateseason_backend_v1.domain.chatroom.domain.TimeProcessor;
 import com.debateseason_backend_v1.domain.chatroom.domain.ChatRoomMapper;
 import com.debateseason_backend_v1.domain.repository.ChatRoomRepository;
 import com.debateseason_backend_v1.domain.youtubeLive.domain.YoutubeLiveDto;
@@ -26,9 +24,11 @@ import lombok.RequiredArgsConstructor;
 @Service
 public class YoutubeLiveService {
 
-	private final ChatRepository chatRepository;
 	private final ChatRoomRepository chatRoomRepository;
 	private final YoutubeLiveRepository youtubeLiveRepository;
+
+	// 시간 처리해주는 객체
+	private final TimeProcessor timeProcessor;
 
 
 	// youtubeLive 모두 보기
@@ -83,7 +83,7 @@ public class YoutubeLiveService {
 				Long agree = (Long)e[3];
 				Long disagree = (Long)e[4];
 
-				String outDated = findLastestChatTime(chatRoomId);
+				String outDated = timeProcessor.findLastestChatTime(chatRoomId);
 
 				return
 					ChatRoomMapper.builder()
@@ -110,38 +110,4 @@ public class YoutubeLiveService {
 			;
 	}
 
-
-	private String findLastestChatTime(Long chatRoomId){
-		Optional<LocalDateTime> latestChat = chatRepository.findMostRecentMessageTimestampByChatRoomId(chatRoomId);
-
-		String time = null;
-
-		if(latestChat.isPresent()){
-			// 몇 분이 지났는지.
-			Duration outdated = Duration.between(latestChat.get(), LocalDateTime.now());
-
-			int realTime = 0; // 대화가 아무것도 없는 상태는 항상 null이다.
-			realTime = (int)outdated.toMinutes();
-
-			if(realTime == 0){
-				time = "방금 전 대화";
-			}
-			else if(realTime >0 && realTime<60){ // mm만 표기
-				time = outdated.toMinutes() + "분 전 대화"; // 분
-			}
-			else if(realTime >=60 && realTime <1440){ // hh:mm
-				int hour = realTime/60;
-				int minute = realTime%60;
-
-				time = hour+"시간 "+minute+"분 전 대화";
-			}
-			else{ // day로 표기
-				int day = realTime/1440;
-
-				time = day+"일 전 대화";
-			}
-
-		}
-		return time;
-	}
 }

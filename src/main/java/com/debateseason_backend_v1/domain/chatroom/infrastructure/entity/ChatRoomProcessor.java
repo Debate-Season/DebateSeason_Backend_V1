@@ -1,15 +1,15 @@
 package com.debateseason_backend_v1.domain.chatroom.infrastructure.entity;
 
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
 
-import com.debateseason_backend_v1.domain.chat.application.repository.ChatRepository;
+import com.debateseason_backend_v1.domain.chatroom.domain.TimeProcessor;
+import com.debateseason_backend_v1.domain.chatroom.model.response.chatroom.messages.Top5BestChatRoom;
 import com.debateseason_backend_v1.domain.chatroom.model.response.chatroom.type.ResponseWithTimeAndOpinion;
 import com.debateseason_backend_v1.domain.repository.ChatRoomRepository;
 
@@ -20,16 +20,16 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ChatRoomProcessor {
 
-	private final ChatRepository chatRepository;
 	private final ChatRoomRepository chatRoomRepository;
 
-
+	// 시간 처리해주는 객체
+	private final TimeProcessor timeProcessor;
 
 	// chat_room_id, title, content, created_at,
 	//            COUNT(CASE WHEN ucr.opinion = 'AGREE' THEN 1 END) AS AGREE,
 	//            COUNT(CASE WHEN ucr.opinion = 'DISAGREE' THEN 1 END) AS DISAGREE
 
-	// chatRoomIds에 해당하는 채팅방 관련 정보(제목, 본문)+ 찬성/반대 가져오기
+	// 1. chatRoomIds에 해당하는 채팅방 관련 정보(제목, 본문)+ 찬성/반대 가져오기
 	public List<ResponseWithTimeAndOpinion> getChatRoomWithOpinionCount(List<Long> chatRoomIds){
 
 		// chatRoomIds에 해당하는 채팅방 관련 정보(제목, 본문, 찬성/반대) 가져오기
@@ -49,7 +49,7 @@ public class ChatRoomProcessor {
 					int agree = Math.toIntExact((Long)e[4]);
 					int disagree = Math.toIntExact((Long)e[5]);
 
-					String time = findLastestChatTime(chatRoomId);
+					String time = timeProcessor.findLastestChatTime(chatRoomId);
 
 					return ResponseWithTimeAndOpinion.builder()
 						.chatRoomId(chatRoomId)
@@ -68,34 +68,48 @@ public class ChatRoomProcessor {
 
 	}
 
-	private String findLastestChatTime(Long chatRoomId) {
-		Optional<LocalDateTime> latestChat = chatRepository.findMostRecentMessageTimestampByChatRoomId(chatRoomId);
+	// issue_id, issue.title, chatroom.chat_room_id, chatroom.title
+	// 2. 활성화된 최상위 5개 토론방을 보여준다.
+	// 값만 가져오면 되는 것을 굳이 DB를 왜 조회할까?
+	public List<Top5BestChatRoom> getTop5ActiveRooms(){
 
-		String time = null;
+		List<Object[]> top5BestChatRooms = chatRoomRepository.findTop5ActiveChatRooms();
 
-		if (latestChat.isPresent()) {
-			// 몇 분이 지났는지.
-			Duration outdated = Duration.between(latestChat.get(), LocalDateTime.now());
+		// 정적 배열로 수정을 함으로써, 성능 효율을 향상.
+		Top5BestChatRoom [] chatRooms = new Top5BestChatRoom[5];
 
-			int realTime = 0; // 대화가 아무것도 없는 상태는 항상 null이다.
-			realTime = (int)outdated.toMinutes();
+		// size = 5
+		for(int i=0; i<5; i++){
+			//
+			Object[] rawChatRooms = top5BestChatRooms.get(i);
 
-			if (realTime == 0) {
-				time = "방금 전 대화";
-			} else if (realTime > 0 && realTime < 60) { // mm만 표기
-				time = outdated.toMinutes() + "분 전 대화"; // 분
-			} else if (realTime >= 60 && realTime < 1440) { // hh:mm
-				int hour = realTime / 60;
-				int minute = realTime % 60;
+			//
+			Long issueId = (Long)rawChatRooms[0];
+			String issueTitle = (String)rawChatRooms[1];
 
-				time = hour + "시간 " + minute + "분 전 대화";
-			} else { // day로 표기
-				int day = realTime / 1440;
+			Long chatRoomId = (Long)rawChatRooms[2];
+			String chatRoomTitle = (String)rawChatRooms[3];
+			String time = timeProcessor.findLastestChatTime(chatRoomId);
 
-				time = day + "일 전 대화";
-			}
+			Top5BestChatRoom top5BestChatRoom = Top5BestChatRoom.builder()
+				.issueId(issueId)
+				.issueTitle(issueTitle)
+				.debateId(chatRoomId)
+				.debateTitle(chatRoomTitle)
+				.time(time)
+				.build()
+				;
+
+			chatRooms[i]=top5BestChatRoom;
 
 		}
-		return time;
+
+		// Mapper 클래스가 List이므로, 구체적인 클래스가 아니라 인터페이스로 바꿈.
+		return Arrays.stream(chatRooms).toList();
+
 	}
+
+
+
+
 }

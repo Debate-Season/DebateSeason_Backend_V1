@@ -38,7 +38,6 @@ public class MbcNews {
 
 	private final YouTubeConfig youTubeConfig;
 
-
 	@Scheduled(fixedRate = 4320000) // 1.2시간 = 1시간 12분 = 4320000밀리초
 	@Transactional
 	public void doCroll() throws JsonProcessingException {

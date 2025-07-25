@@ -1,11 +1,9 @@
 package com.debateseason_backend_v1.domain.chatroom.service;
 
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
@@ -14,6 +12,8 @@ import com.debateseason_backend_v1.common.exception.CustomException;
 import com.debateseason_backend_v1.common.exception.ErrorCode;
 import com.debateseason_backend_v1.common.response.ApiResult;
 
+import com.debateseason_backend_v1.domain.chatroom.domain.TimeProcessor;
+import com.debateseason_backend_v1.domain.chatroom.infrastructure.entity.ChatRoomProcessor;
 import com.debateseason_backend_v1.domain.chatroom.model.response.chatroom.type.ResponseWithTime;
 import com.debateseason_backend_v1.domain.chatroom.model.response.chatroom.ChatRoomResponse;
 import com.debateseason_backend_v1.domain.chatroom.model.request.ChatRoomRequest;
@@ -22,18 +22,15 @@ import com.debateseason_backend_v1.domain.chatroom.model.response.chatroom.Respo
 import com.debateseason_backend_v1.domain.chatroom.model.response.chatroom.messages.TeamScore;
 import com.debateseason_backend_v1.domain.chatroom.model.response.chatroom.messages.Top5BestChatRoom;
 
-import com.debateseason_backend_v1.domain.issue.model.response.IssueBriefResponse;
-import com.debateseason_backend_v1.domain.chat.infrastructure.chat.ChatJpaRepository;
+import com.debateseason_backend_v1.domain.issue.infrastructure.entity.IssueEntity;
+import com.debateseason_backend_v1.domain.issue.mapper.IssueRoomBriefMapper;
 import com.debateseason_backend_v1.domain.repository.ChatRoomRepository;
-import com.debateseason_backend_v1.domain.repository.IssueRepository;
-import com.debateseason_backend_v1.domain.media.infrastructure.repository.MediaJpaRepository;
+import com.debateseason_backend_v1.domain.issue.infrastructure.repository.IssueJpaRepository;
 import com.debateseason_backend_v1.domain.repository.UserChatRoomRepository;
 import com.debateseason_backend_v1.domain.user.infrastructure.UserJpaRepository;
 import com.debateseason_backend_v1.domain.repository.entity.ChatRoom;
-import com.debateseason_backend_v1.domain.repository.entity.Issue;
 import com.debateseason_backend_v1.domain.user.infrastructure.UserEntity;
 import com.debateseason_backend_v1.domain.repository.entity.UserChatRoom;
-import com.debateseason_backend_v1.domain.media.model.response.BreakingNewsResponse;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -46,25 +43,29 @@ public class ChatRoomServiceV1 {
 
 	private final UserJpaRepository userRepository;
 	private final ChatRoomRepository chatRoomRepository;
-	private final IssueRepository issueRepository; // 혹시나 Service쓰면, 나중에 순환참조 발생할 것 같아서 Repository로 함.
+	private final IssueJpaRepository issueJpaRepository; // 혹시나 Service쓰면, 나중에 순환참조 발생할 것 같아서 Repository로 함.
 	private final UserChatRoomRepository userChatRoomRepository;
-	private final ChatJpaRepository chatRepository;
-	private final MediaJpaRepository mediaJpaRepository;
+
+	// TimeProcessor
+	private final TimeProcessor timeProcessor;
+
+	// ChatRoomProcessor
+	private final ChatRoomProcessor chatRoomProcessor;// ChatRoomRepo에서 가져온 것을 후처리를 한다.
 
 	// 1. 채팅방 저장하기
 	public ApiResult<Object> save(ChatRoomRequest chatRoomRequest, long issueId) {
 
 		// 1. Issue 찾기
-		Issue issue ;
+		IssueEntity issueEntity;
 
-		issue = issueRepository.findById(issueId).orElseThrow(
+		issueEntity = issueJpaRepository.findById(issueId).orElseThrow(
 			() -> new CustomException(ErrorCode.NOT_FOUND_ISSUE)
 		);
 
 		// 2 ChatRoom 엔티티 생성
 		// 무조건 title, content 둘 다 값이 있는 경우를 말한다.
 		ChatRoom chatRoom = ChatRoom.builder()
-			.issue(issue)
+			.issueEntity(issueEntity)
 			.title(chatRoomRequest.getTitle())
 			.content(chatRoomRequest.getContent())
 			.build();
@@ -121,6 +122,7 @@ public class ChatRoomServiceV1 {
 
 	// 3. 채팅방 단건 불러오기
 	// Opinion값 같이 넘겨주면 될 듯하다. 없으면 null
+	@Transactional
 	public ApiResult<ChatRoomResponse> fetch(Long userId,Long chatRoomId) { //,String type
 
 		// 우선 해당 채팅방이 유효한지 먼저 파악부터 해야한다.
@@ -163,7 +165,7 @@ public class ChatRoomServiceV1 {
 		}
 
 
-		// highlight인 경우에만 따로 출력을 한다.
+		// highlight인 경우에만 따로 출력을 한다. -> 이거 나중에 쓰임.
 		/*
 		if(type!=null && type.equals("highlight")){
 			// ch.chat_id, ch.content,
@@ -331,6 +333,7 @@ public class ChatRoomServiceV1 {
 	public ApiResult<ResponseOnlyHome> findVotedChatRoom(Long userId,Long pageChatRoomId){
 
 		// 0. 속보 가져오기
+		/* Legacy
 		List<BreakingNewsResponse> breakingNews = mediaJpaRepository.findTop10BreakingNews().stream()
 			.map(
 				e->
@@ -341,56 +344,19 @@ public class ChatRoomServiceV1 {
 			).toList()
 			;
 
-
-		// issue_id, issue.title, chatroom.chat_room_id, chatroom.title
-		// 1. 활성화된 최상위 5개 토론방을 보여준다.
-		List<Top5BestChatRoom> top5BestChatRooms = chatRoomRepository.findTop5ActiveChatRooms().stream().map(
-			e->{
-				Long issueId = (Long)e[0];
-				String issueTitle = (String)e[1];
-
-				Long chatRoomId = (Long)e[2];
-				String chatRoomTitle = (String)e[3];
-				String time = findLastestChatTime(chatRoomId);
-				/*
-				Optional<LocalDateTime> latestChat = chatRepository.findLatestTimeStampByChatRoomId(chatRoomId);
-
-				String time = null; // 대화가 아무것도 없는 상태는 항상 null이다.
-
-				if(latestChat.isPresent()){
-					// 몇 분이 지났는지.
-					Duration outdated = Duration.between(latestChat.get(), LocalDateTime.now());
-
-					time = new StringBuilder()
-						.append(outdated.toMinutes())
-						.append("분 전 대화")
-						.toString();
-				}
-				 */
-				return Top5BestChatRoom.builder()
-					.issueId(issueId)
-					.issueTitle(issueTitle)
-					.debateId(chatRoomId)
-					.debateTitle(chatRoomTitle)
-					.time(time)
-					.build()
-					;
-
-
-			}
-		).toList();
-
+		 */
+		List<Top5BestChatRoom> top5BestChatRooms = chatRoomProcessor.getTop5ActiveRooms();
 
 		// 2. 활성화된 최상위 5개 이슈방을 보여준다.
 		// issue_id, COUNT(ch.chat_room_id)
 
 		// 최상위 5개의 이슈 id를 가져옴
-		List<Long> issueIds = issueRepository.findTop5ActiveIssuesByCountingChats().stream().map(
+		List<Long> issueIds = issueJpaRepository.findTop5ActiveIssuesByCountingChats().stream().map(
 			e-> (Long)e[0]
 		).toList();
 
 		// ui1.issue_id, ui1.title, ui1.created_at, ui1.chat_room_count, COUNT(ui2.issue_id) AS bookmarks
-		List<IssueBriefResponse> top5BestIssueRooms = issueRepository.findIssuesWithBookmarksOrderByCreatedDate(issueIds).stream().map(
+		List<IssueRoomBriefMapper> top5BestIssueRooms = issueJpaRepository.findIssuesWithBookmarksOrderByCreatedDate(issueIds).stream().map(
 			e->{
 				Long issueId = (Long)e[0];
 				String title = (String)e[1];
@@ -402,7 +368,7 @@ public class ChatRoomServiceV1 {
 				Long chatRoomCount = (Long)e[3];
 				Long bookMarksCount = (Long)e[4];
 
-				return IssueBriefResponse.builder()
+				return IssueRoomBriefMapper.builder()
 					.issueId(issueId)
 					.title(title)
 					//.createdAt(createdAt)
@@ -432,7 +398,7 @@ public class ChatRoomServiceV1 {
 		if (chatRoomList.isEmpty()){
 
 			ResponseOnlyHome responseOnlyHome = ResponseOnlyHome.builder()
-				.breakingNews(breakingNews)
+				.breakingNews(null)
 				//.chatRoomResponse(fetchedChatRoomList)
 				.top5BestChatRooms(top5BestChatRooms)
 				.top5BestIssueRooms(top5BestIssueRooms)
@@ -464,7 +430,7 @@ public class ChatRoomServiceV1 {
 				LocalDateTime createdAt = LocalDateTime.parse(result, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
 
 				// 얼마전에 대화가 이루어 졌는지 파악.
-				String time = findLastestChatTime(chatRoomId);
+				String time = timeProcessor.findLastestChatTime(chatRoomId);
 
 				 return ResponseWithTime.builder()
 					.chatRoomId(chatRoomId)
@@ -482,7 +448,7 @@ public class ChatRoomServiceV1 {
 		).collect(Collectors.toList());
 
 		ResponseOnlyHome responseOnlyHome = ResponseOnlyHome.builder()
-			.breakingNews(breakingNews)
+			.breakingNews(null)
 			.top5BestChatRooms(top5BestChatRooms)
 			.top5BestIssueRooms(top5BestIssueRooms)
 			.chatRoomResponse(fetchedChatRoomList)
@@ -499,39 +465,7 @@ public class ChatRoomServiceV1 {
 
 	}
 
-	private String findLastestChatTime(Long chatRoomId){
-		Optional<LocalDateTime> latestChat = chatRepository.findMostRecentMessageTimestampByChatRoomId(chatRoomId);
 
-		String time = null;
-
-		if(latestChat.isPresent()){
-			// 몇 분이 지났는지.
-			Duration outdated = Duration.between(latestChat.get(), LocalDateTime.now());
-
-			int realTime = 0; // 대화가 아무것도 없는 상태는 항상 null이다.
-			realTime = (int)outdated.toMinutes();
-
-			if(realTime == 0){
-				time = "방금 전 대화";
-			}
-			else if(realTime >0 && realTime<60){ // mm만 표기
-				time = outdated.toMinutes() + "분 전 대화"; // 분
-			}
-			else if(realTime >=60 && realTime <1440){ // hh:mm
-				int hour = realTime/60;
-				int minute = realTime%60;
-
-				time = hour+"시간 "+minute+"분 전 대화";
-			}
-			else{ // day로 표기
-				int day = realTime/1440;
-
-				time = day+"일 전 대화";
-			}
-
-		}
-		return time;
-	}
 
 }
 

@@ -10,7 +10,7 @@ public class ChatRoomFixture {
     public static ChatRoom create() {
         return ChatRoom.builder()
                 .id(1L)
-                .issue(IssueFixture.create())
+                .issueEntity(IssueFixture.create())
                 .title("title")
                 .content("content")
                 .createdAt(LocalDateTime.now())

@@ -21,13 +21,12 @@ import com.debateseason_backend_v1.domain.youtubeLive.scheduler.mapper.YouTubeSe
 import com.debateseason_backend_v1.domain.youtubeLive.domain.YoutubeLive;
 import com.debateseason_backend_v1.domain.youtubeLive.domain.YoutubeLiveDto;
 import com.debateseason_backend_v1.domain.youtubeLive.infrastructure.entity.YoutubeLiveEntity;
-import com.debateseason_backend_v1.domain.youtubeLive.infrastructure.repository.YoutubeLiveRepository;
+import com.debateseason_backend_v1.domain.youtubeLive.application.repository.YoutubeLiveRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -38,7 +37,6 @@ public class KbsNews {
 	private final YoutubeLiveRepository youtubeLiveRepository;
 
 	private final YouTubeConfig youTubeConfig;
-
 
 	@Scheduled(fixedRate = 4320000) // 1.2시간 = 1시간 12분 = 4320000밀리초
 	@Transactional

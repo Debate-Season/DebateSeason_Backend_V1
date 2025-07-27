@@ -13,10 +13,6 @@ public record ProfileCreateServiceRequest(
 	String nickname,
 	Long communityId,
 	GenderType gender,
-	AgeRangeType ageRange,
-	ProvinceType residenceProvince,
-	DistrictType residenceDistrict,
-	ProvinceType hometownProvince,
-	DistrictType hometownDistrict
+	AgeRangeType ageRange
 ) {
 }

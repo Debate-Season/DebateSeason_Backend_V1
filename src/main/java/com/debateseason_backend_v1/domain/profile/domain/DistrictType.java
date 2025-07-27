@@ -15,7 +15,7 @@ import lombok.RequiredArgsConstructor;
 public enum DistrictType {
 
 	// 무응답
-	UNDEFINED("무응답", "무응답", ProvinceType.UNDEFINED),
+	UNDEFINED("", "무응답", ProvinceType.UNDEFINED),
 
 	// 서울특별시
 	JONGNO("11010", "종로구", ProvinceType.SEOUL),

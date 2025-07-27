@@ -12,8 +12,10 @@ import com.debateseason_backend_v1.domain.profile.application.service.request.Pr
 import com.debateseason_backend_v1.domain.profile.application.service.request.ProfileUpdateServiceRequest;
 import com.debateseason_backend_v1.domain.profile.application.service.response.ProfileResponse;
 import com.debateseason_backend_v1.domain.profile.domain.CommunityType;
+import com.debateseason_backend_v1.domain.profile.domain.DistrictType;
 import com.debateseason_backend_v1.domain.profile.domain.Nickname;
 import com.debateseason_backend_v1.domain.profile.domain.Profile;
+import com.debateseason_backend_v1.domain.profile.domain.ProvinceType;
 import com.debateseason_backend_v1.domain.profile.domain.Region;
 
 import lombok.RequiredArgsConstructor;
@@ -43,8 +45,8 @@ public class ProfileServiceV1 {
 		Profile profile = Profile.create(
 			request.userId(), request.communityId(),
 			Nickname.of(request.nickname()), request.gender(), request.ageRange(),
-			Region.of(request.residenceProvince(), request.residenceDistrict()),
-			Region.of(request.hometownProvince(), request.hometownDistrict())
+			Region.of(ProvinceType.UNDEFINED, DistrictType.UNDEFINED),
+			Region.of(ProvinceType.UNDEFINED, DistrictType.UNDEFINED)
 		);
 
 		profileRepository.save(profile);

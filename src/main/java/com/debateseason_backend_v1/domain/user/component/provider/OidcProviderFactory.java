@@ -10,7 +10,7 @@ import com.auth0.jwt.exceptions.JWTDecodeException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.debateseason_backend_v1.common.exception.CustomException;
 import com.debateseason_backend_v1.common.exception.ErrorCode;
-import com.debateseason_backend_v1.domain.user.enums.SocialType;
+import com.debateseason_backend_v1.domain.user.domain.SocialType;
 
 @Component
 public class OidcProviderFactory {
@@ -35,7 +35,7 @@ public class OidcProviderFactory {
 		authProviderMap.put(SocialType.KAKAO, kakaoOidcProvider);
 	}
 
-	public String extractUserId(SocialType socialType, String idToken) {
+	public String extractUserId(SocialType SocialType, String idToken) {
 
 		DecodedJWT decodedToken;
 		try {
@@ -47,11 +47,11 @@ public class OidcProviderFactory {
 		String tokenIssuer = decodedToken.getIssuer();
 
 		// 요청된 소셜 타입의 발급자와 토큰의 발급자 비교
-		if (!socialType.getIssuer().equals(tokenIssuer)) {
+		if (!SocialType.getIssuer().equals(tokenIssuer)) {
 			throw new CustomException(ErrorCode.SOCIAL_TYPE_MISMATCH);
 		}
 
-		return getIdTokenHandler(socialType).extractUserId(idToken);
+		return getIdTokenHandler(SocialType).extractUserId(idToken);
 	}
 
 	private OidcProvider getIdTokenHandler(final SocialType socialType) {

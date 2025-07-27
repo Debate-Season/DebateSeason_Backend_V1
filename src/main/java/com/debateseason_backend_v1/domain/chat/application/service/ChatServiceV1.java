@@ -4,6 +4,7 @@ import com.debateseason_backend_v1.common.enums.MessageType;
 import com.debateseason_backend_v1.common.response.ApiResult;
 import com.debateseason_backend_v1.domain.chat.application.repository.ChatReactionRepository;
 import com.debateseason_backend_v1.domain.chat.application.repository.ChatRepository;
+import com.debateseason_backend_v1.domain.chat.domain.model.chat.Chat;
 import com.debateseason_backend_v1.domain.chat.infrastructure.chat.ChatEntity;
 import com.debateseason_backend_v1.domain.chat.presentation.dto.chat.request.ChatMessageRequest;
 import com.debateseason_backend_v1.domain.chat.presentation.dto.chat.response.ChatMessageResponse;
@@ -138,7 +139,7 @@ public class ChatServiceV1 {
 								.chatRoomId(chatEntity.getChatRoomId())
 								.userId(chatEntity.getUserId())
 								.messageType(chatEntity.getMessageType())
-								.content("신고된 메시지 입니다.")
+								.content(Chat.REPORTED_MESSAGE_CONTENT)
 								.sender(chatEntity.getSender())
 								.opinionType(chatEntity.getOpinionType())
 								.userCommunity(chatEntity.getUserCommunity())

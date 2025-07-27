@@ -8,13 +8,13 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.debateseason_backend_v1.domain.repository.entity.ChatRoom;
-import com.debateseason_backend_v1.domain.repository.entity.User;
+import com.debateseason_backend_v1.domain.user.infrastructure.UserEntity;
 import com.debateseason_backend_v1.domain.repository.entity.UserChatRoom;
 
 @Repository
 public interface UserChatRoomRepository extends JpaRepository<UserChatRoom, Long> {
 	List<UserChatRoom> findByChatRoom(ChatRoom chatRoom);
-	UserChatRoom findByUserAndChatRoom(User user, ChatRoom chatRoom);
+	UserChatRoom findByUserAndChatRoom(UserEntity user, ChatRoom chatRoom);
 	UserChatRoom findByUserIdAndChatRoomId(Long userId,Long chatroomId);
 
 	// 1-1 Paramter가 없는 경우
@@ -84,6 +84,8 @@ public interface UserChatRoomRepository extends JpaRepository<UserChatRoom, Long
 	);
 
 
+	//Legacy
+	/*
 	// 2-1 이슈방 issue-id로만 조회
 	@Query(value = "SELECT chat_room_id FROM chat_room WHERE issue_id = :issueId ORDER BY chat_room_id DESC LIMIT 3", nativeQuery = true)
 	List<Long> findTop3ChatRoomIdsByIssueId(@Param("issueId") Long issueId);
@@ -94,6 +96,10 @@ public interface UserChatRoomRepository extends JpaRepository<UserChatRoom, Long
 		@Param("issueId") Long issueId,
 		@Param("ChatRoomId") Long ChatRoomId
 	);
+
+	 */
+
+	/*
 	@Query(value = """
     SELECT ch.chat_room_id, ch.title, ch.content, ch.created_at,
            COUNT(CASE WHEN ucr.opinion = 'AGREE' THEN 1 END) AS AGREE,
@@ -105,6 +111,8 @@ public interface UserChatRoomRepository extends JpaRepository<UserChatRoom, Long
     ORDER BY ch.chat_room_id DESC
     """, nativeQuery = true)
 	List<Object[]> findChatRoomAggregates(@Param("chatRoomIds") List<Long> chatRoomIds);
+
+	 */
 
 	@Query(value = """
     SELECT chat_room_id, opinion AS opinion

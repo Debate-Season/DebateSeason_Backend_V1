@@ -1,8 +1,6 @@
 package com.debateseason_backend_v1.domain.repository;
 
-import java.sql.Timestamp;
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -10,15 +8,41 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.debateseason_backend_v1.domain.repository.entity.ChatRoom;
-import com.debateseason_backend_v1.domain.repository.entity.Issue;
+import com.debateseason_backend_v1.domain.issue.infrastructure.entity.IssueEntity;
 
 @Repository
 public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
 
 	// 1.Issue로 채팅방 가져오기
-	List<ChatRoom> findByIssue(Issue issue);
+	List<ChatRoom> findByIssueEntity(IssueEntity issueEntity);
 
-	Long countByIssue(Issue issue);
+	Long countByIssueEntity(IssueEntity issueEntity);
+
+
+	// 2-1 이슈방 issue-id와 관련된 채팅방ID 가져오기
+	@Query(value = "SELECT chat_room_id FROM chat_room WHERE issue_id = :issueId ORDER BY chat_room_id DESC LIMIT 3", nativeQuery = true)
+	List<Long> findTop3ChatRoomIdsByIssueId(@Param("issueId") Long issueId);
+	// 2-2 이슈방 issue-id와 관련된 채팅방ID + 커서기반
+	@Query(value = "SELECT chat_room_id FROM chat_room WHERE issue_id = :issueId AND chat_room_id < :ChatRoomId ORDER BY chat_room_id DESC LIMIT 3", nativeQuery = true)
+	List<Long> findTop3ChatRoomIdsByIssueIdAndChatRoomId(
+		@Param("issueId") Long issueId,
+		@Param("ChatRoomId") Long ChatRoomId
+	);
+
+	// 3. 채팅방 여러 건 가져오기 + 찬성/반대 포함
+	@Query(value = """
+    SELECT ch.chat_room_id, ch.title, ch.content, ch.created_at,
+           COUNT(CASE WHEN ucr.opinion = 'AGREE' THEN 1 END) AS AGREE,
+           COUNT(CASE WHEN ucr.opinion = 'DISAGREE' THEN 1 END) AS DISAGREE
+    FROM chat_room ch
+         LEFT JOIN user_chat_room ucr ON ch.chat_room_id = ucr.chat_room_id
+    WHERE ch.chat_room_id IN (:chatRoomIds)
+    GROUP BY ch.chat_room_id, ch.title, ch.content, ch.created_at
+    ORDER BY ch.chat_room_id DESC
+    """, nativeQuery = true)
+	List<Object[]> findChatRoomAggregates(@Param("chatRoomIds") List<Long> chatRoomIds);
+
+
 
 	// 2. Legacy 인기 토론방 5개
 	@Query(value = """

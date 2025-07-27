@@ -1,5 +1,8 @@
 package com.debateseason_backend_v1.domain.repository.entity;
 
+import com.debateseason_backend_v1.domain.issue.infrastructure.entity.IssueEntity;
+import com.debateseason_backend_v1.domain.user.infrastructure.UserEntity;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -27,11 +30,11 @@ public class UserIssue {
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "user_id", nullable = false)
-	private User user;
+	private UserEntity user;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "issue_id", nullable = false)
-	private Issue issue;
+	private IssueEntity issueEntity;
 
 	private String bookmark;
 }

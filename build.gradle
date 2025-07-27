@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'org.springframework.boot' version '3.3.5'
     id 'io.spring.dependency-management' version '1.1.6'
+    id 'jacoco'
 }
 
 group = 'com.debateseason_v1'
@@ -80,9 +81,136 @@ dependencies {
     implementation("com.fasterxml.jackson.core:jackson-core:2.19.0")
 }
 
+jacoco {
+    toolVersion = "0.8.13"
+}
+
+tasks.jacocoTestReport {
+    dependsOn test
+    
+    reports {
+        xml.required = true
+        html.required = true
+        csv.required = false
+        
+        xml.outputLocation = file("$buildDir/reports/jacoco/test/jacocoTestReport.xml")
+        html.outputLocation = file("$buildDir/reports/jacoco/test/html")
+    }
+    //자코 테스트 제외 설정
+    afterEvaluate {
+        classDirectories.setFrom(files(classDirectories.files.collect {
+            fileTree(dir: it, exclude: [
+                // 애플리케이션 및 설정 관련
+                '**/*Application*',
+                '**/config/**',
+                
+                // 엔티티 및 인프라 관련
+                '**/entity/**',
+                '**/infrastructure/*Entity*',
+                '**/*Entity*',
+                '**/domain/*/infrastructure/**',
+                
+                // DTO, Request, Response 관련
+                '**/dto/**',
+                '**/request/**',
+                '**/response/**',
+                '**/*Request*',
+                '**/*Response*',
+                '**/*DTO*',
+                '**/*Dto*',
+                
+                // Enum 및 Type 관련
+                '**/enums/**',
+                '**/*Type*',
+                
+                // 예외 및 에러 관련
+                '**/exception/**',
+                '**/*Exception*',
+                '**/error/**',
+                '**/security/error/**',
+                
+                // 문서화 관련
+                '**/docs/**',
+                '**/*Docs*',
+                '**/swagger/**',
+                
+                // 매퍼 관련
+                '**/*Mapper*',
+                '**/youtubeLive/scheduler/mapper/**',
+                
+                // 보안 관련
+                '**/security/component/**',
+                '**/security/jwt/**',
+                
+                // 스케줄러 및 검증 관련
+                '**/scheduler/**',
+                '**/validation/**',
+                
+                // 컴포넌트, 이벤트, 리스너 관련
+                '**/component/**',
+                '**/event/**',
+                '**/listener/**',
+                
+                // 레포지토리 관련
+                '**/*Repository*',
+                '**/*JpaRepository*',
+                '**/app/repository/**',
+                
+                // 공통 모듈 관련
+                '**/common/response/**',
+                '**/common/swagger/**',
+                '**/common/component/**',
+                // 특정 도메인 인프라 제외
+                '**/domain/*/infrastructure/**',
+                '**/youtubeLive/scheduler/mapper/**',
+                '**/media/infrastructure/**',
+                '**/app/repository/**',
+                '**/media/infrastructure/**'
+            ])
+        }))
+    }
+}
+
+tasks.jacocoTestCoverageVerification {
+    dependsOn jacocoTestReport
+    
+    violationRules {
+        rule {
+            limit {
+                counter = 'LINE'
+                value = 'COVEREDRATIO'
+                minimum = 0.70
+            }
+        }
+        
+        rule {
+            element = 'PACKAGE'
+            includes = [
+                'com.debateseason_backend_v1.domain.*.service.*',
+                'com.debateseason_backend_v1.domain.*.application.service.*'
+            ]
+            limit {
+                counter = 'LINE'  
+                value = 'COVEREDRATIO'
+                minimum = 0.80
+            }
+        }
+    }
+}
 
 tasks.named('test') {
     useJUnitPlatform()
+    
+    finalizedBy jacocoTestReport
+}
+
+tasks.register('coverageReport') {
+    dependsOn 'jacocoTestReport'
+    doLast {
+        println "📊 테스트 커버리지 리포트가 생성되었습니다!"
+        println "📁 HTML 리포트: build/reports/jacoco/test/html/index.html"
+        println "📄 XML 리포트: build/reports/jacoco/test/jacocoTestReport.xml"
+    }
 }
 
 bootJar {

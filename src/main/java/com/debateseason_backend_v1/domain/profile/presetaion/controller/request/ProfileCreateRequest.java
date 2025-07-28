@@ -27,19 +27,7 @@ public record ProfileCreateRequest(
 
 	@Schema(description = "연령대", example = "20대")
 	@NotNull(message = "연령대 선택은 필수입니다.")
-	AgeRangeType ageRange,
-
-	@Schema(description = "거주 시도 코드", example = "11")
-	ProvinceType residenceProvince,
-
-	@Schema(description = "거주 시·군·구 코드", example = "11030")
-	DistrictType residenceDistrict,
-
-	@Schema(description = "출신 시도 코드", example = "21")
-	ProvinceType hometownProvince,
-
-	@Schema(description = "출신 시·군·구 코드", example = "21010")
-	DistrictType hometownDistrict
+	AgeRangeType ageRange
 ) {
 
 	public ProfileCreateServiceRequest toServiceRequest(Long userId) {
@@ -50,10 +38,6 @@ public record ProfileCreateRequest(
 			.communityId(communityId)
 			.gender(gender)
 			.ageRange(ageRange)
-			.residenceProvince(residenceProvince)
-			.residenceDistrict(residenceDistrict)
-			.hometownProvince(hometownProvince)
-			.hometownDistrict(hometownDistrict)
 			.build();
 	}
 

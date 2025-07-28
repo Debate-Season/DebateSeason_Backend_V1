@@ -14,7 +14,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum ProvinceType {
 
-	UNDEFINED("00", "무응답"),
+	UNDEFINED("", "무응답"),
 	SEOUL("11", "서울특별시"),
 	BUSAN("21", "부산광역시"),
 	DAEGU("22", "대구광역시"),

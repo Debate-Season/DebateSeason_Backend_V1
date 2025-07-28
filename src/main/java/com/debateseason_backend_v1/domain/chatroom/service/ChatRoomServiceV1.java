@@ -23,7 +23,7 @@ import com.debateseason_backend_v1.domain.chatroom.model.response.chatroom.messa
 import com.debateseason_backend_v1.domain.chatroom.model.response.chatroom.messages.Top5BestChatRoom;
 
 import com.debateseason_backend_v1.domain.issue.infrastructure.entity.IssueEntity;
-import com.debateseason_backend_v1.domain.issue.mapper.IssueRoomBriefMapper;
+import com.debateseason_backend_v1.domain.issue.mapper.IssueBriefResponse;
 import com.debateseason_backend_v1.domain.repository.ChatRoomRepository;
 import com.debateseason_backend_v1.domain.issue.infrastructure.repository.IssueJpaRepository;
 import com.debateseason_backend_v1.domain.repository.UserChatRoomRepository;
@@ -356,7 +356,7 @@ public class ChatRoomServiceV1 {
 		).toList();
 
 		// ui1.issue_id, ui1.title, ui1.created_at, ui1.chat_room_count, COUNT(ui2.issue_id) AS bookmarks
-		List<IssueRoomBriefMapper> top5BestIssueRooms = issueJpaRepository.findIssuesWithBookmarksOrderByCreatedDate(issueIds).stream().map(
+		List<IssueBriefResponse> top5BestIssueRooms = issueJpaRepository.findIssuesWithBookmarksOrderByCreatedDate(issueIds).stream().map(
 			e->{
 				Long issueId = (Long)e[0];
 				String title = (String)e[1];
@@ -368,7 +368,7 @@ public class ChatRoomServiceV1 {
 				Long chatRoomCount = (Long)e[3];
 				Long bookMarksCount = (Long)e[4];
 
-				return IssueRoomBriefMapper.builder()
+				return IssueBriefResponse.builder()
 					.issueId(issueId)
 					.title(title)
 					//.createdAt(createdAt)

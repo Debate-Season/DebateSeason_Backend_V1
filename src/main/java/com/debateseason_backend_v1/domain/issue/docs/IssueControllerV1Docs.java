@@ -10,7 +10,7 @@ import com.debateseason_backend_v1.common.response.ApiResult;
 import com.debateseason_backend_v1.domain.chatroom.model.response.chatroom.ResponseOnlyHome;
 import com.debateseason_backend_v1.domain.issue.model.response.IssueBriefContainer;
 import com.debateseason_backend_v1.domain.issue.model.Category;
-import com.debateseason_backend_v1.domain.issue.mapper.IssueRoomDetailMapper;
+import com.debateseason_backend_v1.domain.issue.mapper.IssueDetailResponse;
 import com.debateseason_backend_v1.security.CustomUserDetails;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -41,7 +41,7 @@ public interface IssueControllerV1Docs {
 		required = true,
 		example = "1"
 	)
-	public ApiResult<IssueRoomDetailMapper> getIssue(
+	public ApiResult<IssueDetailResponse> getIssue(
 		@RequestParam(name = "issue-id") Long issueId,
 		@AuthenticationPrincipal CustomUserDetails principal,
 		@RequestParam(name = "page",required = false)Long page

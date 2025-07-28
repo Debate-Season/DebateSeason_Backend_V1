@@ -12,7 +12,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Builder
-public class IssueRoomBriefMapper {
+public class IssueBriefResponse {
 
 	@Schema(description = "이슈방 Id", example = "1")
 	private long issueId;

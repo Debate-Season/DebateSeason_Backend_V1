@@ -9,6 +9,6 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class IssueBriefContainer {
+public class PaginationDTO {
 	private List<IssueBriefResponse> items;
 }

@@ -13,7 +13,7 @@ import com.debateseason_backend_v1.domain.chatroom.infrastructure.manager.ChatRo
 import com.debateseason_backend_v1.domain.chatroom.infrastructure.entity.ChatRoomProcessor;
 import com.debateseason_backend_v1.domain.chatroom.model.response.chatroom.type.ResponseWithTimeAndOpinion;
 import com.debateseason_backend_v1.domain.issue.infrastructure.entity.IssueMapper;
-import com.debateseason_backend_v1.domain.issue.model.response.IssueBriefContainer;
+import com.debateseason_backend_v1.domain.issue.model.response.PaginationDTO;
 import com.debateseason_backend_v1.domain.issue.infrastructure.entity.IssueEntity;
 import com.debateseason_backend_v1.domain.issue.infrastructure.entity.IssueProcessorManager;
 import com.debateseason_backend_v1.domain.issue.infrastructure.manager.IssuePaginationManager;
@@ -161,7 +161,7 @@ public class IssueServiceV1 {
 
 	// 3. issueMap 가져오기
 	// issue_id, title, major_category, (middle_category), created_at
-	public ApiResult<IssueBriefContainer> fetchIssueMap(Long page, String majorCategory//, String middleCategory
+	public ApiResult<PaginationDTO> fetchIssueMap(Long page, String majorCategory//, String middleCategory
 	) {
 
 		// 일단 issueId 여러개를 가져온다.
@@ -178,13 +178,13 @@ public class IssueServiceV1 {
 		List<IssueBriefResponse> issueBriefResponse = issueProcessorManager.createIssueBriefResponse(rawIssueBookmark);
 
 		// 응답 DTO - 생성자 주입
-		IssueBriefContainer issueBriefContainer = new IssueBriefContainer(issueBriefResponse);
+		PaginationDTO paginationDTO = new PaginationDTO(issueBriefResponse);
 
-		return ApiResult.<IssueBriefContainer>builder()
+		return ApiResult.<PaginationDTO>builder()
 			.status(200)
 			.code(ErrorCode.SUCCESS)
 			.message("이슈방 불러왔습니다.")
-			.data(issueBriefContainer)
+			.data(paginationDTO)
 			.build();
 
 	}

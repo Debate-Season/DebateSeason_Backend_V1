@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import com.debateseason_backend_v1.common.response.ApiResult;
 
 import com.debateseason_backend_v1.domain.chatroom.model.response.chatroom.ResponseOnlyHome;
-import com.debateseason_backend_v1.domain.issue.model.response.IssueBriefContainer;
+import com.debateseason_backend_v1.domain.issue.model.response.PaginationDTO;
 import com.debateseason_backend_v1.domain.issue.model.Category;
 import com.debateseason_backend_v1.domain.issue.mapper.IssueDetailResponse;
 import com.debateseason_backend_v1.security.CustomUserDetails;
@@ -139,7 +139,7 @@ public interface IssueControllerV1Docs {
 		@ApiResponse(responseCode = "200", description = "성공적으로 issue를 불러왔습니다."),
 		@ApiResponse(responseCode = "400", description = "majorcategory를 잘못입력했습니다.")
 	})
-	public ApiResult<IssueBriefContainer> getIssueMap(
+	public ApiResult<PaginationDTO> getIssueMap(
 		@RequestParam(name = "page",required = false) Long page,
 		@RequestParam(name = "majorcategory",required = false) @Nullable Category majorcategory)
 		;

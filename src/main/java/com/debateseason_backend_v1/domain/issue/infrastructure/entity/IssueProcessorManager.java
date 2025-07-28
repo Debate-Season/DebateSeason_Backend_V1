@@ -6,7 +6,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Component;
 
-import com.debateseason_backend_v1.domain.issue.mapper.IssueRoomBriefMapper;
+import com.debateseason_backend_v1.domain.issue.mapper.IssueBriefResponse;
 
 // DB -> DTO로 처리
 @Component
@@ -20,7 +20,7 @@ public class IssueProcessorManager {
 		Long chatRoomCount;
 		Long bookMarkCount;
 	 */
-	public List<IssueRoomBriefMapper> createIssueBriefResponse(List<Object[]> objects){
+	public List<IssueBriefResponse> createIssueBriefResponse(List<Object[]> objects){
 
 		return objects.stream().map( // 순서에 유의하세요!
 			e -> {
@@ -35,7 +35,7 @@ public class IssueProcessorManager {
 				Long chatRoomCount = (Long)e[3];
 				Long bookMarkCount = (Long)e[4];
 
-				return IssueRoomBriefMapper.builder()
+				return IssueBriefResponse.builder()
 					.issueId(issueId)
 					.title(title)
 					.createdAt(createdAt)

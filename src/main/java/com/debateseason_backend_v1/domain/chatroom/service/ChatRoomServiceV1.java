@@ -24,6 +24,8 @@ import com.debateseason_backend_v1.domain.chatroom.model.response.chatroom.messa
 
 import com.debateseason_backend_v1.domain.issue.infrastructure.entity.IssueEntity;
 import com.debateseason_backend_v1.domain.issue.mapper.IssueBriefResponse;
+import com.debateseason_backend_v1.domain.media.infrastructure.repository.MediaJpaRepository;
+import com.debateseason_backend_v1.domain.media.model.response.BreakingNewsResponse;
 import com.debateseason_backend_v1.domain.repository.ChatRoomRepository;
 import com.debateseason_backend_v1.domain.issue.infrastructure.repository.IssueJpaRepository;
 import com.debateseason_backend_v1.domain.repository.UserChatRoomRepository;
@@ -45,6 +47,7 @@ public class ChatRoomServiceV1 {
 	private final ChatRoomRepository chatRoomRepository;
 	private final IssueJpaRepository issueJpaRepository; // 혹시나 Service쓰면, 나중에 순환참조 발생할 것 같아서 Repository로 함.
 	private final UserChatRoomRepository userChatRoomRepository;
+	private final MediaJpaRepository mediaJpaRepository;
 
 	// TimeProcessor
 	private final TimeProcessor timeProcessor;
@@ -333,7 +336,7 @@ public class ChatRoomServiceV1 {
 	public ApiResult<ResponseOnlyHome> findVotedChatRoom(Long userId,Long pageChatRoomId){
 
 		// 0. 속보 가져오기
-		/* Legacy
+
 		List<BreakingNewsResponse> breakingNews = mediaJpaRepository.findTop10BreakingNews().stream()
 			.map(
 				e->
@@ -344,7 +347,7 @@ public class ChatRoomServiceV1 {
 			).toList()
 			;
 
-		 */
+
 		List<Top5BestChatRoom> top5BestChatRooms = chatRoomProcessor.getTop5ActiveRooms();
 
 		// 2. 활성화된 최상위 5개 이슈방을 보여준다.
@@ -398,8 +401,8 @@ public class ChatRoomServiceV1 {
 		if (chatRoomList.isEmpty()){
 
 			ResponseOnlyHome responseOnlyHome = ResponseOnlyHome.builder()
-				.breakingNews(null)
-				//.chatRoomResponse(fetchedChatRoomList)
+				.breakingNews(breakingNews)
+				.chatRoomResponse(null)
 				.top5BestChatRooms(top5BestChatRooms)
 				.top5BestIssueRooms(top5BestIssueRooms)
 				.build()

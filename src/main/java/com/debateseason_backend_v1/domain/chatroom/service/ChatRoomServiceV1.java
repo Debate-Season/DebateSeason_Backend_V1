@@ -334,9 +334,9 @@ public class ChatRoomServiceV1 {
 
 	// 4. 투표한 여러 채팅방 가져오기
 	public ApiResult<ResponseOnlyHome> findVotedChatRoom(Long userId,Long pageChatRoomId){
+		log.info("/api/v1/home/refesh 실행");
 
 		// 0. 속보 가져오기
-
 		List<BreakingNewsResponse> breakingNews = mediaJpaRepository.findTop10BreakingNews().stream()
 			.map(
 				e->
@@ -346,10 +346,10 @@ public class ChatRoomServiceV1 {
 					.build()
 			).toList()
 			;
-
+		log.info("1.breakingNews 가져오기");
 
 		List<Top5BestChatRoom> top5BestChatRooms = chatRoomProcessor.getTop5ActiveRooms();
-
+		log.info("2.뜨겁게 논쟁 중인 찬반토론");
 		// 2. 활성화된 최상위 5개 이슈방을 보여준다.
 		// issue_id, COUNT(ch.chat_room_id)
 
@@ -357,6 +357,7 @@ public class ChatRoomServiceV1 {
 		List<Long> issueIds = issueJpaRepository.findTop5ActiveIssuesByCountingChats().stream().map(
 			e-> (Long)e[0]
 		).toList();
+		log.info("3.최상위 5개의 이슈 id값 가져오기");
 
 		// ui1.issue_id, ui1.title, ui1.created_at, ui1.chat_room_count, COUNT(ui2.issue_id) AS bookmarks
 		List<IssueBriefResponse> top5BestIssueRooms = issueJpaRepository.findIssuesWithBookmarksOrderByCreatedDate(issueIds).stream().map(
@@ -382,21 +383,24 @@ public class ChatRoomServiceV1 {
 
 			}
 		).toList();
+		log.info("4.이런 이슈는 어때요?");
 
 
 		List<Long> chatRoomIds;
 		// 첫 페이지
 		if(pageChatRoomId==null){
 			chatRoomIds = userChatRoomRepository.findTop2ChatRoomIdsByUserId(userId);
+			log.info("5. 채팅방id값 가져오기");
 		}
 		else{
 			// 그 이후 페이지
 			chatRoomIds = userChatRoomRepository.findTop2ChatRoomIdsByUserIdAndChatRoomId(userId,pageChatRoomId);
+			log.info("5. 채팅방id값 가져오기");
 		}
 
 
 		List<Object[]> chatRoomList = userChatRoomRepository.findChatRoomWithOpinions(userId,chatRoomIds);
-
+		log.info("6. 참여 중인 토론 가져오기");
 		// 아직 투표한 방이 없어서 아무것도 없는 상태로 가져올 수 있다.
 		if (chatRoomList.isEmpty()){
 
@@ -407,6 +411,8 @@ public class ChatRoomServiceV1 {
 				.top5BestIssueRooms(top5BestIssueRooms)
 				.build()
 				;
+
+			log.info("7. 응답값 반환");
 
 			return ApiResult.<ResponseOnlyHome>builder()
 				.status(200)
@@ -449,6 +455,7 @@ public class ChatRoomServiceV1 {
 
 			}
 		).collect(Collectors.toList());
+		log.info("7. 참여 중인 토론 DTO만들기");
 
 		ResponseOnlyHome responseOnlyHome = ResponseOnlyHome.builder()
 			.breakingNews(null)
@@ -457,7 +464,7 @@ public class ChatRoomServiceV1 {
 			.chatRoomResponse(fetchedChatRoomList)
 			.build()
 			;
-
+		log.info("8. ApiResult 응답값 생성.");
 
 		return ApiResult.<ResponseOnlyHome>builder()
 			.status(200)

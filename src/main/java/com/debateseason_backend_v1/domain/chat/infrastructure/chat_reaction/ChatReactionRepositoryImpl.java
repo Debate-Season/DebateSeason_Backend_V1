@@ -55,8 +55,8 @@ public class ChatReactionRepositoryImpl implements ChatReactionRepository {
     @Override
     public Map<Long, Map<ChatReactionRequest.ReactionType, Integer>> findReactionCountsByChatIdsIn(List<Long> chatIds){
         if (chatIds == null || chatIds.isEmpty()) {
-            log.error("@@ chatIds가 null or empty 입니다.");
-            log.error("@@ chatIds = {}", chatIds);
+            log.warn("@@ chatIds가 null or empty 입니다.");
+            log.warn("@@ chatIds = {}", chatIds);
             return Collections.emptyMap();
         }
 

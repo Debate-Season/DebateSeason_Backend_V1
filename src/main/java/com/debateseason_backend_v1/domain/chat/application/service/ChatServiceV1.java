@@ -204,7 +204,7 @@ public class ChatServiceV1 {
 				.collect(Collectors.toSet());
 
 		// 디버깅 로그 추가
-		log.info("@@ 승인된 신고 메시지 ID 목록: {}", acceptedReportChatIds);
+		log.debug("@@ 승인된 신고 메시지 ID 목록: {}", acceptedReportChatIds);
 
 		List<ChatMessageResponse> messageResponses = displayChats.stream()
 				.map(chatEntity -> {

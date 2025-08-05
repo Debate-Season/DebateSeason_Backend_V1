@@ -6,7 +6,9 @@ import com.debateseason_backend_v1.domain.chat.application.repository.ChatReacti
 import com.debateseason_backend_v1.domain.chat.application.repository.ChatRepository;
 import com.debateseason_backend_v1.domain.chat.domain.model.chat.Chat;
 import com.debateseason_backend_v1.domain.chat.infrastructure.chat.ChatEntity;
+import com.debateseason_backend_v1.domain.chat.infrastructure.report.ReportEntity;
 import com.debateseason_backend_v1.domain.chat.presentation.dto.chat.request.ChatMessageRequest;
+import com.debateseason_backend_v1.domain.chat.presentation.dto.chat.request.ChatReactionRequest;
 import com.debateseason_backend_v1.domain.chat.presentation.dto.chat.response.ChatMessageResponse;
 import com.debateseason_backend_v1.domain.chat.presentation.dto.chat.response.ChatMessagesResponse;
 import com.debateseason_backend_v1.domain.chat.validation.ChatValidate;
@@ -26,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -103,7 +106,6 @@ public class ChatServiceV1 {
 	}
 
 	// ---------- 채팅 메시지 조회 ----------
-
 	@Transactional(readOnly = true)
 	public ApiResult<ChatMessagesResponse> getChatMessages(Long roomId, Long cursor, Long userId) {
 		cursor = (cursor == null) ? Long.MAX_VALUE : cursor;
@@ -168,4 +170,87 @@ public class ChatServiceV1 {
 		
 		return ApiResult.success("채팅 메시지를 성공적으로 조회했습니다.", response);
 	}
+
+	// ---------- 채팅 메시지 조회 v2 배치쿼리 ----------
+	@Transactional(readOnly = true)
+	public ApiResult<ChatMessagesResponse> getChatMessagesV2(Long roomId, Long cursor, Long userId) {
+		cursor = (cursor == null) ? Long.MAX_VALUE : cursor;
+
+		chatRoomService.findChatRoomById(roomId);
+
+		// 메시지 조회 (최대 20개 + 1개 더 조회하여 hasMore 확인)
+		List<ChatEntity> chats = chatRepository.findByRoomIdAndCursor(
+				roomId, cursor, PageRequest.of(0, PAGE_SIZE + 1));
+
+		boolean hasMore = chats.size() > PAGE_SIZE;
+
+		List<ChatEntity> displayChats = hasMore ? chats.subList(0, PAGE_SIZE) : chats;
+
+		//조회된 메시지 채팅 ID 추출
+		List<Long> chatIds = displayChats.stream()
+				.map(ChatEntity::getId)
+				.toList();
+
+		//chatIds 메시지들 반응 수 조회
+		Map<Long, Map<ChatReactionRequest.ReactionType, Integer>> reactionCountsMap = chatReactionRepository.findReactionCountsByChatIdsIn(chatIds);
+		//chatIds 메시지들 사용자 반응
+		Map<Long, Set<ChatReactionRequest.ReactionType>> userReactionsMap = chatReactionRepository.findUserReactionsByChatIdsIn(chatIds, userId);
+
+		//신고 메시지 처리 로직
+		Set<Long> acceptedReportChatIds = reportRepository.findByTargetTypeAndStatus(
+						ReportTargetType.CHAT, ReportStatus.ACCEPTED)
+				.stream()
+				.map(ReportEntity::getTargetId)
+				.collect(Collectors.toSet());
+
+		// 디버깅 로그 추가
+		log.info("@@ 승인된 신고 메시지 ID 목록: {}", acceptedReportChatIds);
+
+		List<ChatMessageResponse> messageResponses = displayChats.stream()
+				.map(chatEntity -> {
+					if (acceptedReportChatIds.contains(chatEntity.getId())) {
+						ChatEntity maskedEntity = createMaskedEntity(chatEntity);
+						// 새로운 최적화된 메서드 사용
+						return ChatMessageResponse.fromOptimized(
+								maskedEntity, userId, reactionCountsMap, userReactionsMap);
+					}
+					return ChatMessageResponse.fromOptimized(
+							chatEntity, userId, reactionCountsMap, userReactionsMap);
+				})
+				.toList();
+
+		// 기존 페이지네이션 코드 유지
+		String nextCursor = null;
+		if (!displayChats.isEmpty()) {
+			nextCursor = String.valueOf(displayChats.get(displayChats.size() - 1).getId());
+		}
+
+		int totalCount = chatRepository.countByRoomId(roomId);
+
+		ChatMessagesResponse response = ChatMessagesResponse.builder()
+				.items(messageResponses)
+				.hasMore(hasMore)
+				.nextCursor(nextCursor)
+				.totalCount(totalCount)
+				.build();
+
+		return ApiResult.success("채팅 메시지를 성공적으로 조회했습니다.", response);
+
+	}
+
+	// 헬퍼 메서드: 마스킹된 엔티티 생성 (가독성 위해 분리)
+	private ChatEntity createMaskedEntity(ChatEntity original) {
+		return ChatEntity.builder()
+				.id(original.getId())
+				.chatRoomId(original.getChatRoomId())
+				.userId(original.getUserId())
+				.messageType(original.getMessageType())
+				.content(Chat.REPORTED_MESSAGE_CONTENT)  // 신고된 메시지 내용으로 대체
+				.sender(original.getSender())
+				.opinionType(original.getOpinionType())
+				.userCommunity(original.getUserCommunity())
+				.timeStamp(original.getTimeStamp())
+				.build();
+	}
+
 }

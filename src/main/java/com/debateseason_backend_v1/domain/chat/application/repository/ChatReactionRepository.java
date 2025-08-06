@@ -4,7 +4,9 @@ import com.debateseason_backend_v1.domain.chat.infrastructure.chat_reaction.Chat
 import com.debateseason_backend_v1.domain.chat.presentation.dto.chat.request.ChatReactionRequest;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 public interface ChatReactionRepository {
 
@@ -22,5 +24,24 @@ public interface ChatReactionRepository {
 
     void deleteByChatIdAndUserIdAndReactionType(Long chatId, Long userId, ChatReactionRequest.ReactionType reactionType);
 
+    /**
+     * 여러 채팅의 반응 수를 한 번에 조회
+     *
+     * @param chatIds 조회할 채팅 ID 목록
+     * @return Map<채팅ID, Map<반응타입, 반응수>>
+     *
+     */
+    Map<Long, Map<ChatReactionRequest.ReactionType, Integer>> findReactionCountsByChatIdsIn(List<Long> chatIds);
+
+
+    /**
+     * 특정 사용자가 여러 채팅에 남긴 반응을 한 번에 조회
+     *
+     * @param chatIds 조회할 채팅 ID 목록
+     * @param userId 사용자 ID
+     * @return Map<채팅ID, Set<반응타입>>
+     *
+     */
+    Map<Long, Set<ChatReactionRequest.ReactionType>> findUserReactionsByChatIdsIn(List<Long> chatIds, Long userId);
 
 }

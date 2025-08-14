@@ -458,7 +458,7 @@ public class ChatRoomServiceV1 {
 		log.info("7. 참여 중인 토론 DTO만들기");
 
 		ResponseOnlyHome responseOnlyHome = ResponseOnlyHome.builder()
-			.breakingNews(null)
+			.breakingNews(breakingNews)
 			.top5BestChatRooms(top5BestChatRooms)
 			.top5BestIssueRooms(top5BestIssueRooms)
 			.chatRoomResponse(fetchedChatRoomList)

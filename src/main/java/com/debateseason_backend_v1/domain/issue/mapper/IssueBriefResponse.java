@@ -26,7 +26,6 @@ public class IssueBriefResponse {
 	private LocalDateTime createdAt;
 
 
-
 	@Schema(description = "관련 토론방 수", example = "15")
 	private Long countChatRoom;
 

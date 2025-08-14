@@ -21,13 +21,9 @@ public class IssueBriefResponse {
 	private String title;
 
 
-	/*
 	@Schema(description = "생성일", example = "2024-12-03T08:51:57")
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
 	private LocalDateTime createdAt;
-
-	 */
-
 
 
 	@Schema(description = "관련 토론방 수", example = "15")

@@ -347,6 +347,10 @@ public class ChatRoomServiceV1 {
 			).toList()
 			;
 		log.info("1.breakingNews 가져오기");
+		
+		if(breakingNews==null){
+			log.info("breakingNews가 null일리가 없는데");
+		}
 
 		List<Top5BestChatRoom> top5BestChatRooms = chatRoomProcessor.getTop5ActiveRooms();
 		log.info("2.뜨겁게 논쟁 중인 찬반토론");
@@ -404,8 +408,20 @@ public class ChatRoomServiceV1 {
 		// 아직 투표한 방이 없어서 아무것도 없는 상태로 가져올 수 있다.
 		if (chatRoomList.isEmpty()){
 
+			// 0. 속보 가져오기
+			List<BreakingNewsResponse> breakingNews2 = mediaJpaRepository.findTop10BreakingNews().stream()
+				.map(
+					e->
+						BreakingNewsResponse.builder()
+							.title(e.getTitle())
+							.url(e.getUrl())
+							.build()
+				).toList()
+				;
+			log.info("breakingNews 강제로 주입 <- 수정 필요!!!!!");
+
 			ResponseOnlyHome responseOnlyHome = ResponseOnlyHome.builder()
-				.breakingNews(breakingNews)
+				.breakingNews(breakingNews2)
 				.chatRoomResponse(null)
 				.top5BestChatRooms(top5BestChatRooms)
 				.top5BestIssueRooms(top5BestIssueRooms)

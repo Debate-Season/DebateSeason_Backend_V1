@@ -286,7 +286,7 @@ public class IssueServiceV1 {
 			IssueBriefResponse response = IssueBriefResponse.builder()
 				.issueId(id)
 				.title(issueEntityList.get(i).getTitle())
-				//.createdAt(issueEntityList.get(i).getCreatedAt())
+				.createdAt(issueEntityList.get(i).getCreatedAt())
 				.countChatRoom(chatRoomRepository.countByIssueEntity(issueEntityList.get(i)))
 				.build();
 			responseList.add(response);

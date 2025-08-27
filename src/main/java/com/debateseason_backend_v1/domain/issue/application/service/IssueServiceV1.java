@@ -13,15 +13,15 @@ import com.debateseason_backend_v1.domain.chatroom.infrastructure.manager.ChatRo
 import com.debateseason_backend_v1.domain.chatroom.infrastructure.entity.ChatRoomProcessor;
 import com.debateseason_backend_v1.domain.chatroom.model.response.chatroom.type.ResponseWithTimeAndOpinion;
 import com.debateseason_backend_v1.domain.issue.infrastructure.entity.IssueMapper;
-import com.debateseason_backend_v1.domain.issue.model.response.IssueBriefContainer;
+import com.debateseason_backend_v1.domain.issue.model.response.PaginationDTO;
 import com.debateseason_backend_v1.domain.issue.infrastructure.entity.IssueEntity;
 import com.debateseason_backend_v1.domain.issue.infrastructure.entity.IssueProcessorManager;
 import com.debateseason_backend_v1.domain.issue.infrastructure.manager.IssuePaginationManager;
 import com.debateseason_backend_v1.domain.issue.application.repository.IssueRepository;
 import com.debateseason_backend_v1.domain.issue.CommunityRecords;
 import com.debateseason_backend_v1.domain.issue.model.request.IssueRequest;
-import com.debateseason_backend_v1.domain.issue.mapper.IssueRoomBriefMapper;
-import com.debateseason_backend_v1.domain.issue.mapper.IssueRoomDetailMapper;
+import com.debateseason_backend_v1.domain.issue.mapper.IssueBriefResponse;
+import com.debateseason_backend_v1.domain.issue.mapper.IssueDetailResponse;
 import com.debateseason_backend_v1.domain.profile.domain.CommunityType;
 import com.debateseason_backend_v1.domain.profile.infrastructure.ProfileEntity;
 import com.debateseason_backend_v1.domain.profile.infrastructure.ProfileJpaRepository;
@@ -84,7 +84,7 @@ public class IssueServiceV1 {
 
 	//2. fetch 단건 이슈방
 	@Transactional
-	public ApiResult<IssueRoomDetailMapper> fetchV2(Long issueId, Long userId, Long ChatRoomId) {
+	public ApiResult<IssueDetailResponse> fetchV2(Long issueId, Long userId, Long ChatRoomId) {
 
 		List<Object[]> object = userIssueRepository.findByIssueIdAndUserId(issueId, userId);
 
@@ -141,7 +141,7 @@ public class IssueServiceV1 {
 
 		}
 
-		IssueRoomDetailMapper issueRoomDetailMapper = IssueRoomDetailMapper.builder()
+		IssueDetailResponse issueDetailResponse = IssueDetailResponse.builder()
 			.title(issueMapper.getTitle())
 			.bookMarkState(bookMarkState)
 			.bookMarks(issueMapper.getBookMarks())
@@ -150,18 +150,18 @@ public class IssueServiceV1 {
 			.chatRoomMap(chatRooms)
 			.build();
 
-		return ApiResult.<IssueRoomDetailMapper>builder()
+		return ApiResult.<IssueDetailResponse>builder()
 			.status(200)
 			.code(ErrorCode.SUCCESS)
 			.message("이슈방 " + issueId + "조회")
-			.data(issueRoomDetailMapper)
+			.data(issueDetailResponse)
 			.build();
 
 	}
 
 	// 3. issueMap 가져오기
 	// issue_id, title, major_category, (middle_category), created_at
-	public ApiResult<IssueBriefContainer> fetchIssueMap(Long page, String majorCategory//, String middleCategory
+	public ApiResult<PaginationDTO> fetchIssueMap(Long page, String majorCategory//, String middleCategory
 	) {
 
 		// 일단 issueId 여러개를 가져온다.
@@ -175,16 +175,16 @@ public class IssueServiceV1 {
 		List<Object[]> rawIssueBookmark = issueRepository.findIssuesWithBookmarks(issueIds);
 
 		// 후처리
-		List<IssueRoomBriefMapper> issueRoomBriefMapper = issueProcessorManager.createIssueBriefResponse(rawIssueBookmark);
+		List<IssueBriefResponse> issueBriefResponse = issueProcessorManager.createIssueBriefResponse(rawIssueBookmark);
 
 		// 응답 DTO - 생성자 주입
-		IssueBriefContainer issueBriefContainer = new IssueBriefContainer(issueRoomBriefMapper);
+		PaginationDTO paginationDTO = new PaginationDTO(issueBriefResponse);
 
-		return ApiResult.<IssueBriefContainer>builder()
+		return ApiResult.<PaginationDTO>builder()
 			.status(200)
 			.code(ErrorCode.SUCCESS)
 			.message("이슈방 불러왔습니다.")
-			.data(issueBriefContainer)
+			.data(paginationDTO)
 			.build();
 
 	}
@@ -273,17 +273,17 @@ public class IssueServiceV1 {
 	}
 
 	// 구버전
-	public ApiResult<List<IssueRoomBriefMapper>> fetchV1() {
+	public ApiResult<List<IssueBriefResponse>> fetchV1() {
 		List<IssueEntity> issueEntityList = issueJpaRepository.findAll();
 
 		// Gson,JSONArray이 없어서 Map으로 반환을 한다.
-		List<IssueRoomBriefMapper> responseList = new ArrayList<>();
+		List<IssueBriefResponse> responseList = new ArrayList<>();
 
 		// loop를 돌면서, issueId에 해당하는 chatRoom을 count 한다.
 		for (int i = 0; i < issueEntityList.size(); i++) {
 
 			Long id = issueEntityList.get(i).getId();
-			IssueRoomBriefMapper response = IssueRoomBriefMapper.builder()
+			IssueBriefResponse response = IssueBriefResponse.builder()
 				.issueId(id)
 				.title(issueEntityList.get(i).getTitle())
 				.createdAt(issueEntityList.get(i).getCreatedAt())
@@ -293,7 +293,7 @@ public class IssueServiceV1 {
 		}
 
 
-		return ApiResult.<List<IssueRoomBriefMapper>>builder()
+		return ApiResult.<List<IssueBriefResponse>>builder()
 			.status(200)
 			.code(ErrorCode.SUCCESS)
 			.message("이슈방 전체를 불러왔습니다.")

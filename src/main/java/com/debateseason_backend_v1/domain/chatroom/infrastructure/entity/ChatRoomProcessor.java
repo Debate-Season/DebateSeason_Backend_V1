@@ -14,8 +14,10 @@ import com.debateseason_backend_v1.domain.chatroom.model.response.chatroom.type.
 import com.debateseason_backend_v1.domain.repository.ChatRoomRepository;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 // DB에서 가져온 데이터 가공 -> DTO로 변환
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class ChatRoomProcessor {

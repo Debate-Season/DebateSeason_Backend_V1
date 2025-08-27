@@ -9,13 +9,11 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Getter
 @AllArgsConstructor
 @Builder
-public class IssueRoomDetailMapper { // 일관성, GC 범위 감소
+public class IssueDetailResponse { // 일관성, GC 범위 감소
 
 	@Schema(description = "이슈명", example = "윤석열 계엄")
 	private final String title;

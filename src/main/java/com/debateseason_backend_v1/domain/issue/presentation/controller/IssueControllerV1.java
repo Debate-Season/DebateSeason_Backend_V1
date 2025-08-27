@@ -11,10 +11,10 @@ import org.springframework.web.bind.annotation.RestController;
 import com.debateseason_backend_v1.common.response.ApiResult;
 import com.debateseason_backend_v1.domain.chatroom.model.response.chatroom.ResponseOnlyHome;
 import com.debateseason_backend_v1.domain.chatroom.service.ChatRoomServiceV1;
-import com.debateseason_backend_v1.domain.issue.model.response.IssueBriefContainer;
+import com.debateseason_backend_v1.domain.issue.model.response.PaginationDTO;
 import com.debateseason_backend_v1.domain.issue.docs.IssueControllerV1Docs;
 import com.debateseason_backend_v1.domain.issue.model.Category;
-import com.debateseason_backend_v1.domain.issue.mapper.IssueRoomDetailMapper;
+import com.debateseason_backend_v1.domain.issue.mapper.IssueDetailResponse;
 import com.debateseason_backend_v1.domain.issue.application.service.IssueServiceV1;
 import com.debateseason_backend_v1.security.CustomUserDetails;
 
@@ -44,7 +44,7 @@ public class IssueControllerV1 implements IssueControllerV1Docs {
 	// 2. 이슈방 단건 불러오기(+ 채팅방도 같이 불러와야 함.)
 	// issueId는 required = true
 	@GetMapping("/issue")
-	public ApiResult<IssueRoomDetailMapper> getIssue(
+	public ApiResult<IssueDetailResponse> getIssue(
 		@RequestParam(name = "issue-id") Long issueId,
 		@AuthenticationPrincipal CustomUserDetails principal,
 		@RequestParam(name = "page",required = false)Long page) {
@@ -73,7 +73,7 @@ public class IssueControllerV1 implements IssueControllerV1Docs {
 		summary = "이슈맵 페이지로 이동합니다.",
 		description = " ")
 	@GetMapping("/issue-map")
-	public ApiResult<IssueBriefContainer> getIssueMap(
+	public ApiResult<PaginationDTO> getIssueMap(
 		@RequestParam(name = "page",required = false) Long page,
 		@RequestParam(name = "majorcategory",required = false) @Nullable Category majorcategory) {
 

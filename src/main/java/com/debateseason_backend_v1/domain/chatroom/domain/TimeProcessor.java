@@ -20,7 +20,7 @@ public class TimeProcessor {
 	public String findLastestChatTime(Long chatRoomId){
 		Optional<LocalDateTime> latestChat = chatRepository.findMostRecentMessageTimestampByChatRoomId(chatRoomId);
 
-		String time = null;
+		String time = "";// 최초 생성인 경우 빈 문자열로 응답.
 
 		if(latestChat.isPresent()){
 			// 몇 분이 지났는지.

@@ -42,7 +42,7 @@ public class ChatRoomControllerV1 implements ChatRoomControllerV1Docs {
 		description = "채팅방 상세보기")
 	@GetMapping("/room")
 	public ApiResult<ChatRoomResponse> getChatRoom(
-		@RequestParam(name = "chatroom-id") Long chatRoomId,
+		@RequestParam(name = "chatroom-id",required = false) Long chatRoomId,
 		//@RequestParam(name = "type",required = false) String type,
 		@AuthenticationPrincipal CustomUserDetails principal) {
 		// type은 토론위키일 수도 있고, 하이라이트일 수도 있고, 아무것도 없을 수도 있다.

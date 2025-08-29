@@ -7,5 +7,5 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum Opinion {
-	AGREE,DISAGREE
+	AGREE,DISAGREE,NEUTRAL
 }

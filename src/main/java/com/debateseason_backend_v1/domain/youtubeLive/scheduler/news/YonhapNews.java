@@ -147,7 +147,7 @@ public class YonhapNews {
 		}
 		catch (WebClientResponseException e){
 			if(key.equals("dummy")){
-				log.error("key: "+key+"이므로, 설정값 다시 확인!");
+				log.error("현재 활성화 된 유트브 API 키 값은 "+key+"이므로, 실행중인 서버는 Local 또는 Dev일 수 있습니다.");
 			}
 			else{
 				log.error("유튜브 API 할당량 모두 소진 -> YonhapNews.NewsLive");

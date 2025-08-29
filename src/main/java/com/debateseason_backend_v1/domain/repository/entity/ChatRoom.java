@@ -22,6 +22,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -29,6 +30,7 @@ import lombok.Setter;
 @Setter
 @Builder
 @Entity
+@ToString(exclude = "issueEntity")
 @Table(name = "chat_room")
 @EntityListeners(AuditingEntityListener.class)
 public class ChatRoom {
@@ -38,6 +40,7 @@ public class ChatRoom {
 	@Column(name = "chat_room_id")
 	private Long id;
 
+	// 무한 로딩을 발생시킬 수 있으므로, 이것은 toString에서 제외.
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "issue_id", nullable = false)
 	private IssueEntity issueEntity;

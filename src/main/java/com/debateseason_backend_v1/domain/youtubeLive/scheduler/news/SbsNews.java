@@ -22,6 +22,7 @@ import com.debateseason_backend_v1.domain.youtubeLive.domain.YoutubeLive;
 import com.debateseason_backend_v1.domain.youtubeLive.domain.YoutubeLiveDto;
 import com.debateseason_backend_v1.domain.youtubeLive.infrastructure.entity.YoutubeLiveEntity;
 import com.debateseason_backend_v1.domain.youtubeLive.application.repository.YoutubeLiveRepository;
+import com.debateseason_backend_v1.domain.youtubeLive.scheduler.news.template.NewsTemplate;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -32,7 +33,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @RequiredArgsConstructor
 @Component
-public class SbsNews {
+public class SbsNews extends NewsTemplate {
 
 	private final YoutubeLiveRepository youtubeLiveRepository;
 
@@ -48,6 +49,8 @@ public class SbsNews {
 		// dirty-checking or save
 
 		String key = youTubeConfig.getKey();
+
+		String category = "sbs"; // 5
 
 		try {
 			MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
@@ -120,7 +123,7 @@ public class SbsNews {
 			Thumbnail thumbnail = thumbnails.getDefaultThumbnail();
 			String url = thumbnail.getUrl();
 
-			String category = "sbs"; // 5
+			//String category = "sbs"; // 5
 
 			// 새로운 youtubelive 데이터 생성하기
 			YoutubeLive newYoutubeLive = YoutubeLive.builder()
@@ -146,12 +149,9 @@ public class SbsNews {
 
 		}
 		catch (WebClientResponseException e){
-			if(key.equals("dummy")){
-				log.error("현재 활성화 된 유트브 API 키 값은 "+key+"이므로, 실행중인 서버는 Local 또는 Dev일 수 있습니다.");
-			}
-			else{
-				log.error("유튜브 API 할당량 모두 소진 -> Sbs.NewsLive");
-			}
+
+			super.checkCurrentKeyState(key,category);
+
 		}
 		catch (JsonProcessingException e) {
 			log.error("SbsNews에서 발생한 JsonProcessingException 에러");

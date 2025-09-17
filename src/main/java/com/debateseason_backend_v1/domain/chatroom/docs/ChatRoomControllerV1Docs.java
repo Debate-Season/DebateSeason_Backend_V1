@@ -36,7 +36,7 @@ public interface ChatRoomControllerV1Docs {
 		required = true,
 		example = "1"
 	)
-	public ApiResult<Object> createChatRoom(
+	public ApiResult<Object> save(
 		@RequestBody ChatRoomRequest chatRoomRequest,
 		@RequestParam(name = "issue-id") Long issue_id
 	);
@@ -69,7 +69,7 @@ public interface ChatRoomControllerV1Docs {
 		@ApiResponse(responseCode = "200", description = "해당 채팅방을 성공적으로 불러왔습니다."),
 		@ApiResponse(responseCode = "400", description = "해당 채팅방을 불러오지 못했습니다.")
 	})
-	public ApiResult<ChatRoomResponse> getChatRoom(
+	public ApiResult<ChatRoomResponse> fetch(
 		@RequestParam(name = "chatroom-id") Long chatRoomId,
 		//@RequestParam(name = "type",required = false) String type,
 		@AuthenticationPrincipal CustomUserDetails principal);
@@ -98,7 +98,7 @@ public interface ChatRoomControllerV1Docs {
 		@ApiResponse(responseCode = "200", description = "성공적으로 투표했습니다."),
 
 	})
-	public ApiResult<String> voteChatRoom(
+	public ApiResult<String> vote(
 		@RequestParam(name = "opinion") Opinion opinion,
 		@RequestParam(name = "chatroom-id") Long chatRoomId,
 		@AuthenticationPrincipal CustomUserDetails principal)

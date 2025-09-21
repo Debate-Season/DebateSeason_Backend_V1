@@ -79,6 +79,9 @@ dependencies {
 
     // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core
     implementation("com.fasterxml.jackson.core:jackson-core:2.19.0")
+
+    // Firebase Admin SDK for FCM
+    implementation 'com.google.firebase:firebase-admin:9.2.0'
 }
 
 jacoco {

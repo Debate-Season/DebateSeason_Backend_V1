@@ -12,13 +12,13 @@ import com.debateseason_backend_v1.common.response.ApiResult;
 import com.debateseason_backend_v1.domain.chatroom.infrastructure.manager.ChatRoomPaginationManager;
 import com.debateseason_backend_v1.domain.chatroom.infrastructure.entity.ChatRoomProcessor;
 import com.debateseason_backend_v1.domain.chatroom.model.response.chatroom.type.ResponseWithTimeAndOpinion;
+import com.debateseason_backend_v1.domain.issue.community.CommunitySorterV3;
 import com.debateseason_backend_v1.domain.issue.infrastructure.entity.IssueMapper;
 import com.debateseason_backend_v1.domain.issue.model.response.PaginationDTO;
 import com.debateseason_backend_v1.domain.issue.infrastructure.entity.IssueEntity;
 import com.debateseason_backend_v1.domain.issue.infrastructure.entity.IssueProcessorManager;
 import com.debateseason_backend_v1.domain.issue.infrastructure.manager.IssuePaginationManager;
 import com.debateseason_backend_v1.domain.issue.application.repository.IssueRepository;
-import com.debateseason_backend_v1.domain.issue.CommunityRecords;
 import com.debateseason_backend_v1.domain.issue.model.request.IssueRequest;
 import com.debateseason_backend_v1.domain.issue.mapper.IssueBriefResponse;
 import com.debateseason_backend_v1.domain.issue.mapper.IssueDetailResponse;
@@ -33,6 +33,7 @@ import com.debateseason_backend_v1.domain.repository.entity.UserIssue;
 import com.debateseason_backend_v1.domain.user.dto.UserDTO;
 import com.debateseason_backend_v1.domain.user.infrastructure.UserEntity;
 import com.debateseason_backend_v1.domain.user.infrastructure.UserJpaRepository;
+import com.google.common.base.Stopwatch;
 
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
@@ -62,6 +63,9 @@ public class IssueServiceV1 {
 	private final IssueProcessorManager issueProcessorManager;
 	private final ChatRoomProcessor chatRoomProcessor;
 
+	// CommunitySorterV2 -> V3로 변경( HashMap에 대한 동기화 문제가 발생할 수 있어서 V3로 변경. )
+	private final CommunitySorterV3 communityMananger;
+
 	// 1. save 이슈방
 	public ApiResult<Object> save(IssueRequest issueRequest) {
 
@@ -85,6 +89,9 @@ public class IssueServiceV1 {
 	//2. fetch 단건 이슈방
 	@Transactional
 	public ApiResult<IssueDetailResponse> fetchV2(Long issueId, Long userId, Long ChatRoomId) {
+
+		// 시간 측정.
+		Stopwatch stopwatch = Stopwatch.createStarted();
 
 		List<Object[]> object = userIssueRepository.findByIssueIdAndUserId(issueId, userId);
 
@@ -119,9 +126,11 @@ public class IssueServiceV1 {
 		userDTO.setCommunity(communityType.getName());
 		userDTO.setId(userId);
 
-		CommunityRecords.record(userDTO, issueId);
+		//CommunityRecords.record(userDTO, issueId);
+		communityMananger.record(userDTO,issueId);
 
-		LinkedHashMap<String, Integer> sortedMap = CommunityRecords.getSortedCommunity(issueId); // LinkedHashMap을 써서 순서를 보장한다.
+		//LinkedHashMap<String, Integer> sortedMap = CommunityRecords.getSortedCommunity(issueId); // LinkedHashMap을 써서 순서를 보장한다.
+		LinkedHashMap<String, Integer> sortedMap = communityMananger.getSortedCommunity(issueId);
 
 		//
 		List<Long> chatRoomIds = chatRoomPaginationManager.getChatRoomsByPage(issueId,ChatRoomId); // 순차적으로 chatRoomId로 페이지네이션
@@ -149,6 +158,11 @@ public class IssueServiceV1 {
 			.map(sortedMap)
 			.chatRoomMap(chatRooms)
 			.build();
+
+		// 종료 시간
+		stopwatch.stop();
+		log.info("실행 시간: " + stopwatch.elapsed().toMillis() + " ms");
+
 
 		return ApiResult.<IssueDetailResponse>builder()
 			.status(200)

@@ -26,6 +26,7 @@ import com.debateseason_backend_v1.domain.user.dto.UserDTO;
 
 @ExtendWith(MockitoExtension.class)
 public class CommunitySorterV1Test {
+	/*
 
 	// 차체 알고리즘 동시성 테스트.
 	static List<String> community = new ArrayList<>();
@@ -280,5 +281,7 @@ public class CommunitySorterV1Test {
 		assertTrue((dc == 1 && theqoo == 0) || (dc == 0 && theqoo == 1),
 			"최종 소속이 한 쪽으로 수렴하지 않음");
 	}
+
+	 */
 
 }

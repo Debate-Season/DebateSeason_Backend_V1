@@ -4,10 +4,12 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
+import com.debateseason_backend_v1.common.enums.OpinionType;
 import com.debateseason_backend_v1.common.exception.CustomException;
 import com.debateseason_backend_v1.common.exception.ErrorCode;
 import com.debateseason_backend_v1.common.response.ApiResult;
@@ -22,6 +24,7 @@ import com.debateseason_backend_v1.domain.chatroom.model.response.chatroom.Respo
 import com.debateseason_backend_v1.domain.chatroom.model.response.chatroom.messages.TeamScore;
 import com.debateseason_backend_v1.domain.chatroom.model.response.chatroom.messages.Top5BestChatRoom;
 
+import com.debateseason_backend_v1.domain.chatroom.model.response.etc.Opinion;
 import com.debateseason_backend_v1.domain.issue.infrastructure.entity.IssueEntity;
 import com.debateseason_backend_v1.domain.issue.mapper.IssueBriefResponse;
 import com.debateseason_backend_v1.domain.media.infrastructure.repository.MediaJpaRepository;
@@ -56,12 +59,10 @@ public class ChatRoomServiceV1 {
 	private final ChatRoomProcessor chatRoomProcessor;// ChatRoomRepo에서 가져온 것을 후처리를 한다.
 
 	// 1. 채팅방 저장하기
-	public ApiResult<Object> save(ChatRoomRequest chatRoomRequest, long issueId) {
+	public ApiResult<Object> save(ChatRoomRequest chatRoomRequest, Long issueId) {
 
 		// 1. Issue 찾기
-		IssueEntity issueEntity;
-
-		issueEntity = issueJpaRepository.findById(issueId).orElseThrow(
+		IssueEntity issueEntity = issueJpaRepository.findById(issueId).orElseThrow(
 			() -> new CustomException(ErrorCode.NOT_FOUND_ISSUE)
 		);
 
@@ -86,7 +87,9 @@ public class ChatRoomServiceV1 {
 	// 2. 채팅방 찬반 투표하기
 	// Dirty Checking을 위해서 Transactional을 통한 변경감지
 	@Transactional
-	public ApiResult<String> vote(String opinion, Long chatRoomId, Long userId) {
+	public ApiResult<String> vote(Opinion opinionType, Long chatRoomId, Long userId) {
+
+		String userOpinion = opinionType.name();// name을 사용함으로써, 불변성을 유지한다.(toString은 변경이 가능함.)
 
 		//1. 채팅방 가져오기
 		ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId).orElseThrow(
@@ -99,27 +102,25 @@ public class ChatRoomServiceV1 {
 		);
 
 		// 3. 투표하기
-		UserChatRoom userChatRoom = userChatRoomRepository.findByUserAndChatRoom(user, chatRoom);
+		// UserChatRoom을 가져온다 -> 1. Null이면 DB에 새로운 UserChatRoom을 저장하고, 그 객체를 반환. 2. 아니면 더티체킹만 한다.
+		UserChatRoom userChatRoom = Optional.ofNullable(userChatRoomRepository.findByUserAndChatRoom(user, chatRoom))
 
-		if (userChatRoom == null) {
-			// 3. 최초 저장시에만 Entity 생성, 나머지는 Update(Dirty Checking)
+			.orElseGet(() -> userChatRoomRepository.save(
+				UserChatRoom.builder()
+					.user(user)
+					.chatRoom(chatRoom)
+					.opinion(userOpinion)
+					.build()
 
-			userChatRoom = UserChatRoom.builder()
-				.user(user)
-				.chatRoom(chatRoom)
-				.opinion(opinion) // String
-				.build();
+			));
 
-			userChatRoomRepository.save(userChatRoom); // 1. 투표를 할 때 userChatRoom에 저장이 된다.
-		} else {
-			// DirtyChecking
-			userChatRoom.setOpinion(opinion);
-		}
+		// 이미 컨트롤러단에서 파라미터를 받을때 검증을 해서, 무시해도 됨.( 1.의 객체에 다시 setOpinion을 한다. )
+		userChatRoom.setOpinion(userOpinion);
 
 		return ApiResult.<String>builder()
 			.status(200)
 			.code(ErrorCode.SUCCESS)
-			.message(opinion + "을 투표하셨습니다.")
+			.message(userOpinion + "을 투표하셨습니다.")
 			.build();
 	}
 
@@ -128,42 +129,37 @@ public class ChatRoomServiceV1 {
 	@Transactional
 	public ApiResult<ChatRoomResponse> fetch(Long userId,Long chatRoomId) { //,String type
 
-		// 우선 해당 채팅방이 유효한지 먼저 파악부터 해야한다.
-		/*
-		if(chatRoomRepository.findById(chatRoomId).isEmpty()){
-			throw new CustomException(ErrorCode.NOT_FOUND_ISSUE);
-		}
-
-		 */
-
-
 		// 1. 채팅방 불러오기
-		ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
-			.orElseThrow(
+		ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId).orElseThrow(
 				() -> new CustomException(ErrorCode.NOT_FOUND_CHATROOM)
-			);
+		);
 
+		// 2. 내가 이 토론방에 투표한 의견을 가져온다. null이면 NEUTRAL을 유지한다.
+		String opinion = Optional.ofNullable(userChatRoomRepository.findByUserIdAndChatRoomId(userId,chatRoomId))
+			.map(UserChatRoom::getOpinion)
+			.orElse(Opinion.NEUTRAL.name())
+			;
+
+		/* Legacy
 		// opinion의 기본값 = NEUTRAL
 		String opinion = "NEUTRAL";// 아무런 의견을 표명하지 않은 경우에는 NEUTRAL로 반환을 하는데, 이건 저장할 가치가 없다.
 
-		// 내가 이 토론방에 투표한 의견
 		UserChatRoom getMyChatRoom = userChatRoomRepository.findByUserIdAndChatRoomId(userId,chatRoomId);
 		if(getMyChatRoom!=null){
 			opinion = getMyChatRoom.getOpinion();
 		}
+		 */
 
-		// 2. UserChatRoom 가져오기 (특정 이슈방에 대한 찬성/반대를 추출하기 위함)
+		// 3. UserChatRoom 가져오기 (특정 이슈방에 대한 찬성/반대를 추출하기 위함)
 		List<UserChatRoom> userChatRoom = userChatRoomRepository.findByChatRoom(chatRoom);
 
-		// 2-1. 찬성 반대 count하기
+		// 3-1. 찬성 반대 count하기
 		int countAgree = 0;
 		int countDisagree = 0;
+
 		for (UserChatRoom e : userChatRoom) {
-			if (e.getOpinion().equals("AGREE")) {
-				countAgree++;
-			} else if (e.getOpinion().equals("DISAGREE")) {
-				countDisagree++;
-			}
+			countAgree += "AGREE".equals(e.getOpinion()) ? 1 : 0;
+			countDisagree += "DISAGREE".equals(e.getOpinion()) ? 1 : 0;
 			// 아무런 의견도 없는 경우는 걍 PASS
 		}
 
@@ -246,16 +242,15 @@ public class ChatRoomServiceV1 {
 
 		 */
 
-		// 3. 합계,논리,태도, MVP 가져오기
+		// 4. 합계,논리,태도, MVP 가져오기
 
-		// 3-1. 합계,논리 태도 가져오기(찬성/반대)
+		// 4-1. 합계,논리 태도 가져오기(찬성/반대)
 
 		List<Object[]> agreeDTO = chatRoomRepository.getReactionSummaryByOpinion(chatRoomId,"AGREE");
 		List<Object[]> disagreeDTO = chatRoomRepository.getReactionSummaryByOpinion(chatRoomId,"DISAGREE");
 
 		String agreeMvp = chatRoomRepository.findTopChatRoomUserNickname(chatRoomId,"AGREE");
 		String disagreeMvp = chatRoomRepository.findTopChatRoomUserNickname(chatRoomId,"DISAGREE");
-		System.out.println(disagreeMvp);
 
 		int agreeLogic=0;
 		int agreeAttitude=0;
@@ -347,10 +342,6 @@ public class ChatRoomServiceV1 {
 			).toList()
 			;
 		log.info("1.breakingNews 가져오기");
-		
-		if(breakingNews==null){
-			log.info("breakingNews가 null일리가 없는데");
-		}
 
 		List<Top5BestChatRoom> top5BestChatRooms = chatRoomProcessor.getTop5ActiveRooms();
 		log.info("2.뜨겁게 논쟁 중인 찬반토론");
@@ -408,20 +399,10 @@ public class ChatRoomServiceV1 {
 		// 아직 투표한 방이 없어서 아무것도 없는 상태로 가져올 수 있다.
 		if (chatRoomList.isEmpty()){
 
-			// 0. 속보 가져오기
-			List<BreakingNewsResponse> breakingNews2 = mediaJpaRepository.findTop10BreakingNews().stream()
-				.map(
-					e->
-						BreakingNewsResponse.builder()
-							.title(e.getTitle())
-							.url(e.getUrl())
-							.build()
-				).toList()
-				;
 			log.info("breakingNews 강제로 주입 <- 수정 필요!!!!!");
 
 			ResponseOnlyHome responseOnlyHome = ResponseOnlyHome.builder()
-				.breakingNews(breakingNews2)
+				.breakingNews(breakingNews)
 				.chatRoomResponse(null)
 				.top5BestChatRooms(top5BestChatRooms)
 				.top5BestIssueRooms(top5BestIssueRooms)

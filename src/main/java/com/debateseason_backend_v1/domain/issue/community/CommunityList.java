@@ -38,4 +38,8 @@ public class CommunityList {
 	public String get(String name){
 		return communityMap.get(name);
 	}
+
+	public Map<String,String> getCommunityMap(){
+		return communityMap;
+	}
 }

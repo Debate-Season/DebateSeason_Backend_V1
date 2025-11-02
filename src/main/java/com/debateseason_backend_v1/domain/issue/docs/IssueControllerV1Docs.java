@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import com.debateseason_backend_v1.common.response.ApiResult;
 
-import com.debateseason_backend_v1.domain.chatroom.model.response.chatroom.ResponseOnlyHome;
+import com.debateseason_backend_v1.domain.chatroom.model.response.chatroom.UserVotedChatRoom;
 import com.debateseason_backend_v1.domain.issue.model.response.PaginationDTO;
 import com.debateseason_backend_v1.domain.issue.model.Category;
 import com.debateseason_backend_v1.domain.issue.mapper.IssueDetailResponse;
@@ -65,7 +65,7 @@ public interface IssueControllerV1Docs {
 		required = false,
 		example = "1"
 	)
-	public ApiResult<ResponseOnlyHome> indexPage(
+	public ApiResult<UserVotedChatRoom> indexPage(
 		@RequestParam(name = "page", required = false) Long page,
 		@AuthenticationPrincipal CustomUserDetails principal
 	);
@@ -87,7 +87,7 @@ public interface IssueControllerV1Docs {
 		required = false,
 		example = "1"
 	)
-	public ApiResult<ResponseOnlyHome> getRecommend(
+	public ApiResult<UserVotedChatRoom> getRecommend(
 		@RequestParam(name = "page", required = false) Long page,
 		@AuthenticationPrincipal CustomUserDetails principal
 	);

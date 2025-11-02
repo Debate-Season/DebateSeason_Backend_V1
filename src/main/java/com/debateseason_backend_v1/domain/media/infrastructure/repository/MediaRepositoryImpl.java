@@ -71,6 +71,5 @@ public class MediaRepositoryImpl implements MediaRepository {
 		}
 
 		return mediaEntityList;
-
 	}
 }

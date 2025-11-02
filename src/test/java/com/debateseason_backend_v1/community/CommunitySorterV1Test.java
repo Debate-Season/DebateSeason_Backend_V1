@@ -9,7 +9,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
@@ -22,52 +25,28 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import com.debateseason_backend_v1.domain.issue.community.CommunityList;
 
 import com.debateseason_backend_v1.domain.issue.community.CommunitySorterV3;
+import com.debateseason_backend_v1.domain.issue.community.CommunitySorterV4;
+import com.debateseason_backend_v1.domain.user.domain.User;
 import com.debateseason_backend_v1.domain.user.dto.UserDTO;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @ExtendWith(MockitoExtension.class)
 public class CommunitySorterV1Test {
+
 	/*
-
-	// 차체 알고리즘 동시성 테스트.
-	static List<String> community = new ArrayList<>();
-
-	static {
-		community.add("디시인사이드");
-		community.add("에펨코리아");
-		community.add("더쿠");
-		community.add("뽐뿌");
-		community.add("루리웹");
-		community.add("엠팍");
-		community.add("인벤");
-		community.add("네이트판");
-		community.add("아카라이브");
-		community.add("클리앙");
-		community.add("일간베스트");
-		community.add("인스티즈");
-		community.add("보배드림");
-		community.add("웃긴대학");
-		community.add("오르비");
-		community.add("오늘의유머");
-		community.add("여성시대");
-		community.add("에브리타임");
-		community.add("블라인드");
-		community.add("Reddit");
-		community.add("X");
-		community.add("Threads");
-		community.add("무소속");
-	}
-
 	@Test
 	void doubleCheckLock() throws InterruptedException {
 		// 시나리오
 		// 500개의 스레드가 각 100000건의 USER 생성 후, record 호출 -> 5,000,000건의 요청이 발생.
 
 		final int THREADS = 500;
-		final int USERS_PER_THREAD = 10000;
+		final int USERS_PER_THREAD = 100;
 		final long issueId = 1L;
 
 		CommunityList communityList = new CommunityList();
-		CommunitySorterV3 newRecord = new CommunitySorterV3(communityList);
+		CommunitySorterV4 newRecord = new CommunitySorterV4(communityList);
 
 		CountDownLatch start = new CountDownLatch(1);     // 동시에 출발
 		CountDownLatch done  = new CountDownLatch(THREADS); // 완료 대기
@@ -114,7 +93,7 @@ public class CommunitySorterV1Test {
 	void uniqueIds_twoCommunities_counts_and_p95() throws Exception {
 
 		CommunityList communityList = new CommunityList();
-		CommunitySorterV3 newRecord = new CommunitySorterV3(communityList);
+		CommunitySorterV4 newRecord = new CommunitySorterV4(communityList);
 
 		final int THREADS = 500;
 		final int USERS_PER_THREAD = 10000;      // 총 5,000,000 ops
@@ -192,7 +171,7 @@ public class CommunitySorterV1Test {
 	void multiIssue_init_race_and_counts() throws Exception {
 
 		CommunityList communityList = new CommunityList();
-		CommunitySorterV3 newRecord = new CommunitySorterV3(communityList);
+		CommunitySorterV4 newRecord = new CommunitySorterV4(communityList);
 
 		final int THREADS = 500;
 		final int OPS_PER_THREAD = 10000;  // 총 5,000,000 ops
@@ -240,7 +219,7 @@ public class CommunitySorterV1Test {
 	void sameUserId_manyTimes_should_count_as_one() throws Exception {
 
 		CommunityList communityList = new CommunityList();
-		CommunitySorterV3 newRecord = new CommunitySorterV3(communityList);
+		CommunitySorterV4 newRecord = new CommunitySorterV4(communityList);
 
 		final int THREADS = 200;
 		final int OPS_PER_THREAD = 50000;//10,000,000
@@ -283,5 +262,7 @@ public class CommunitySorterV1Test {
 	}
 
 	 */
+
+
 
 }

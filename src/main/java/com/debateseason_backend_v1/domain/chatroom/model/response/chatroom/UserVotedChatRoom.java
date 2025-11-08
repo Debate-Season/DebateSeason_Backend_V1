@@ -17,7 +17,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @Builder
-public class ResponseOnlyHome {
+public class UserVotedChatRoom {
 
 	private List<BreakingNewsResponse> breakingNews;
 

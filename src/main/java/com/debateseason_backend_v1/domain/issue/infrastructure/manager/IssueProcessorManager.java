@@ -1,4 +1,4 @@
-package com.debateseason_backend_v1.domain.issue.infrastructure.entity;
+package com.debateseason_backend_v1.domain.issue.infrastructure.manager;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;

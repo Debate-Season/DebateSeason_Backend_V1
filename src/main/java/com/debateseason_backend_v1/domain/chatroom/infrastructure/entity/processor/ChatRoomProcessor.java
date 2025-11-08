@@ -1,4 +1,4 @@
-package com.debateseason_backend_v1.domain.chatroom.infrastructure.entity;
+package com.debateseason_backend_v1.domain.chatroom.infrastructure.entity.processor;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;

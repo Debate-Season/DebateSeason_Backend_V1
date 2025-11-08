@@ -9,14 +9,14 @@ import org.springframework.stereotype.Service;
 import com.debateseason_backend_v1.common.exception.CustomException;
 import com.debateseason_backend_v1.common.exception.ErrorCode;
 import com.debateseason_backend_v1.common.response.ApiResult;
-import com.debateseason_backend_v1.domain.chatroom.infrastructure.manager.ChatRoomPaginationManager;
-import com.debateseason_backend_v1.domain.chatroom.infrastructure.entity.ChatRoomProcessor;
+import com.debateseason_backend_v1.domain.chatroom.infrastructure.entity.manager.ChatRoomPaginationManager;
+import com.debateseason_backend_v1.domain.chatroom.infrastructure.entity.processor.ChatRoomProcessor;
 import com.debateseason_backend_v1.domain.chatroom.model.response.chatroom.type.ResponseWithTimeAndOpinion;
-import com.debateseason_backend_v1.domain.issue.community.CommunitySorterV3;
+import com.debateseason_backend_v1.domain.issue.community.CommunitySorterV4;
 import com.debateseason_backend_v1.domain.issue.infrastructure.entity.IssueMapper;
 import com.debateseason_backend_v1.domain.issue.model.response.PaginationDTO;
 import com.debateseason_backend_v1.domain.issue.infrastructure.entity.IssueEntity;
-import com.debateseason_backend_v1.domain.issue.infrastructure.entity.IssueProcessorManager;
+import com.debateseason_backend_v1.domain.issue.infrastructure.manager.IssueProcessorManager;
 import com.debateseason_backend_v1.domain.issue.infrastructure.manager.IssuePaginationManager;
 import com.debateseason_backend_v1.domain.issue.application.repository.IssueRepository;
 import com.debateseason_backend_v1.domain.issue.model.request.IssueRequest;
@@ -33,7 +33,6 @@ import com.debateseason_backend_v1.domain.repository.entity.UserIssue;
 import com.debateseason_backend_v1.domain.user.dto.UserDTO;
 import com.debateseason_backend_v1.domain.user.infrastructure.UserEntity;
 import com.debateseason_backend_v1.domain.user.infrastructure.UserJpaRepository;
-import com.google.common.base.Stopwatch;
 
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
@@ -64,7 +63,7 @@ public class IssueServiceV1 {
 	private final ChatRoomProcessor chatRoomProcessor;
 
 	// CommunitySorterV2 -> V3로 변경( HashMap에 대한 동기화 문제가 발생할 수 있어서 V3로 변경. )
-	private final CommunitySorterV3 communityMananger;
+	private final CommunitySorterV4 communityMananger;
 
 	// 1. save 이슈방
 	public ApiResult<Object> save(IssueRequest issueRequest) {
@@ -90,8 +89,6 @@ public class IssueServiceV1 {
 	@Transactional
 	public ApiResult<IssueDetailResponse> fetchV2(Long issueId, Long userId, Long ChatRoomId) {
 
-		// 시간 측정.
-		Stopwatch stopwatch = Stopwatch.createStarted();
 
 		List<Object[]> object = userIssueRepository.findByIssueIdAndUserId(issueId, userId);
 
@@ -158,10 +155,6 @@ public class IssueServiceV1 {
 			.map(sortedMap)
 			.chatRoomMap(chatRooms)
 			.build();
-
-		// 종료 시간
-		stopwatch.stop();
-		log.info("실행 시간: " + stopwatch.elapsed().toMillis() + " ms");
 
 
 		return ApiResult.<IssueDetailResponse>builder()
@@ -262,8 +255,6 @@ public class IssueServiceV1 {
 
 	}
 
-
-	// 얕은 복사 : 객체의 값에 덮어 Opinion을 덮어 씌운다.
 	private void markUserOpinion(List<Object[]> opinions,List<ResponseWithTimeAndOpinion> chatRooms){
 
 		if (!opinions.isEmpty()) {

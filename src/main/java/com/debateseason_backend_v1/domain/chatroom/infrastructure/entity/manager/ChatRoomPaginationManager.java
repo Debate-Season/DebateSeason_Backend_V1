@@ -1,4 +1,4 @@
-package com.debateseason_backend_v1.domain.chatroom.infrastructure.manager;
+package com.debateseason_backend_v1.domain.chatroom.infrastructure.entity.manager;
 
 import java.util.List;
 

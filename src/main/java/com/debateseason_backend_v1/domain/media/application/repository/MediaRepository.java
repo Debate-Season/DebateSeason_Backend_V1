@@ -29,7 +29,6 @@ public interface MediaRepository {
 
 	// 5. media를 type(news, community)별로 가져오되, time 기반 페이지네이션을 수행한다.
 	// cursor = time이 수행한다.
-	public List<MediaEntity> findMediaByTypeAndTimeCursor(String type, String time);
-
-
+	List<MediaEntity> findMediaByTypeAndTimeCursor(String type, String time);
+	
 }

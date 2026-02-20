@@ -12,7 +12,9 @@ public class WebConfig implements WebMvcConfigurer {
 	public void addCorsMappings(CorsRegistry registry) {
 		registry.addMapping("/**") //모든 경로 허용
 			.allowedOrigins(
-				"https://debate-season.click"
+				"https://debate-season.click",
+				"http://localhost:3000",
+				"https://toronchul.app"
 			)
 			.allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH")
 			.allowedHeaders("*")

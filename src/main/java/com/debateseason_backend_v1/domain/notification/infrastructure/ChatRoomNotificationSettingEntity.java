@@ -22,6 +22,7 @@ public class ChatRoomNotificationSettingEntity {
     private Long chatRoomId;
 
     @Column(name = "notification_enabled", nullable = false)
+    @Builder.Default
     private boolean notificationEnabled = true;
 }
 

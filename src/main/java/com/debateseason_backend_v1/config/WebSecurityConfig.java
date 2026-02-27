@@ -39,6 +39,15 @@ public class WebSecurityConfig {
 		"/api/v1/app/**"
 	};
 
+	public static final String[] OPTIONAL_AUTH_URLS = {
+		"/api/v1/issue",
+		"/api/v1/issue-map",
+		"/api/v1/home/recommend",
+		"/api/v1/home/media",
+		"/api/v1/room",
+		"/api/v1/users/home"
+	};
+
 	@Bean
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
@@ -48,6 +57,7 @@ public class WebSecurityConfig {
 			.httpBasic(AbstractHttpConfigurer::disable)
 			.authorizeHttpRequests(auth -> auth
 				.requestMatchers(PUBLIC_URLS).permitAll()
+				.requestMatchers(OPTIONAL_AUTH_URLS).permitAll()
 				.anyRequest().authenticated()
 			)
 			.addFilterBefore(

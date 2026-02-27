@@ -48,7 +48,7 @@ public class IssueControllerV1 implements IssueControllerV1Docs {
 		@RequestParam(name = "issue-id") Long issueId,
 		@AuthenticationPrincipal CustomUserDetails principal,
 		@RequestParam(name = "page",required = false)Long page) {
-		Long userId = principal.getUserId();
+		Long userId = principal != null ? principal.getUserId() : null;
 		return issueServiceV1.fetchV2(issueId, userId, page);
 	}
 
@@ -88,7 +88,7 @@ public class IssueControllerV1 implements IssueControllerV1Docs {
 		@RequestParam(name = "page", required = false) Long page,
 		@AuthenticationPrincipal CustomUserDetails principal
 	) {
-		Long userId = principal.getUserId();
+		Long userId = principal != null ? principal.getUserId() : null;
 		return chatRoomServiceV1.findVotedChatRoom(userId,page);
 
 	}

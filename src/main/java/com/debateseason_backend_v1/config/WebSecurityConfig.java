@@ -1,5 +1,6 @@
 package com.debateseason_backend_v1.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -12,8 +13,10 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 import com.debateseason_backend_v1.security.component.SecurityPathMatcher;
 import com.debateseason_backend_v1.security.error.JwtAuthenticationErrorHandler;
+import com.debateseason_backend_v1.security.filter.RateLimitFilter;
 import com.debateseason_backend_v1.security.jwt.JwtAuthenticationFilter;
 import com.debateseason_backend_v1.security.jwt.JwtUtil;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;
 
@@ -25,6 +28,13 @@ public class WebSecurityConfig {
 	private final JwtUtil jwtUtil;
 	private final JwtAuthenticationErrorHandler errorHandler;
 	private final SecurityPathMatcher securityPathMatcher;
+	private final ObjectMapper objectMapper;
+
+	@Value("${rate-limit.anonymous-requests-per-minute:100}")
+	private long anonymousRateLimit;
+
+	@Value("${rate-limit.authenticated-requests-per-minute:300}")
+	private long authenticatedRateLimit;
 
 	public static final String[] PUBLIC_URLS = {
 		"/swagger-ui/**",
@@ -51,6 +61,11 @@ public class WebSecurityConfig {
 	@Bean
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
+		JwtAuthenticationFilter jwtFilter = new JwtAuthenticationFilter(jwtUtil, errorHandler, securityPathMatcher);
+		RateLimitFilter rateLimitFilter = new RateLimitFilter(
+			securityPathMatcher, objectMapper, anonymousRateLimit, authenticatedRateLimit
+		);
+
 		return http
 			.csrf(AbstractHttpConfigurer::disable)
 			.formLogin(AbstractHttpConfigurer::disable)
@@ -60,10 +75,8 @@ public class WebSecurityConfig {
 				.requestMatchers(OPTIONAL_AUTH_URLS).permitAll()
 				.anyRequest().authenticated()
 			)
-			.addFilterBefore(
-				new JwtAuthenticationFilter(jwtUtil, errorHandler, securityPathMatcher),
-				UsernamePasswordAuthenticationFilter.class
-			)
+			.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
+			.addFilterAfter(rateLimitFilter, JwtAuthenticationFilter.class)
 			.build();
 	}
 }

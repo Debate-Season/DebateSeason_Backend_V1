@@ -83,6 +83,9 @@ public enum ErrorCode implements CodeInterface {
 	// 7000번대: 동시성 관련 에러
 	CONCURRENT_REQUEST(7000, HttpStatus.CONFLICT, "요청 처리 중 충돌이 발생했습니다. 잠시 후 다시 시도해주세요."),
 
+	// 8000번대: Rate Limiting 에러
+	RATE_LIMIT_EXCEEDED(8000, HttpStatus.TOO_MANY_REQUESTS, "요청이 너무 많습니다. 잠시 후 다시 시도해주세요."),
+
 	NOT_FOUND_REPORT(404, HttpStatus.NOT_FOUND, "NOT_FOUND"),
 
 	// API 요청 에러

@@ -82,6 +82,9 @@ dependencies {
 
     // Firebase Admin SDK for FCM
     implementation 'com.google.firebase:firebase-admin:9.2.0'
+
+    // Rate Limiting
+    implementation 'com.bucket4j:bucket4j-core:8.10.1'
 }
 
 jacoco {

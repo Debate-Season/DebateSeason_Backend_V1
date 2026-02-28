@@ -400,3 +400,290 @@ public ApiResult<List<IssueBriefResponse>> indexPage(
 | **Required Auth** | `POST /api/v1/bookmark` | X (401) |
 | **Required Auth** | `POST /api/v1/room/vote` | X (401) |
 | **Required Auth** | `POST /api/v1/room` | X (401) |
+
+---
+
+## 2026-03-01: Rate Limiting 구현
+
+### 목적
+AWS Lightsail 단일 인스턴스 환경에서 API 남용 방지를 위한 Rate Limiting 적용.
+Bucket4j 기반 in-memory Token Bucket 알고리즘으로 비로그인 IP당 100 req/min, 로그인 userId당 300 req/min 제한.
+
+### Rate Limiting 흐름
+
+```
+[필터 체인 순서]
+JwtAuthenticationFilter → RateLimitFilter → AuthorizationFilter
+
+[RateLimitFilter 내부 흐름]
+제외 URL? (/swagger-ui/**, /actuator/**, /ws-stomp/**)
+  → Yes → skip (Rate Limit 미적용)
+  → No  → SecurityContext에 인증 정보 있음?
+            → Yes → "user:{userId}" 키로 300 req/min 버킷 적용
+            → No  → "ip:{clientIp}" 키로 100 req/min 버킷 적용
+                     → 토큰 소비 성공? → Yes → 다음 필터로 진행
+                                        → No  → 429 + Retry-After 헤더 + JSON 에러 응답
+```
+
+### 의사결정
+
+**1. JwtAuthenticationFilter 뒤에 배치하는 이유**
+- `SecurityContext`에 인증 정보가 세팅된 후여야 로그인/비로그인을 구분 가능
+- JwtAuthenticationFilter가 먼저 실행되어 Optional Auth URL에서도 토큰이 있으면 인증 정보가 세팅됨
+- 인증된 사용자는 userId 기반 버킷, 비인증 사용자는 IP 기반 버킷으로 분리
+
+**2. Bucket4j in-memory 선택 이유**
+- AWS Lightsail 단일 인스턴스 환경 → Redis 등 외부 저장소 불필요
+- `ConcurrentHashMap<String, BucketEntry>` + `ScheduledExecutorService`로 단순하게 구현
+- 다중 인스턴스 확장 시 Redis 기반으로 전환 가능 (Bucket4j-redis 모듈 존재)
+
+**3. Caffeine 미사용 이유**
+- 의존성 최소화: Caffeine 추가 없이 `ScheduledExecutorService`로 5분마다 만료 엔트리(10분 미접근) 정리
+- `BucketEntry` 내부 클래스로 `lastAccessTime`을 `volatile`로 관리하여 thread-safe 보장
+
+**4. 설정값 외부화 (`@Value` + YAML)**
+- `RateLimitFilter`는 `new`로 직접 인스턴스화 (Spring 관리 Bean 아님) → filter 내부에서 `@Value` 사용 불가
+- `WebSecurityConfig`에서 `@Value`로 주입받아 생성자 파라미터로 전달
+- `application.yml`과 `application-prod.yml`에 분리하여 운영 모니터링 후 독립 조정 가능
+
+**5. IP 추출 시 `X-Forwarded-For` 우선 사용**
+- Lightsail 로드밸런서/리버스 프록시 뒤에서 실제 클라이언트 IP를 얻기 위함
+- `X-Forwarded-For` 헤더의 첫 번째 값(원본 클라이언트 IP)을 사용
+
+**6. 에러 응답 패턴 통일**
+- `JwtAuthenticationErrorHandler.writeErrorResponse()`와 동일한 패턴으로 429 응답 작성
+- `ObjectMapper` → `ErrorResponse` JSON 직렬화 → `response.setStatus()`, `setContentType()`, `setCharacterEncoding()`, `getWriter().write()`
+
+### 변경 파일 목록 (5개 수정 + 1개 신규)
+
+| # | 파일 | 변경 유형 |
+|---|------|----------|
+| 1 | `build.gradle` | 의존성 추가 |
+| 2 | `ErrorCode.java` | 에러 코드 추가 |
+| 3 | `RateLimitFilter.java` | **신규 생성** |
+| 4 | `WebSecurityConfig.java` | 필터 등록 + 설정 주입 |
+| 5 | `application.yml` | 설정값 추가 |
+| 6 | `application-prod.yml` | 설정값 추가 |
+
+---
+
+### 1. build.gradle
+
+**경로:** `build.gradle`
+
+**변경 내용:**
+- `com.bucket4j:bucket4j-core:8.10.1` 의존성 추가
+
+**추가된 코드:**
+```gradle
+// Rate Limiting
+implementation 'com.bucket4j:bucket4j-core:8.10.1'
+```
+
+---
+
+### 2. ErrorCode.java
+
+**경로:** `src/main/java/com/debateseason_backend_v1/common/exception/ErrorCode.java`
+
+**변경 내용:**
+- 8000번대 Rate Limiting 에러 코드 추가 (기존: 7000번대 동시성)
+
+**추가된 코드:**
+```java
+// 8000번대: Rate Limiting 에러
+RATE_LIMIT_EXCEEDED(8000, HttpStatus.TOO_MANY_REQUESTS, "요청이 너무 많습니다. 잠시 후 다시 시도해주세요."),
+```
+
+---
+
+### 3. RateLimitFilter.java (신규)
+
+**경로:** `src/main/java/com/debateseason_backend_v1/security/filter/RateLimitFilter.java`
+
+**설계 패턴:**
+- `OncePerRequestFilter` 확장 (JwtAuthenticationFilter와 동일 패턴)
+- Spring Bean이 아닌 직접 인스턴스화 → 생성자로 의존성 주입
+
+**핵심 구조:**
+
+**(1) 버킷 키 결정 (L88-99):**
+```java
+Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+if (isAuthenticated(authentication)) {
+    CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+    bucketKey = "user:" + userDetails.getUserId();
+    rateLimit = authenticatedRateLimit;
+} else {
+    bucketKey = "ip:" + resolveClientIp(request);
+    rateLimit = anonymousRateLimit;
+}
+```
+- `isAuthenticated()`: `authentication != null && isAuthenticated() && principal instanceof CustomUserDetails`로 3중 체크
+- 로그인 사용자 → `"user:{userId}"`, 비로그인 → `"ip:{clientIp}"`
+
+**(2) Token Bucket 소비 (L101-113):**
+```java
+BucketEntry entry = buckets.computeIfAbsent(bucketKey, k -> new BucketEntry(createBucket(rateLimit)));
+entry.updateLastAccess();
+
+ConsumptionProbe probe = entry.getBucket().tryConsumeAndReturnRemaining(1);
+
+if (!probe.isConsumed()) {
+    long retryAfterSeconds = TimeUnit.NANOSECONDS.toSeconds(probe.getNanosToWaitForRefill()) + 1;
+    log.warn("Rate limit exceeded for key: {}, retry after: {}s", bucketKey, retryAfterSeconds);
+    response.setHeader("Retry-After", String.valueOf(retryAfterSeconds));
+    writeErrorResponse(response);
+    return;
+}
+```
+- `computeIfAbsent`로 키별 버킷 lazy 생성
+- `tryConsumeAndReturnRemaining(1)`로 토큰 1개 소비 시도
+- 초과 시 `Retry-After` 헤더에 대기 시간(초) 포함, WARN 로깅
+
+**(3) Bucket4j 8.10+ API 사용 (L142-146):**
+```java
+private Bucket createBucket(long capacity) {
+    return Bucket.builder()
+        .addLimit(limit -> limit.capacity(capacity).refillGreedy(capacity, Duration.ofMinutes(1)))
+        .build();
+}
+```
+- deprecated된 `Bandwidth.simple()` 대신 lambda builder API 사용
+- `refillGreedy`: 1분마다 capacity만큼 한번에 리필 (greedy 전략)
+
+**(4) 만료 엔트리 정리 (L159-175):**
+```java
+private void cleanupExpiredEntries() {
+    long now = System.currentTimeMillis();
+    var iterator = buckets.entrySet().iterator();
+    while (iterator.hasNext()) {
+        var entry = iterator.next();
+        if (now - entry.getValue().getLastAccessTime() > ENTRY_EXPIRATION_MILLIS) {
+            iterator.remove();
+        }
+    }
+}
+```
+- `ScheduledExecutorService` daemon 스레드가 5분 간격으로 실행
+- 10분 미접근 엔트리 제거 → 메모리 누수 방지
+
+**(5) BucketEntry 내부 클래스 (L177-197):**
+```java
+private static class BucketEntry {
+    private final Bucket bucket;
+    private volatile long lastAccessTime;  // volatile: 멀티스레드 가시성 보장
+    // ...
+}
+```
+
+**(6) 제외 URL (L34-38, L124-132):**
+```java
+private static final String[] EXCLUDED_PATHS = {
+    "/swagger-ui/**", "/actuator/**", "/ws-stomp/**"
+};
+```
+- `AntPathMatcher`로 패턴 매칭 (SecurityPathMatcher와 동일 방식)
+- Swagger, Actuator, WebSocket은 Rate Limiting 미적용
+
+---
+
+### 4. WebSecurityConfig.java
+
+**경로:** `src/main/java/com/debateseason_backend_v1/config/WebSecurityConfig.java`
+
+**변경 내용:**
+- `ObjectMapper` 의존성 추가 (기존 `@RequiredArgsConstructor`에 final 필드로 추가)
+- `@Value`로 rate-limit 설정값 주입
+- `RateLimitFilter` 인스턴스 생성 및 `JwtAuthenticationFilter` 뒤에 등록
+
+**추가된 필드:**
+```java
+private final ObjectMapper objectMapper;
+
+@Value("${rate-limit.anonymous-requests-per-minute:100}")
+private long anonymousRateLimit;
+
+@Value("${rate-limit.authenticated-requests-per-minute:300}")
+private long authenticatedRateLimit;
+```
+
+**변경된 filterChain() 메서드:**
+```java
+// 변경 전: 인라인 생성
+.addFilterBefore(
+    new JwtAuthenticationFilter(jwtUtil, errorHandler, securityPathMatcher),
+    UsernamePasswordAuthenticationFilter.class
+)
+
+// 변경 후: 변수 추출 + RateLimitFilter 추가
+JwtAuthenticationFilter jwtFilter = new JwtAuthenticationFilter(jwtUtil, errorHandler, securityPathMatcher);
+RateLimitFilter rateLimitFilter = new RateLimitFilter(
+    securityPathMatcher, objectMapper, anonymousRateLimit, authenticatedRateLimit
+);
+
+// ...
+.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
+.addFilterAfter(rateLimitFilter, JwtAuthenticationFilter.class)
+```
+
+**설계 의도:**
+- `addFilterAfter(rateLimitFilter, JwtAuthenticationFilter.class)`: JWT 인증이 먼저 실행된 후 Rate Limiting 적용
+- 최종 필터 순서: `JwtAuthenticationFilter` → `RateLimitFilter` → `UsernamePasswordAuthenticationFilter` (비활성)
+
+---
+
+### 5. application.yml
+
+**경로:** `src/main/resources/application.yml`
+
+**추가된 설정:**
+```yaml
+rate-limit:
+  anonymous-requests-per-minute: 100
+  authenticated-requests-per-minute: 300
+```
+
+---
+
+### 6. application-prod.yml
+
+**경로:** `src/main/resources/application-prod.yml`
+
+**추가된 설정:**
+```yaml
+rate-limit:
+  anonymous-requests-per-minute: 100
+  authenticated-requests-per-minute: 300
+```
+
+**설계 의도:**
+- 초기에는 동일값이지만, 운영 모니터링 후 독립 조정 가능하도록 분리
+
+---
+
+### 빌드 결과
+
+- **컴파일**: `./gradlew build -x test` → BUILD SUCCESSFUL (deprecation 경고 없음)
+- **테스트**: `./gradlew test` → 60개 중 58개 통과, 2개 실패
+  - 실패한 테스트: `ChatApiTest.채팅메시지_조회_성공()`, `ChatWebSocketTest.채팅메시지_전송_및_수신_성공()`
+  - 이번 변경과 무관한 기존 실패 (chat 도메인 통합 테스트)
+
+### Rate Limiting 적용 범위 정리
+
+| 대상 | Rate Limit | 버킷 키 |
+|------|-----------|---------|
+| 비로그인 사용자 | 100 req/min | `ip:{clientIp}` |
+| 로그인 사용자 | 300 req/min | `user:{userId}` |
+| Swagger / Actuator / WebSocket | 미적용 (제외) | — |
+
+### 429 응답 예시
+
+```json
+{
+  "status": 429,
+  "code": "RATE_LIMIT_EXCEEDED",
+  "message": "요청이 너무 많습니다. 잠시 후 다시 시도해주세요."
+}
+```
+- `Retry-After` 헤더: 버킷 리필까지 남은 초(+1) 포함

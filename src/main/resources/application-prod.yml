@@ -25,6 +25,10 @@ jwt:
   refresh-token:
     expire-time: ${REFRESH_EXPIRE_TIME}
 
+rate-limit:
+  anonymous-requests-per-minute: 100
+  authenticated-requests-per-minute: 300
+
 logging:
   level:
     # 1) 루트 레벨

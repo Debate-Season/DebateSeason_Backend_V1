@@ -1,6 +1,7 @@
 package com.debateseason_backend_v1.security.component;
 
-import static com.debateseason_backend_v1.config.WebSecurityConfig.*;
+import static com.debateseason_backend_v1.config.WebSecurityConfig.OPTIONAL_AUTH_URLS;
+import static com.debateseason_backend_v1.config.WebSecurityConfig.PUBLIC_URLS;
 
 import java.util.Arrays;
 
@@ -24,17 +25,28 @@ public class SecurityPathMatcher {
 	}
 
 	public boolean isPublicUrl(String requestURI) {
+		String path = removeContextPath(requestURI);
+		return Arrays.stream(PUBLIC_URLS)
+			.anyMatch(pattern -> pathMatcher.match(pattern, path));
+	}
 
-		String pathWithoutContext = requestURI;
-		if (!contextPath.isEmpty() && requestURI.startsWith(contextPath)) {
-			pathWithoutContext = requestURI.substring(contextPath.length());
+	public boolean isOptionalAuthUrl(String requestURI, String method) {
+		String path = removeContextPath(requestURI);
+
+		// /api/v1/room은 GET만 Optional, POST는 Required Auth
+		if (pathMatcher.match("/api/v1/room", path)) {
+			return "GET".equalsIgnoreCase(method);
 		}
 
-		// 최종 값을 final 변수에 할당
-		final String finalPath = pathWithoutContext;
+		return Arrays.stream(OPTIONAL_AUTH_URLS)
+			.anyMatch(pattern -> pathMatcher.match(pattern, path));
+	}
 
-		return Arrays.stream(PUBLIC_URLS)
-			.anyMatch(pattern -> pathMatcher.match(pattern, finalPath));
+	private String removeContextPath(String requestURI) {
+		if (!contextPath.isEmpty() && requestURI.startsWith(contextPath)) {
+			return requestURI.substring(contextPath.length());
+		}
+		return requestURI;
 	}
 
 }

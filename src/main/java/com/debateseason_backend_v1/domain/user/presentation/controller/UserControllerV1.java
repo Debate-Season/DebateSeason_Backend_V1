@@ -68,14 +68,8 @@ public class UserControllerV1 implements UserControllerV1Docs {
 		description = " ")
 	@GetMapping("/home")
 	public ApiResult<List<IssueBriefResponse>> indexPage(
-		//@RequestParam(name = "page", required = false) Long page,
 		@AuthenticationPrincipal CustomUserDetails principal
 	) {
-		Long userId = principal.getUserId();
-		//return chatRoomServiceV1.findVotedChatRoom(userId,page);
-
-		// 활성도가 가장 높은 토론방 5개 표시
-
 		return issueServiceV1.fetchV1();
 	}
 

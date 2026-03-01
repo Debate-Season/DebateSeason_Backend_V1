@@ -30,6 +30,10 @@ chat:
     max-length: 500
     min-length: 1
 
+rate-limit:
+  anonymous-requests-per-minute: 100
+  authenticated-requests-per-minute: 300
+
 social:
   kakao:
     audience: 18af8def9522316a9c30d75d997df2b1

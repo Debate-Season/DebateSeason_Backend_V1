@@ -61,7 +61,7 @@ public class ChatRoomControllerV1 implements ChatRoomControllerV1Docs {
 		@AuthenticationPrincipal CustomUserDetails principal) {
 		// type은 토론위키일 수도 있고, 하이라이트일 수도 있고, 아무것도 없을 수도 있다.
 
-		Long userId = principal.getUserId();
+		Long userId = principal != null ? principal.getUserId() : null;
 		return chatRoomServiceV1.fetch(userId,chatRoomId);
 	}
 

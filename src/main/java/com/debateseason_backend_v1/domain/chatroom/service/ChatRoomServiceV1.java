@@ -138,10 +138,12 @@ public class ChatRoomServiceV1 {
 		);
 
 		// 2. 내가 이 토론방에 투표한 의견을 가져온다. null이면 NEUTRAL을 유지한다.
-		String opinion = Optional.ofNullable(userChatRoomRepository.findByUserIdAndChatRoomId(userId,chatRoomId))
-			.map(UserChatRoom::getOpinion)
-			.orElse(Opinion.NEUTRAL.name())
-			;
+		String opinion = Opinion.NEUTRAL.name();
+		if (userId != null) {
+			opinion = Optional.ofNullable(userChatRoomRepository.findByUserIdAndChatRoomId(userId, chatRoomId))
+				.map(UserChatRoom::getOpinion)
+				.orElse(Opinion.NEUTRAL.name());
+		}
 
 		/* Legacy
 		// opinion의 기본값 = NEUTRAL
@@ -333,9 +335,28 @@ public class ChatRoomServiceV1 {
 	// 4. 내가 투표한 여러 채팅방 가져오기
 	public ApiResult<UserVotedChatRoom> findVotedChatRoom(Long userId,Long pageChatRoomId){
 
-
 		// 1. 속보 가져오기
 		List<BreakingNewsResponse> breakingNews = mediaManager.findTop10BreakingNews();
+
+		// 비로그인: 투표한 채팅방 조회 불가 → 공개 데이터만 반환
+		if (userId == null) {
+			List<Top5BestChatRoom> top5BestChatRooms = chatRoomProcessor.getTop5ActiveRooms();
+			List<IssueBriefResponse> top5BestIssueRooms = issueManager.findTop5BestIssueRooms();
+
+			UserVotedChatRoom userVotedChatRoom = UserVotedChatRoom.builder()
+				.breakingNews(breakingNews)
+				.chatRoomResponse(List.of())
+				.top5BestChatRooms(top5BestChatRooms)
+				.top5BestIssueRooms(top5BestIssueRooms)
+				.build();
+
+			return ApiResult.<UserVotedChatRoom>builder()
+				.status(200)
+				.code(ErrorCode.SUCCESS)
+				.message("채팅방을 불러왔습니다.")
+				.data(userVotedChatRoom)
+				.build();
+		}
 
 		// 1. 최상위 5개 채팅방 가져오기
 		List<Top5BestChatRoom> top5BestChatRooms = chatRoomProcessor.getTop5ActiveRooms();

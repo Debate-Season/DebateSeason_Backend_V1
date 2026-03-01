@@ -4,9 +4,14 @@ import com.debateseason_backend_v1.common.enums.MessageType;
 import com.debateseason_backend_v1.common.enums.OpinionType;
 import com.debateseason_backend_v1.domain.chat.presentation.dto.chat.request.ChatMessageRequest;
 import com.debateseason_backend_v1.domain.chat.presentation.dto.chat.response.ChatMessageResponse;
+import com.debateseason_backend_v1.domain.issue.infrastructure.entity.IssueEntity;
+import com.debateseason_backend_v1.domain.issue.infrastructure.repository.IssueJpaRepository;
+import com.debateseason_backend_v1.domain.repository.ChatRoomRepository;
+import com.debateseason_backend_v1.domain.repository.entity.ChatRoom;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.messaging.converter.MappingJackson2MessageConverter;
@@ -34,6 +39,14 @@ public class ChatWebSocketTest {
     private final BlockingQueue<ChatMessageResponse> messageQueue = new LinkedBlockingQueue<>();
     private String WS_URL;
 
+    @Autowired
+    private IssueJpaRepository issueRepository;
+
+    @Autowired
+    private ChatRoomRepository chatRoomRepository;
+
+    private ChatRoom savedChatRoom;
+
     @BeforeEach
     void setup(){
         this.stompClient = new WebSocketStompClient(new StandardWebSocketClient());
@@ -41,16 +54,29 @@ public class ChatWebSocketTest {
         this.WS_URL = "ws://localhost:" + port + "/ws-stomp";
 
         messageQueue.clear();
+
+        // IssueEntity 저장 (ChatRoom의 FK 필수)
+        IssueEntity issue = IssueEntity.builder()
+                .title("테스트 이슈")
+                .majorCategory("정치")
+                .build();
+        IssueEntity savedIssue = issueRepository.save(issue);
+
+        // ChatRoom 저장 (WebSocket 메시지 처리 시 DB 조회 필수)
+        savedChatRoom = ChatRoom.builder()
+                .issueEntity(savedIssue)
+                .title("테스트 채팅방")
+                .content("테스트 채팅방 내용")
+                .build();
+        savedChatRoom = chatRoomRepository.save(savedChatRoom);
     }
-
-
 
 
     @Test
     void 채팅메시지_전송_및_수신_성공() throws Exception {
         System.out.println("USING WS_URL = " + WS_URL);
         //given
-        Long roomId = 1L;
+        Long roomId = savedChatRoom.getId();
         String sender = "testSender";
         String message = "testMessage";
         String userCommunity = "에펨코리아";
@@ -96,8 +122,6 @@ public class ChatWebSocketTest {
         assertEquals(receivedMessage.getOpinionType(), OpinionType.AGREE);
         assertEquals(receivedMessage.getUserCommunity(), userCommunity);
     }
-
-
 
 
 }

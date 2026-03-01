@@ -7,6 +7,9 @@ import com.debateseason_backend_v1.common.response.ApiResult;
 import com.debateseason_backend_v1.domain.chat.presentation.dto.chat.response.ChatMessagesResponse;
 import com.debateseason_backend_v1.domain.chat.infrastructure.chat.ChatJpaRepository;
 import com.debateseason_backend_v1.domain.chat.infrastructure.chat.ChatEntity;
+import com.debateseason_backend_v1.domain.issue.infrastructure.entity.IssueEntity;
+import com.debateseason_backend_v1.domain.issue.infrastructure.repository.IssueJpaRepository;
+import com.debateseason_backend_v1.domain.repository.ChatRoomRepository;
 import com.debateseason_backend_v1.domain.repository.entity.ChatRoom;
 import com.debateseason_backend_v1.security.jwt.JwtUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -16,7 +19,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.context.ApplicationContext;
 import org.springframework.http.*;
 import org.springframework.test.context.ActiveProfiles;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -43,13 +45,37 @@ public class ChatApiTest {
     @Autowired
     private ChatJpaRepository chatRepository;
 
+    @Autowired
+    private IssueJpaRepository issueRepository;
+
+    @Autowired
+    private ChatRoomRepository chatRoomRepository;
+
+    @Autowired
+    private JwtUtil jwtUtil;
+
     private String baseUrl;
+    private ChatRoom savedChatRoom;
 
 
     @BeforeEach
     void setup(){
         this.baseUrl = "http://localhost:" + port + "/api/v1/chat";
 
+        // IssueEntity 저장 (ChatRoom의 FK 필수)
+        IssueEntity issue = IssueEntity.builder()
+                .title("테스트 이슈")
+                .majorCategory("정치")
+                .build();
+        IssueEntity savedIssue = issueRepository.save(issue);
+
+        // ChatRoom 저장 (ChatEntity의 FK 필수)
+        savedChatRoom = ChatRoom.builder()
+                .issueEntity(savedIssue)
+                .title("테스트 채팅방")
+                .content("테스트 채팅방 내용")
+                .build();
+        savedChatRoom = chatRoomRepository.save(savedChatRoom);
     }
 
 
@@ -57,11 +83,11 @@ public class ChatApiTest {
     @Test
     void 채팅메시지_조회_성공() throws Exception {
         //given
-        Long roomId = 1L;
+        Long roomId = savedChatRoom.getId();
         Long userId = 99L;
 
         int messageCount = 50;
-        List<ChatEntity> chats = prepareTestChatMessages(roomId, messageCount);
+        List<ChatEntity> chats = prepareTestChatMessages(savedChatRoom, messageCount);
         String apiUrl = baseUrl + "/rooms/" + roomId + "/messages";
         System.out.println("@@@ apiUrl: " + apiUrl);
         //when
@@ -92,23 +118,12 @@ public class ChatApiTest {
     }
 
 
-    @Autowired private JwtUtil jwtUtil;
-    private String createTestJwt(Long userId) {
-        return jwtUtil.createAccessToken(userId);
-    }
-
-
-    @Autowired
-    private ApplicationContext context;
     /**
      * 테스트에 필요한 채팅 메시지를 데이터베이스에 준비하는 메서드
      * @param count count만큼 채팅메시지가 생성 된다.
-     * @param roomId 채팅 메시지를 생성할 roomId
+     * @param chatRoom DB에 저장된 채팅방 엔티티
      */
-    private List<ChatEntity> prepareTestChatMessages(Long roomId, int count) {
-        ChatRoom chatRoom = new ChatRoom();
-        chatRoom.setId(roomId);
-
+    private List<ChatEntity> prepareTestChatMessages(ChatRoom chatRoom, int count) {
         List<ChatEntity> savedChats = new ArrayList<>();
         for (int i = 1; i <= count; i++) {
             ChatEntity chat = ChatEntity.builder()

@@ -1,4 +1,4 @@
-package com.debateseason_backend_v1.domain.issue;
+package com.debateseason_backend_v1.domain.issue.community;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -14,14 +14,14 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class CommunityRecords { // 자주 들락날락할텐데 DB에 기록하면 매우느림. 그리고 나중에 사용자 많아지면, OOM발생할거 같은데.
+public class CommunitySorterV1 { // 자주 들락날락할텐데 DB에 기록하면 매우느림. 그리고 나중에 사용자 많아지면, OOM발생할거 같은데.
 
 	// Key는 중복되면 안됨. User는 고유하기 때문에 key로 사용
 	private static HashMap<Long, LinkedList<UserDTO>> markUserWithIssue = new HashMap<>();
 	private static HashMap<Long, Map<Long, Integer>> markUserIndexAboutUserWithIssue = new HashMap<>();
-	private static Map<String,String> communityUrlList = new HashMap<>();
+	static Map<String,String> communityUrlList = new HashMap<>();
 
-	private CommunityRecords() {}
+	private CommunitySorterV1() {}
 
 	// JVM에 로드될 경우 딱 한번만 실행이 된다.
 	// 초기화 블록

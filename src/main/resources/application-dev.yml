@@ -71,7 +71,7 @@ server:
   port: 80
 
 # 환경별로 스웨거 요청 분리
-swagger-base-url: "https://debate-season.click/dev"
+swagger-base-url: "https://toronchul.app/dev"
 
 #stomp 연결 환경분리
 stomp-connect-url: "/ws-stomp"

@@ -11,6 +11,7 @@ spring:
         format_sql: true
         show-sql: true
         highlight_sql: true
+        dialect: org.hibernate.dialect.MariaDBDialect
     defer-datasource-initialization: true
 
   sql:
@@ -19,7 +20,7 @@ spring:
 
   datasource:
     driver-class-name: org.mariadb.jdbc.Driver
-    url: jdbc:mariadb://127.0.0.1:3307/debate?serverTimezone=Asia/Seoul
+    url: jdbc:mariadb://localhost:3306/debate_season_local?serverTimezone=Asia/Seoul
     username: root
     password: "1234"
 
@@ -35,6 +36,8 @@ spring:
 
 logging.level:
   root: info
+
+  com.debateseason_backend_v1: debug
 
   # Database & ORM
   org.hibernate.SQL: debug

@@ -27,43 +27,45 @@ public class ChatRoomControllerV1 implements ChatRoomControllerV1Docs {
 
 	private final ChatRoomServiceV1 chatRoomServiceV1;
 
-	// 4. 채팅방(=안건=토론방)생성하기, title,content -> JSON, issue_id = 쿼리스트링
+	// 1. 채팅방(=안건=토론방)생성하기, title,content -> JSON, issue_id = 쿼리스트링
 	// 에러처리 OK
 	@PostMapping("/room")
-	public ApiResult<Object> createChatRoom(
+	public ApiResult<Object> save(
 		@Valid @RequestBody ChatRoomRequest chatRoomRequest,
 		@Valid @RequestParam(name = "issue-id") Long issue_id) {
 		return chatRoomServiceV1.save(chatRoomRequest, issue_id);
 	}
 
-	// 4. 채팅방 단건 불러오기
-	@Operation(
-		summary = "채팅방 단건 불러오기",
-		description = "채팅방 상세보기")
-	@GetMapping("/room")
-	public ApiResult<ChatRoomResponse> getChatRoom(
-		@RequestParam(name = "chatroom-id",required = false) Long chatRoomId,
-		//@RequestParam(name = "type",required = false) String type,
-		@AuthenticationPrincipal CustomUserDetails principal) {
-		// type은 토론위키일 수도 있고, 하이라이트일 수도 있고, 아무것도 없을 수도 있다.
-
-		Long userId = principal.getUserId();
-		return chatRoomServiceV1.fetch(userId,chatRoomId);
-	}
-
-	// 5. 채팅방 찬성/반대 투표하기, opinion, chatroomid = 쿼리스트링
+	// 2. 채팅방 찬성/반대 투표하기, opinion, chatroomid = 쿼리스트링
 	@Operation(
 		summary = "채팅방 찬성/반대 투표하기",
 		description = "opinion, chatroomid = 쿼리스트링")
 	@PostMapping("/room/vote")
-	public ApiResult<String> voteChatRoom(
+	public ApiResult<String> vote(
 		@RequestParam(name = "opinion") Opinion opinion,
 		@RequestParam(name = "chatroom-id") Long chatRoomId,
 		@AuthenticationPrincipal CustomUserDetails principal) {
 
 		Long userId = principal.getUserId();
-		return chatRoomServiceV1.vote(opinion.toString(), chatRoomId, userId);
+		return chatRoomServiceV1.vote(opinion, chatRoomId, userId);
 	}
+
+	// 3. 채팅방 단건 불러오기
+	@Operation(
+		summary = "채팅방 단건 불러오기",
+		description = "채팅방 상세보기")
+	@GetMapping("/room")
+	public ApiResult<ChatRoomResponse> fetch(
+		@RequestParam(name = "chatroom-id") Long chatRoomId,
+		//@RequestParam(name = "type",required = false) String type,
+		@AuthenticationPrincipal CustomUserDetails principal) {
+		// type은 토론위키일 수도 있고, 하이라이트일 수도 있고, 아무것도 없을 수도 있다.
+
+		Long userId = principal != null ? principal.getUserId() : null;
+		return chatRoomServiceV1.fetch(userId,chatRoomId);
+	}
+
+
 
 
 }

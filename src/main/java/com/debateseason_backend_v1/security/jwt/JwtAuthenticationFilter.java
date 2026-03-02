@@ -45,6 +45,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 			return;
 		}
 
+		// Optional Auth: 토큰 있으면 파싱, 없으면 anonymous로 통과
+		if (securityPathMatcher.isOptionalAuthUrl(requestURI, request.getMethod())) {
+			tryOptionalAuthentication(request);
+			filterChain.doFilter(request, response);
+			return;
+		}
+
 		// 1. Authorization 헤더 검증
 		String authorizationHeader = request.getHeader(AUTHORIZATION_HEADER);
 
@@ -118,6 +125,22 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 			"Security Context에 '{}' 인증 정보를 저장했습니다, uri: {}",
 			authentication.getName(), requestURI
 		);
+	}
+
+	private void tryOptionalAuthentication(HttpServletRequest request) {
+		String authorizationHeader = request.getHeader(AUTHORIZATION_HEADER);
+		if (!containsValidHeader(authorizationHeader)) {
+			return;
+		}
+		String token = removeBearerPrefix(authorizationHeader);
+		if (token == null) {
+			return;
+		}
+		try {
+			authenticateWithAccessToken(token, request.getRequestURI());
+		} catch (Exception e) {
+			log.debug("Optional auth failed, continuing as anonymous: {}", e.getMessage());
+		}
 	}
 
 }

@@ -9,16 +9,16 @@ import org.springframework.stereotype.Service;
 import com.debateseason_backend_v1.common.exception.CustomException;
 import com.debateseason_backend_v1.common.exception.ErrorCode;
 import com.debateseason_backend_v1.common.response.ApiResult;
-import com.debateseason_backend_v1.domain.chatroom.infrastructure.manager.ChatRoomPaginationManager;
-import com.debateseason_backend_v1.domain.chatroom.infrastructure.entity.ChatRoomProcessor;
+import com.debateseason_backend_v1.domain.chatroom.infrastructure.entity.manager.ChatRoomPaginationManager;
+import com.debateseason_backend_v1.domain.chatroom.infrastructure.entity.processor.ChatRoomProcessor;
 import com.debateseason_backend_v1.domain.chatroom.model.response.chatroom.type.ResponseWithTimeAndOpinion;
+import com.debateseason_backend_v1.domain.issue.community.CommunitySorterV4;
 import com.debateseason_backend_v1.domain.issue.infrastructure.entity.IssueMapper;
 import com.debateseason_backend_v1.domain.issue.model.response.PaginationDTO;
 import com.debateseason_backend_v1.domain.issue.infrastructure.entity.IssueEntity;
-import com.debateseason_backend_v1.domain.issue.infrastructure.entity.IssueProcessorManager;
+import com.debateseason_backend_v1.domain.issue.infrastructure.manager.IssueProcessorManager;
 import com.debateseason_backend_v1.domain.issue.infrastructure.manager.IssuePaginationManager;
 import com.debateseason_backend_v1.domain.issue.application.repository.IssueRepository;
-import com.debateseason_backend_v1.domain.issue.CommunityRecords;
 import com.debateseason_backend_v1.domain.issue.model.request.IssueRequest;
 import com.debateseason_backend_v1.domain.issue.mapper.IssueBriefResponse;
 import com.debateseason_backend_v1.domain.issue.mapper.IssueDetailResponse;
@@ -62,6 +62,9 @@ public class IssueServiceV1 {
 	private final IssueProcessorManager issueProcessorManager;
 	private final ChatRoomProcessor chatRoomProcessor;
 
+	// CommunitySorterV2 -> V3로 변경( HashMap에 대한 동기화 문제가 발생할 수 있어서 V3로 변경. )
+	private final CommunitySorterV4 communityMananger;
+
 	// 1. save 이슈방
 	public ApiResult<Object> save(IssueRequest issueRequest) {
 
@@ -86,59 +89,61 @@ public class IssueServiceV1 {
 	@Transactional
 	public ApiResult<IssueDetailResponse> fetchV2(Long issueId, Long userId, Long ChatRoomId) {
 
-		List<Object[]> object = userIssueRepository.findByIssueIdAndUserId(issueId, userId);
-
+		// 북마크 상태 조회 (비로그인 시 기본값 "no")
 		String bookMarkState = "no";
-		// 이 부분은 사용자가 북마크를 했는지 확인하기 위한 부분. 첫 방문 항상 bookmarkState는 no
-		if (!object.isEmpty()) {
-			Object[] object2 = object.get(0);
-			bookMarkState = (String)object2[0];
+		if (userId != null) {
+			List<Object[]> object = userIssueRepository.findByIssueIdAndUserId(issueId, userId);
+			if (!object.isEmpty()) {
+				Object[] object2 = object.get(0);
+				bookMarkState = (String)object2[0];
+			}
 		}
 
-		//  이슈와 북마크 개수 가져오기 <- 1.수정 필요. Object[] 말고.
-		// issue_id, title, COUNT(ui.issue_id) AS bookmarks
+		//  이슈와 북마크 개수 가져오기
 		List<Object[]> fetchIssue = issueRepository.findSingleIssueWithBookmarks(issueId);
 		Object[] tmp = fetchIssue.get(0);
-		IssueMapper issueMapper = IssueMapper.builder() // DB 필드 값 -> DTO
+		IssueMapper issueMapper = IssueMapper.builder()
 			.title((String)tmp[1])
 			.bookMarks((long)tmp[2])
 			.build();
 
+		// 커뮤니티 맵 (비로그인 시 방문 기록 없이 기존 데이터만 반환)
+		if (userId != null) {
+			ProfileEntity profile = profileRepository.findByUserId(userId).orElseThrow(
+				() -> new CustomException(ErrorCode.NOT_FOUND_PROFILE)
+			);
 
-		ProfileEntity profile = profileRepository.findByUserId(userId).orElseThrow(
-			() -> new CustomException(ErrorCode.NOT_FOUND_PROFILE)
-		);
+			CommunityType communityType = profile.getCommunityType();
+			if (communityType == null) {
+				throw new CustomException(ErrorCode.NOT_FOUND_COMMUNITY);
+			}
 
-		CommunityType communityType = profile.getCommunityType();
-		if (communityType == null) {
-			throw new CustomException(ErrorCode.NOT_FOUND_COMMUNITY);
+			UserDTO userDTO = new UserDTO();
+			userDTO.setCommunity(communityType.getName());
+			userDTO.setId(userId);
+
+			communityMananger.record(userDTO, issueId);
 		}
 
-		// 2. 서버 세션에 user 방문 기록 저장하기. 이는 커뮤니티 사용자 수를 내림차순으로 보여주기 위함임. UserDTO 수정 요함.
-		UserDTO userDTO = new UserDTO();
-		userDTO.setCommunity(communityType.getName());
-		userDTO.setId(userId);
-
-		CommunityRecords.record(userDTO, issueId);
-
-		LinkedHashMap<String, Integer> sortedMap = CommunityRecords.getSortedCommunity(issueId); // LinkedHashMap을 써서 순서를 보장한다.
+		LinkedHashMap<String, Integer> sortedMap = communityMananger.getSortedCommunity(issueId);
 
 		//
-		List<Long> chatRoomIds = chatRoomPaginationManager.getChatRoomsByPage(issueId,ChatRoomId); // 순차적으로 chatRoomId로 페이지네이션
+		List<Long> chatRoomIds = chatRoomPaginationManager.getChatRoomsByPage(issueId, ChatRoomId);
 
 		// 4. 채팅방을 반환 (없으면 없는대로 반환을 한다)
 		long chats = 0L;
 		List<ResponseWithTimeAndOpinion> chatRooms = null;
 
 		if (!chatRoomIds.isEmpty()) {
+			chatRooms = chatRoomProcessor.getChatRoomWithOpinionCount(chatRoomIds);
 
-			// 수정
-			chatRooms = chatRoomProcessor.getChatRoomWithOpinionCount(chatRoomIds); // chatRoomIds에 해당하는 채팅방 관련 정보(제목, 본문)+ 찬성/반대 가져오기
-			List<Object[]> opinions = userChatRoomRepository.findUserChatRoomOpinions(userId, chatRoomIds); // 해당 채팅방에 사용자의 개인 의견 표시하기
-			markUserOpinion(opinions,chatRooms); // chatRooms에 Opinion을 덮어 씌운다.
+			// 로그인 사용자만 개인 투표 상태 조회
+			if (userId != null) {
+				List<Object[]> opinions = userChatRoomRepository.findUserChatRoomOpinions(userId, chatRoomIds);
+				markUserOpinion(opinions, chatRooms);
+			}
 
-			chats = issueRepository.countChatsTodayByIssueId(issueId); // 오늘 신규 대화 -> 수정
-
+			chats = issueRepository.countChatsTodayByIssueId(issueId);
 		}
 
 		IssueDetailResponse issueDetailResponse = IssueDetailResponse.builder()
@@ -149,6 +154,7 @@ public class IssueServiceV1 {
 			.map(sortedMap)
 			.chatRoomMap(chatRooms)
 			.build();
+
 
 		return ApiResult.<IssueDetailResponse>builder()
 			.status(200)
@@ -248,8 +254,6 @@ public class IssueServiceV1 {
 
 	}
 
-
-	// 얕은 복사 : 객체의 값에 덮어 Opinion을 덮어 씌운다.
 	private void markUserOpinion(List<Object[]> opinions,List<ResponseWithTimeAndOpinion> chatRooms){
 
 		if (!opinions.isEmpty()) {

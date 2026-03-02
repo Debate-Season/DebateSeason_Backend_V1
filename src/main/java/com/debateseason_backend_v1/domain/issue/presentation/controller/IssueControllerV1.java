@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.debateseason_backend_v1.common.response.ApiResult;
-import com.debateseason_backend_v1.domain.chatroom.model.response.chatroom.ResponseOnlyHome;
+import com.debateseason_backend_v1.domain.chatroom.model.response.chatroom.UserVotedChatRoom;
 import com.debateseason_backend_v1.domain.chatroom.service.ChatRoomServiceV1;
 import com.debateseason_backend_v1.domain.issue.model.response.PaginationDTO;
 import com.debateseason_backend_v1.domain.issue.docs.IssueControllerV1Docs;
@@ -31,7 +31,7 @@ public class IssueControllerV1 implements IssueControllerV1Docs {
 
 	@Override
 	@GetMapping("/home/refresh")
-	public ApiResult<ResponseOnlyHome> indexPage(
+	public ApiResult<UserVotedChatRoom> indexPage(
 		@RequestParam(name = "page", required = false) Long page,
 		@AuthenticationPrincipal CustomUserDetails principal
 	) {
@@ -48,7 +48,7 @@ public class IssueControllerV1 implements IssueControllerV1Docs {
 		@RequestParam(name = "issue-id") Long issueId,
 		@AuthenticationPrincipal CustomUserDetails principal,
 		@RequestParam(name = "page",required = false)Long page) {
-		Long userId = principal.getUserId();
+		Long userId = principal != null ? principal.getUserId() : null;
 		return issueServiceV1.fetchV2(issueId, userId, page);
 	}
 
@@ -84,11 +84,11 @@ public class IssueControllerV1 implements IssueControllerV1Docs {
 
 	// 4. 추천 게시글 가져오기
 	@GetMapping("/home/recommend")
-	public ApiResult<ResponseOnlyHome> getRecommend(
+	public ApiResult<UserVotedChatRoom> getRecommend(
 		@RequestParam(name = "page", required = false) Long page,
 		@AuthenticationPrincipal CustomUserDetails principal
 	) {
-		Long userId = principal.getUserId();
+		Long userId = principal != null ? principal.getUserId() : null;
 		return chatRoomServiceV1.findVotedChatRoom(userId,page);
 
 	}

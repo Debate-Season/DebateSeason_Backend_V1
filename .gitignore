@@ -40,3 +40,8 @@ out/
 
 **/application-*secret.yml
 **/application-secret.yml
+
+### Secrets & Keys ###
+*.pem
+*.key
+.env

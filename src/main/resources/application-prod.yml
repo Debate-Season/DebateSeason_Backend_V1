@@ -25,6 +25,10 @@ jwt:
   refresh-token:
     expire-time: ${REFRESH_EXPIRE_TIME}
 
+rate-limit:
+  anonymous-requests-per-minute: 100
+  authenticated-requests-per-minute: 300
+
 logging:
   level:
     # 1) 루트 레벨
@@ -83,10 +87,10 @@ server:
   port: 80
 
 # 환경별로 스웨거 요청 분리
-swagger-base-url: "https://debate-season.click/prod"
+swagger-base-url: "https://toronchul.app/prod"
 
 #stomp 연결 환경분리
 stomp-connect-url: "/ws-stomp"
 
-# 유튜브 라이브 api key (실제 값)
-youtube_live-api-key : "AIzaSyCdEG_MS81NpdlsAJOQwmzS21u7L_K-r0M"
+# 유튜브 라이브 api key (환경변수로 관리)
+youtube_live-api-key: ${YOUTUBE_API_KEY}

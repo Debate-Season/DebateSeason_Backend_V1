@@ -22,6 +22,7 @@ import com.debateseason_backend_v1.domain.youtubeLive.domain.YoutubeLive;
 import com.debateseason_backend_v1.domain.youtubeLive.domain.YoutubeLiveDto;
 import com.debateseason_backend_v1.domain.youtubeLive.infrastructure.entity.YoutubeLiveEntity;
 import com.debateseason_backend_v1.domain.youtubeLive.application.repository.YoutubeLiveRepository;
+import com.debateseason_backend_v1.domain.youtubeLive.scheduler.news.template.NewsTemplate;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -32,7 +33,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @RequiredArgsConstructor
 @Component
-public class KbsNews {
+public class KbsNews extends NewsTemplate {
 
 	private final YoutubeLiveRepository youtubeLiveRepository;
 
@@ -47,6 +48,7 @@ public class KbsNews {
 		// dirty-checking or save
 
 		String key = youTubeConfig.getKey();
+		String category = "kbs";
 
 		try {
 			MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
@@ -119,9 +121,7 @@ public class KbsNews {
 			Thumbnail thumbnail = thumbnails.getDefaultThumbnail();
 			String url = thumbnail.getUrl();
 
-			System.out.println(url);
-
-			String category = "kbs"; // 5
+			//String category = "kbs"; // 5
 
 			// 새로운 youtubelive 데이터 생성하기
 			YoutubeLive newYoutubeLive = YoutubeLive.builder()
@@ -139,7 +139,6 @@ public class KbsNews {
 
 			// 만약 null이면 -> 없음 -> 새로 넣어주자. 아니면 더티 체킹
 			if (fetchedYoutubeLiveEntity == null) {
-
 				youtubeLiveRepository.save(youtubeLiveDto);
 			} else { // Dirty-Checking
 				update(fetchedYoutubeLiveEntity, youtubeLiveDto);
@@ -147,12 +146,9 @@ public class KbsNews {
 
 		}
 		catch (WebClientResponseException e){
-			if(key.equals("dummy")){
-				log.error("key: "+key+"이므로, 설정값 다시 확인!");
-			}
-			else{
-				log.error("유튜브 API 할당량 모두 소진 -> Kbs.NewsLive");
-			}
+
+			super.checkCurrentKeyState(key,category);
+
 		}
 		catch (JsonProcessingException e) {
 			log.error("KbsNews에서 발생한 JsonProcessingException 에러");

@@ -13,6 +13,7 @@ import com.debateseason_backend_v1.domain.chat.presentation.dto.chat.response.Ch
 import com.debateseason_backend_v1.domain.chat.presentation.dto.chat.response.ChatMessagesResponse;
 import com.debateseason_backend_v1.domain.chat.validation.ChatValidate;
 import com.debateseason_backend_v1.domain.chatroom.service.ChatRoomServiceV1;
+import com.debateseason_backend_v1.domain.notification.application.service.NotificationServiceV1;
 import com.debateseason_backend_v1.domain.repository.entity.ChatRoom;
 import com.debateseason_backend_v1.domain.chat.application.repository.ReportRepository;
 import com.debateseason_backend_v1.domain.chat.domain.model.report.Report;
@@ -44,6 +45,7 @@ public class ChatServiceV1 {
 	private final ChatValidate chatValidate;
 	private final ChatReactionRepository chatReactionRepository;
 	private final ReportRepository reportRepository;
+    private final NotificationServiceV1 notificationService;
 
 	// ---------- WebSocket 실시간 메시지 처리 ----------
 	
@@ -64,7 +66,10 @@ public class ChatServiceV1 {
 		// 메시지 저장
 		ChatEntity chat = ChatEntity.from(message, chatRoom, userId);
 		ChatEntity savedchat = chatRepository.save(chat);
-		log.debug("채팅 메시지 저장 완료: roomId={}, sender={}", roomId, message.getSender());
+
+		// 비동기 FCM 알림 전송 (오프라인 사용자 푸시)
+		// notificationService.sendChatMessageNotification(savedchat);
+		// log.debug("채팅 메시지 저장 완료: roomId={}, sender={}", roomId, message.getSender());
 
 		// 빈 반응 정보를 포함한 응답 생성
 		return ChatMessageResponse.from(savedchat);

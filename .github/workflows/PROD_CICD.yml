@@ -130,7 +130,7 @@ jobs:
           mv "$JAR_NEW" "$JAR"
 
           # Restart service
-          sudo systemctl restart debateseason
+          sudo systemctl restart toronchul
 
           # Health check: 12 attempts, 5 seconds apart (60s total)
           echo "Waiting for application to start..."
@@ -147,7 +147,7 @@ jobs:
           echo "Health check failed after 60 seconds. Rolling back..."
           if [ -f "$JAR_BACKUP" ]; then
             mv "$JAR_BACKUP" "$JAR"
-            sudo systemctl restart debateseason
+            sudo systemctl restart toronchul
             echo "Rollback complete."
           fi
           exit 1

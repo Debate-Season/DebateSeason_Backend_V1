@@ -92,5 +92,5 @@ swagger-base-url: "https://toronchul.app/prod"
 #stomp 연결 환경분리
 stomp-connect-url: "/ws-stomp"
 
-# 유튜브 라이브 api key (실제 값)
-youtube_live-api-key : "AIzaSyCdEG_MS81NpdlsAJOQwmzS21u7L_K-r0M"
+# 유튜브 라이브 api key (환경변수로 관리)
+youtube_live-api-key: ${YOUTUBE_API_KEY}

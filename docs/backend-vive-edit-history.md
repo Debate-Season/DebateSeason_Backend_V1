@@ -687,3 +687,156 @@ rate-limit:
 }
 ```
 - `Retry-After` 헤더: 버킷 리필까지 남은 초(+1) 포함
+
+---
+
+## 2026-03-02: Chat 통합 테스트 FK 제약조건 위반 수정
+
+### 목적
+`ChatApiTest.채팅메시지_조회_성공()`과 `ChatWebSocketTest.채팅메시지_전송_및_수신_성공()` 2개 테스트가 H2 테스트 DB에서 FK 제약조건 위반으로 실패하던 문제 해결.
+기존에 `new ChatRoom(); setId(1L)`로 메모리상 객체만 만들고 실제 DB에 INSERT하지 않아 발생.
+
+### 근본 원인
+
+```
+ChatEntity → FK(chat_room_id) → ChatRoom → FK(issue_id) → IssueEntity
+```
+
+테스트 코드에서 `ChatRoom(ID=1)`을 DB에 저장하지 않은 채 `ChatEntity`를 저장하려 하여:
+- `ChatApiTest`: `chatRepository.save(chat)` 시점에 `DataIntegrityViolationException` (FK 위반)
+- `ChatWebSocketTest`: `chatRoomService.findChatRoomById(1L)` 조회 실패 → 메시지 브로드캐스트 안 됨 → `messageQueue.poll()` 타임아웃 → `assertNotNull` 실패
+
+### 변경 파일 목록 (2개)
+
+| # | 파일 | 변경 유형 |
+|---|------|----------|
+| 1 | `ChatApiTest.java` | 테스트 셋업 수정 |
+| 2 | `ChatWebSocketTest.java` | 테스트 셋업 수정 |
+
+---
+
+### 1. ChatApiTest.java
+
+**경로:** `src/test/java/com/debateseason_backend_v1/integration/chat/ChatApiTest.java`
+
+**변경 내용:**
+- `IssueJpaRepository`, `ChatRoomRepository` 의존성 주입 추가
+- `@BeforeEach`에서 `IssueEntity` → `ChatRoom` 순서로 DB 저장
+- 하드코딩된 `roomId = 1L` 제거, `savedChatRoom.getId()` 사용
+- `prepareTestChatMessages()` 파라미터를 `Long roomId` → `ChatRoom chatRoom`으로 변경
+- 미사용 `ApplicationContext`, `createTestJwt()` 제거
+
+**추가된 필드 및 @BeforeEach:**
+```java
+@Autowired
+private IssueJpaRepository issueRepository;
+
+@Autowired
+private ChatRoomRepository chatRoomRepository;
+
+private ChatRoom savedChatRoom;
+
+@BeforeEach
+void setup(){
+    this.baseUrl = "http://localhost:" + port + "/api/v1/chat";
+
+    // IssueEntity 저장 (ChatRoom의 FK 필수)
+    IssueEntity issue = IssueEntity.builder()
+            .title("테스트 이슈")
+            .majorCategory("정치")
+            .build();
+    IssueEntity savedIssue = issueRepository.save(issue);
+
+    // ChatRoom 저장 (ChatEntity의 FK 필수)
+    savedChatRoom = ChatRoom.builder()
+            .issueEntity(savedIssue)
+            .title("테스트 채팅방")
+            .content("테스트 채팅방 내용")
+            .build();
+    savedChatRoom = chatRoomRepository.save(savedChatRoom);
+}
+```
+
+**변경된 테스트 메서드:**
+```java
+// 변경 전
+Long roomId = 1L;
+List<ChatEntity> chats = prepareTestChatMessages(roomId, messageCount);
+
+// 변경 후
+Long roomId = savedChatRoom.getId();
+List<ChatEntity> chats = prepareTestChatMessages(savedChatRoom, messageCount);
+```
+
+**변경된 prepareTestChatMessages():**
+```java
+// 변경 전: 메모리상 ChatRoom 객체만 생성
+private List<ChatEntity> prepareTestChatMessages(Long roomId, int count) {
+    ChatRoom chatRoom = new ChatRoom();
+    chatRoom.setId(roomId);
+    // ...
+}
+
+// 변경 후: DB에 저장된 ChatRoom 객체를 직접 받음
+private List<ChatEntity> prepareTestChatMessages(ChatRoom chatRoom, int count) {
+    // ...
+}
+```
+
+---
+
+### 2. ChatWebSocketTest.java
+
+**경로:** `src/test/java/com/debateseason_backend_v1/integration/chat/ChatWebSocketTest.java`
+
+**변경 내용:**
+- `IssueJpaRepository`, `ChatRoomRepository` 의존성 주입 추가
+- `@BeforeEach`에서 `IssueEntity` → `ChatRoom` 순서로 DB 저장
+- 하드코딩된 `roomId = 1L` 제거, `savedChatRoom.getId()` 사용
+
+**추가된 필드 및 @BeforeEach 셋업:**
+```java
+@Autowired
+private IssueJpaRepository issueRepository;
+
+@Autowired
+private ChatRoomRepository chatRoomRepository;
+
+private ChatRoom savedChatRoom;
+
+@BeforeEach
+void setup(){
+    // ... 기존 stompClient, WS_URL 설정 ...
+
+    // IssueEntity 저장 (ChatRoom의 FK 필수)
+    IssueEntity issue = IssueEntity.builder()
+            .title("테스트 이슈")
+            .majorCategory("정치")
+            .build();
+    IssueEntity savedIssue = issueRepository.save(issue);
+
+    // ChatRoom 저장 (WebSocket 메시지 처리 시 DB 조회 필수)
+    savedChatRoom = ChatRoom.builder()
+            .issueEntity(savedIssue)
+            .title("테스트 채팅방")
+            .content("테스트 채팅방 내용")
+            .build();
+    savedChatRoom = chatRoomRepository.save(savedChatRoom);
+}
+```
+
+**변경된 테스트 메서드:**
+```java
+// 변경 전
+Long roomId = 1L;
+
+// 변경 후
+Long roomId = savedChatRoom.getId();
+```
+
+---
+
+### 빌드 결과
+
+- **컴파일**: `./gradlew build -x test` → BUILD SUCCESSFUL
+- **테스트**: `./gradlew test` → **60개 전체 통과, 0개 실패**

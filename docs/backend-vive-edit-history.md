@@ -840,3 +840,300 @@ Long roomId = savedChatRoom.getId();
 
 - **컴파일**: `./gradlew build -x test` → BUILD SUCCESSFUL
 - **테스트**: `./gradlew test` → **60개 전체 통과, 0개 실패**
+
+---
+
+## 2026-03-03: CI/CD 마이그레이션 ECS → Lightsail VM + 보안 강화
+
+### 목적
+AWS ECS 기반 Docker 배포에서 Lightsail VM 기반 JAR 직접 배포로 전환.
+DEV 서버 폐기, PROD만 운영. 배포 안정성(자동 백업/롤백/헬스체크)과 보안(API 키 환경변수화) 강화.
+
+### 배포 아키텍처 변경
+
+```
+[변경 전 - ECS]
+GitHub Actions → Docker Build → ECR Push → ECS Task Definition 업데이트 → ECS 롤링 배포
+
+[변경 후 - Lightsail VM]
+GitHub Actions → Gradle Build → SCP jar 전송 → SSH: 백업 → swap → systemd restart → 헬스체크 → 실패 시 자동 롤백
+```
+
+### 서버 인프라 구조
+
+```
+클라이언트 → :80 Nginx (HTTP→HTTPS 301) → :443 Nginx (SSL termination) → :8080 Spring Boot (systemd)
+```
+
+### 변경 파일 목록 (6개 수정 + 2개 신규)
+
+| # | 파일 | 변경 유형 |
+|---|------|----------|
+| 1 | `PROD_CICD.yml` | deploy job 전면 교체 (ECS → SSH/SCP) |
+| 2 | `DEV_CICD.yml` | deploy job 제거 (build + test만 유지) |
+| 3 | `application-prod.yml` | server.port 80→8080, YouTube API 키 환경변수화 |
+| 4 | `.gitignore` | *.pem, *.key, .env 추가 |
+| 5 | `lightsail-deployment-guide.md` | **신규** — 서버 초기 설정 가이드 |
+| 6 | `lightsail-deployment-review.md` | **신규** — 운영 배포 실행 계획 |
+
+---
+
+### 1. PROD_CICD.yml
+
+**경로:** `.github/workflows/PROD_CICD.yml`
+
+**변경 내용:**
+- ECS 배포 관련 스텝 전체 제거 (Docker Build, ECR Push, Task Definition, ECS Deploy)
+- SSH/SCP 기반 Lightsail 배포로 교체
+- 자동 백업, 헬스체크, 롤백 로직 포함
+
+**제거된 스텝:**
+- Configure AWS credentials (OIDC role assume)
+- Login to Amazon ECR
+- Set up QEMU / Docker Buildx
+- Build and push (Docker multi-platform)
+- Download Task Definition Template
+- Fill in the new image ID
+- Deploy Amazon ECS task definition
+
+**추가된 스텝 (4개):**
+
+**(1) Setup SSH key:**
+```yaml
+- name: Setup SSH key
+  run: |
+    mkdir -p ~/.ssh
+    echo "${{ secrets.LIGHTSAIL_SSH_PRIVATE_KEY }}" > ~/.ssh/lightsail_key
+    chmod 600 ~/.ssh/lightsail_key
+    ssh-keyscan -H ${{ secrets.LIGHTSAIL_HOST }} >> ~/.ssh/known_hosts
+```
+
+**(2) Transfer jar to Lightsail:**
+```yaml
+- name: Transfer jar to Lightsail
+  run: |
+    JAR_FILE=$(ls build/libs/*.jar | grep -v plain | head -1)
+    scp -i ~/.ssh/lightsail_key "$JAR_FILE" ubuntu@${{ secrets.LIGHTSAIL_HOST }}:/home/ubuntu/app/app.jar.new
+```
+- `grep -v plain`: Spring Boot의 plain jar 제외, 실행 가능한 fat jar만 전송
+
+**(3) Deploy and health check:**
+```yaml
+- name: Deploy and health check
+  run: |
+    ssh -T -i ~/.ssh/lightsail_key ubuntu@${{ secrets.LIGHTSAIL_HOST }} 'bash -s' << 'DEPLOY_SCRIPT'
+    APP_DIR=/home/ubuntu/app
+    JAR=$APP_DIR/app.jar
+    JAR_NEW=$APP_DIR/app.jar.new
+    JAR_BACKUP=$APP_DIR/app.jar.backup
+
+    # Backup current jar
+    if [ -f "$JAR" ]; then
+      cp "$JAR" "$JAR_BACKUP"
+    fi
+
+    # Atomic swap
+    mv "$JAR_NEW" "$JAR"
+
+    # Restart service
+    sudo systemctl restart toronchul
+
+    # Health check: 12 attempts, 5 seconds apart (60s total)
+    echo "Waiting for application to start..."
+    DEPLOY_SUCCESS=false
+    for i in $(seq 1 12); do
+      sleep 5
+      if curl -sf http://localhost:8080/prod/actuator/health > /dev/null 2>&1; then
+        echo "Health check passed (attempt $i)"
+        DEPLOY_SUCCESS=true
+        break
+      fi
+      echo "Health check attempt $i/12 failed, retrying..."
+    done
+
+    if [ "$DEPLOY_SUCCESS" = true ]; then
+      echo "Deploy completed successfully"
+      exit 0
+    fi
+
+    # Health check failed — rollback
+    echo "Health check failed after 60 seconds. Rolling back..."
+    if [ -f "$JAR_BACKUP" ]; then
+      mv "$JAR_BACKUP" "$JAR"
+      sudo systemctl restart toronchul
+      echo "Rollback complete."
+    fi
+    exit 1
+    DEPLOY_SCRIPT
+```
+
+**설계 결정:**
+- `ssh -T`: pseudo-terminal 할당 방지 (heredoc 사용 시 필수)
+- `bash -s`: 명시적 셸 실행으로 exit code 전파 보장
+- `break` + 플래그 변수: for 루프 내 `exit 0` 대신 사용 — SSH heredoc에서 exit code가 정상 전파되지 않는 문제 해결
+- `mv` (atomic swap): `cp` 대비 파일 교체 중 불완전 상태 방지
+- 12회 × 5초 = 60초: Spring Boot 기동 시간 고려한 헬스체크 타임아웃
+
+**(4) Cleanup SSH key:**
+```yaml
+- name: Cleanup SSH key
+  if: always()
+  run: rm -f ~/.ssh/lightsail_key
+```
+- `if: always()`: deploy 실패해도 키 파일 반드시 삭제
+
+---
+
+### 2. DEV_CICD.yml
+
+**경로:** `.github/workflows/DEV_CICD.yml`
+
+**변경 내용:**
+- ECS deploy job 전체 제거 (77줄)
+- build + test job만 유지
+
+**제거된 job:**
+```yaml
+deploy:
+  permissions:
+    id-token: write
+    contents: read
+  needs: [ build, test ]
+  if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
+  # ... ECR login, Docker build, ECS deploy 등 전체 삭제
+```
+
+**설계 의도:**
+- DEV 서버 폐기에 따라 develop 브랜치 push 시 배포하지 않음
+- CI(빌드/테스트) 기능은 유지하여 PR 검증용으로 활용
+
+---
+
+### 3. application-prod.yml
+
+**경로:** `src/main/resources/application-prod.yml`
+
+**변경 내용 (2개):**
+
+**(1) server.port 변경:**
+```yaml
+# 변경 전
+server:
+  port: 80
+
+# 변경 후
+server:
+  port: 8080
+```
+
+**변경 이유:**
+- Lightsail 서버에 Nginx가 :80/:443을 점유하고 `proxy_pass http://localhost:8080`으로 프록시
+- Spring Boot가 :80에서 직접 리슨하면 Nginx와 포트 충돌
+
+**(2) YouTube API 키 환경변수화:**
+```yaml
+# 변경 전
+youtube_live-api-key: "AIzaSyCdEG_MS81NpdlsAJOQwmzS21u7L_K-r0M"
+
+# 변경 후
+youtube_live-api-key: ${YOUTUBE_API_KEY}
+```
+
+**변경 이유:**
+- API 키가 소스코드에 평문 노출 — git history에 남아있으므로 키 rotate 권장
+- `.env` 파일에 `YOUTUBE_API_KEY=...`로 관리
+
+---
+
+### 4. .gitignore
+
+**경로:** `.gitignore`
+
+**추가된 규칙:**
+```gitignore
+### Secrets & Keys ###
+*.pem
+*.key
+.env
+```
+
+**변경 이유:**
+- SSH 키 파일(`.pem`)이 프로젝트 루트에 존재했음 → `~/.ssh/`로 이동 후 gitignore 추가
+- `.env` 파일이 실수로 커밋되는 것 방지
+
+---
+
+### 5. lightsail-deployment-guide.md (신규)
+
+**경로:** `docs/lightsail-deployment-guide.md`
+
+서버 1회 초기 설정 가이드:
+- 앱 디렉토리 생성 (`/home/ubuntu/app`)
+- `.env` 환경변수 파일 생성 (DB, JWT, YouTube API 키 등 전체 목록)
+- Java 포트 바인딩 (`setcap`)
+- systemd 서비스 파일 생성 및 등록
+- 배포용 SSH 키 생성 및 GitHub Secrets 등록
+- 자동 백업/롤백 흐름 설명
+- 수동 긴급 롤백 절차
+
+---
+
+### 6. lightsail-deployment-review.md (신규)
+
+**경로:** `docs/lightsail-deployment-review.md`
+
+운영 배포 실행 계획:
+- Phase 1~4 단계별 체크리스트 (로컬 검증 → 환경변수 → CI/CD → 배포 검증)
+- 예외 상황 대응 테이블 (빌드 실패, 기동 실패, 헬스체크 실패, 긴급 롤백)
+- 수동 긴급 롤백 절차 (코드 블록)
+- 향후 개선 권고 (무중단 배포, logrotate, 환경변수 관리)
+
+---
+
+### Lightsail 서버 설정 내역
+
+배포 과정에서 서버에 직접 수행한 설정:
+
+| # | 작업 | 명령어/파일 |
+|---|------|-----------|
+| 1 | 앱 디렉토리 생성 | `mkdir -p /home/ubuntu/app` |
+| 2 | `.env` 파일 생성 | `nano /home/ubuntu/app/.env` + `chmod 600` |
+| 3 | Java 포트 바인딩 | `sudo setcap 'cap_net_bind_service=+ep' ...` |
+| 4 | systemd 서비스 등록 | `/etc/systemd/system/toronchul.service` |
+| 5 | 서비스 활성화 | `sudo systemctl daemon-reload && enable toronchul` |
+| 6 | 배포용 SSH 키 생성 | `ssh-keygen -t ed25519` → GitHub Secrets 등록 |
+
+### GitHub Secrets 등록 내역
+
+| Name | 용도 |
+|------|------|
+| `LIGHTSAIL_HOST` | Lightsail VM 퍼블릭 IP |
+| `LIGHTSAIL_SSH_PRIVATE_KEY` | 배포용 ED25519 프라이빗 키 |
+
+### 제거 가능한 기존 Secrets (ECS 관련)
+
+- `AWS_ROLE_TO_ASSUME`, `AWS_ACCOUNT_ID`
+- `PROD_ECR_REPOSITORY_NAME`, `PROD_TASK_DEFINITION_NAME`, `PROD_ECS_SERVICE`, `PROD_ECS_CLUSTER`
+- `DEV_ECR_REPOSITORY_NAME`, `DEV_TASK_DEFINITION_NAME`, `DEV_ECS_SERVICE`, `DEV_ECS_CLUSTER`
+
+---
+
+### 배포 중 발생한 이슈 및 해결
+
+| # | 이슈 | 원인 | 해결 |
+|---|------|------|------|
+| 1 | ECR repository not found | CI/CD 워크플로우 파일이 커밋에서 누락 | `.github/workflows/` 파일 별도 커밋 |
+| 2 | PAT에 workflow 권한 없음 | GitHub가 워크플로우 파일 push 거부 | PAT에 `workflow` 스코프 추가 |
+| 3 | `debateseason.service not found` | 서버에 systemd 서비스 미생성 | 서버에서 `toronchul.service` 생성 및 등록 |
+| 4 | 서비스명 불일치 | PROD_CICD.yml이 `debateseason` 참조 | `toronchul`로 변경 |
+| 5 | Health check 301 리다이렉트 | Nginx가 :80 점유, Spring Boot도 :80 | Spring Boot 포트 80→8080 변경 |
+| 6 | SSH heredoc exit code 1 | for 루프 내 `exit 0`이 SSH heredoc에서 전파 안 됨 | `ssh -T` + `bash -s` + break/플래그 방식으로 변경 |
+
+---
+
+### 빌드 결과
+
+- **GitHub Actions PROD CI/CD**: build → test → deploy 전체 통과
+- **GitHub Actions DEV CI/CD**: build → test 통과 (deploy 없음)
+- **서버 상태**: `sudo systemctl status toronchul` → active (running)
+- **헬스 체크**: `curl http://localhost:8080/prod/actuator/health` → 정상 응답

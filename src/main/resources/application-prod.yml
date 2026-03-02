@@ -84,7 +84,7 @@ server:
   servlet:
     context-path: /prod
 
-  port: 80
+  port: 8080
 
 # 환경별로 스웨거 요청 분리
 swagger-base-url: "https://toronchul.app/prod"

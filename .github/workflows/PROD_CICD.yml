@@ -128,6 +128,14 @@ jobs:
           # Atomic swap
           mv "$JAR_NEW" "$JAR"
 
+          # Kill any orphan java process occupying port 8080
+          ORPHAN_PID=$(sudo lsof -ti :8080 || true)
+          if [ -n "$ORPHAN_PID" ]; then
+            echo "Killing orphan process on port 8080: PID=$ORPHAN_PID"
+            sudo kill "$ORPHAN_PID" || true
+            sleep 2
+          fi
+
           # Restart service
           sudo systemctl restart toronchul
 

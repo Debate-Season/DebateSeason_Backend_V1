@@ -1301,45 +1301,42 @@ fi
 
 ---
 
-## 2026-03-07: requestMatchers MvcRequestMatcher → AntPathRequestMatcher 전환
+## 2026-03-07: authorizeHttpRequests 간소화 + CommunitySorterV4 NPE 수정
 
 ### 목적
-비로그인 상태로 `GET /api/v1/issue` 호출 시 403 반환되던 문제 수정.
-`GET /api/v1/room`은 정상(404 — 앱 레벨, 보안 통과), `/api/v1/issue`만 403.
+비로그인 상태로 `GET /api/v1/issue` 호출 시 403 반환, 이후 보안 통과 후 500(NPE) 발생하던 문제 수정.
 
-### 근본 원인
+### 근본 원인 (2가지)
 
-Spring Security 6.x의 `requestMatchers(String...)` 메서드는 Spring MVC가 classpath에 있을 때 내부적으로 `MvcRequestMatcher`를 생성한다.
-`MvcRequestMatcher`는 `HandlerMappingIntrospector`를 통해 핸들러 매핑을 조회하여 경로를 매칭한다.
-
-**`/api/v1/issue` 경로가 두 개의 서로 다른 컨트롤러에 매핑**되어 있어 `HandlerMappingIntrospector` 해석이 실패:
-
-| 컨트롤러 | 매핑 |
-|----------|------|
-| `IssueControllerV1` | `@GetMapping("/issue")` |
-| `AdminIssueControllerV1` | `@PostMapping("/issue")` |
-
-다른 OPTIONAL_AUTH_URL들은 단일 컨트롤러 매핑이므로 정상 동작:
-- `/api/v1/issue-map` → `IssueControllerV1`만 (GET) → 200 ✓
-- `/api/v1/room` → `ChatRoomControllerV1`만 (GET+POST 동일 컨트롤러) → 정상 ✓
-- `/api/v1/home/recommend` → `IssueControllerV1`만 (GET) → 200 ✓
+| # | 문제 | 영향 |
+|---|------|------|
+| 1 | Spring Security 6.x `authorizeHttpRequests`의 `requestMatchers(String...)`가 내부적으로 `MvcRequestMatcher`를 사용. `/api/v1/issue`가 두 컨트롤러(`IssueControllerV1` GET, `AdminIssueControllerV1` POST)에 분산 매핑되어 `HandlerMappingIntrospector` 해석 실패 → 403 | `AntPathRequestMatcher` 명시 사용으로도 해결 안 됨 → `anyRequest().permitAll()`로 전환 |
+| 2 | `CommunitySorterV4.getSortedCommunity()`에서 비로그인 시 `record()`가 호출되지 않아 `usersByIssue.get(issueId)` → null → for문 NPE → 500 | null 체크 추가로 빈 맵 반환 |
 
 ### 진단 과정
 
-1. 서버에서 localhost curl 테스트 → `/api/v1/issue` 403 확인 (Content-Length: 0, 빈 응답)
-2. 403 + 빈 응답 = Spring Security의 `Http403ForbiddenEntryPoint` (formLogin/httpBasic 비활성 시 기본 EntryPoint)
-3. `@PreAuthorize` 등 메서드 레벨 보안 → 없음
-4. 같은 OPTIONAL_AUTH_URLS 배열의 다른 URL 테스트:
-   - `/api/v1/issue-map` → 200 ✓
-   - `/api/v1/home/recommend` → 200 ✓
-   - `/api/v1/issue` → 403 ✗
-5. `/api/v1/issue` 경로의 핸들러 매핑 조사 → 두 개의 다른 컨트롤러에 분산 매핑 발견
+1. 서버에서 curl 테스트 → `/api/v1/issue` 403, `/api/v1/room` 404(정상), `/api/v1/issue-map` 200(정상)
+2. 403 + Content-Length: 0 = Spring Security `Http403ForbiddenEntryPoint` (formLogin/httpBasic 비활성 시 기본)
+3. 같은 `OPTIONAL_AUTH_URLS` 배열인데 `/api/v1/issue`만 실패 → 핸들러 매핑 조사
+4. `/api/v1/issue`가 두 컨트롤러에 분산 매핑 발견 → `AntPathRequestMatcher` 시도 → 여전히 403
+5. `authorizeHttpRequests`를 `anyRequest().permitAll()`로 변경 → 403 해결, 500 발생
+6. 500 로그: `CommunitySorterV4.getSortedCommunity()` NPE → null 방어 추가 → 200 정상
 
-### 변경 파일 (1개)
+### 설계 결정: `anyRequest().permitAll()`
+
+**`JwtAuthenticationFilter`가 이미 모든 인증 로직을 처리:**
+- Public URL → skip (인증 없이 통과)
+- Optional Auth URL → 토큰 있으면 파싱, 없으면 anonymous 통과
+- 그 외 → 토큰 필수 (없으면 401 응답, `filterChain.doFilter()` 호출 안 함)
+
+따라서 `authorizeHttpRequests`의 URL별 `permitAll()` / `authenticated()` 설정은 **중복**이었으며, Spring Security의 `MvcRequestMatcher` 버그에 취약했다. `anyRequest().permitAll()`로 변경하여 URL 매칭 의존성을 제거하고, 접근 제어를 `JwtAuthenticationFilter`에 일원화.
+
+### 변경 파일 (2개)
 
 | # | 파일 | 변경 유형 |
 |---|------|----------|
-| 1 | `WebSecurityConfig.java` | `requestMatchers`를 `AntPathRequestMatcher` 명시 사용 |
+| 1 | `WebSecurityConfig.java` | `authorizeHttpRequests` 간소화 |
+| 2 | `CommunitySorterV4.java` | NPE 방어 |
 
 ---
 
@@ -1348,40 +1345,67 @@ Spring Security 6.x의 `requestMatchers(String...)` 메서드는 Spring MVC가 c
 **경로:** `src/main/java/com/debateseason_backend_v1/config/WebSecurityConfig.java`
 
 **변경 내용:**
-- `requestMatchers(String...)` (MvcRequestMatcher 암시 사용) → `requestMatchers(RequestMatcher...)` (AntPathRequestMatcher 명시 사용)
-- `toAntMatchers()` 헬퍼 메서드 추가
-- 미사용 import 정리 (`@Profile`, `SessionCreationPolicy`)
+- `authorizeHttpRequests` 내 URL별 `requestMatchers(...).permitAll()` 제거
+- `anyRequest().permitAll()`로 단순화
+- `AntPathRequestMatcher`, `RequestMatcher`, `Arrays` 등 미사용 import 정리
 
-**추가된 헬퍼 메서드:**
+**변경 전:**
 ```java
-private static RequestMatcher[] toAntMatchers(String[] patterns) {
-    return Arrays.stream(patterns)
-        .map(AntPathRequestMatcher::new)
-        .toArray(RequestMatcher[]::new);
-}
-```
-
-**변경된 filterChain():**
-```java
-// 변경 전: MvcRequestMatcher 암시 사용 (HandlerMappingIntrospector 의존)
 .authorizeHttpRequests(auth -> auth
     .requestMatchers(PUBLIC_URLS).permitAll()
     .requestMatchers(OPTIONAL_AUTH_URLS).permitAll()
     .anyRequest().authenticated()
 )
+```
 
-// 변경 후: AntPathRequestMatcher 명시 사용 (servlet path 기준 단순 매칭)
-RequestMatcher[] publicMatchers = toAntMatchers(PUBLIC_URLS);
-RequestMatcher[] optionalMatchers = toAntMatchers(OPTIONAL_AUTH_URLS);
-
+**변경 후:**
+```java
 .authorizeHttpRequests(auth -> auth
-    .requestMatchers(publicMatchers).permitAll()
-    .requestMatchers(optionalMatchers).permitAll()
-    .anyRequest().authenticated()
+    .anyRequest().permitAll()
 )
 ```
 
-**왜 `AntPathRequestMatcher`인가:**
-- `MvcRequestMatcher`는 `HandlerMappingIntrospector`에 의존하여 핸들러 매핑을 조회 → 동일 경로가 여러 컨트롤러에 분산되면 해석 실패 가능
-- `AntPathRequestMatcher`는 요청의 servlet path를 Ant 패턴으로 단순 매칭 → 핸들러 매핑과 무관하게 안정적
-- `SecurityPathMatcher`(커스텀 필터용)도 이미 `AntPathMatcher`를 사용하므로 매칭 로직이 일관됨
+**`PUBLIC_URLS`, `OPTIONAL_AUTH_URLS` 상수 배열은 유지** — `JwtAuthenticationFilter`와 `SecurityPathMatcher`가 참조하므로 삭제 불가.
+
+---
+
+### 2. CommunitySorterV4.java
+
+**경로:** `src/main/java/com/debateseason_backend_v1/domain/issue/community/CommunitySorterV4.java`
+
+**변경 내용:**
+- `getSortedCommunity()` 메서드에 `userList` null 체크 추가
+
+**변경 전 (L101-109):**
+```java
+public LinkedHashMap<String, Integer> getSortedCommunity(Long issueId) {
+    List<UserDTO> userList = usersByIssue.get(issueId);
+    HashMap<String, Integer> map = new HashMap<>();
+    for (UserDTO u : userList) {  // userList가 null이면 NPE
+```
+
+**변경 후 (L101-113):**
+```java
+public LinkedHashMap<String, Integer> getSortedCommunity(Long issueId) {
+    List<UserDTO> userList = usersByIssue.get(issueId);
+
+    if (userList == null) {
+        return new LinkedHashMap<>();
+    }
+
+    HashMap<String, Integer> map = new HashMap<>();
+    for (UserDTO u : userList) {
+```
+
+**발생 조건:**
+- 비로그인 사용자가 이슈를 조회할 때, `record()`가 호출되지 않아 `usersByIssue`에 해당 issueId 엔트리가 없음
+- `ConcurrentHashMap.get()` → null 반환 → for문 NPE
+
+---
+
+### 서버 검증
+
+- `curl http://localhost:8080/prod/api/v1/issue?issue-id=1` → 200 (비로그인 정상 응답, `map: {}`, `bookMarkState: "no"`)
+- `curl http://localhost:8080/prod/api/v1/room?chatroom-id=1` → 404 (해당 chatroom 미존재, 보안 통과)
+- `curl http://localhost:8080/prod/api/v1/issue-map` → 200 (기존 정상)
+- `curl http://localhost:8080/prod/api/v1/home/recommend` → 200 (기존 정상)

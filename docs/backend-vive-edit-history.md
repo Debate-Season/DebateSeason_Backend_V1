@@ -1298,3 +1298,90 @@ fi
 - **서버 검증**:
   - `curl http://localhost:8080/prod/api/v1/home/recommend` → 200 (비로그인 정상 응답)
   - `curl http://localhost:8080/prod/api/v1/issue-map` → 200 (비로그인 정상 응답)
+
+---
+
+## 2026-03-07: requestMatchers MvcRequestMatcher → AntPathRequestMatcher 전환
+
+### 목적
+비로그인 상태로 `GET /api/v1/issue` 호출 시 403 반환되던 문제 수정.
+`GET /api/v1/room`은 정상(404 — 앱 레벨, 보안 통과), `/api/v1/issue`만 403.
+
+### 근본 원인
+
+Spring Security 6.x의 `requestMatchers(String...)` 메서드는 Spring MVC가 classpath에 있을 때 내부적으로 `MvcRequestMatcher`를 생성한다.
+`MvcRequestMatcher`는 `HandlerMappingIntrospector`를 통해 핸들러 매핑을 조회하여 경로를 매칭한다.
+
+**`/api/v1/issue` 경로가 두 개의 서로 다른 컨트롤러에 매핑**되어 있어 `HandlerMappingIntrospector` 해석이 실패:
+
+| 컨트롤러 | 매핑 |
+|----------|------|
+| `IssueControllerV1` | `@GetMapping("/issue")` |
+| `AdminIssueControllerV1` | `@PostMapping("/issue")` |
+
+다른 OPTIONAL_AUTH_URL들은 단일 컨트롤러 매핑이므로 정상 동작:
+- `/api/v1/issue-map` → `IssueControllerV1`만 (GET) → 200 ✓
+- `/api/v1/room` → `ChatRoomControllerV1`만 (GET+POST 동일 컨트롤러) → 정상 ✓
+- `/api/v1/home/recommend` → `IssueControllerV1`만 (GET) → 200 ✓
+
+### 진단 과정
+
+1. 서버에서 localhost curl 테스트 → `/api/v1/issue` 403 확인 (Content-Length: 0, 빈 응답)
+2. 403 + 빈 응답 = Spring Security의 `Http403ForbiddenEntryPoint` (formLogin/httpBasic 비활성 시 기본 EntryPoint)
+3. `@PreAuthorize` 등 메서드 레벨 보안 → 없음
+4. 같은 OPTIONAL_AUTH_URLS 배열의 다른 URL 테스트:
+   - `/api/v1/issue-map` → 200 ✓
+   - `/api/v1/home/recommend` → 200 ✓
+   - `/api/v1/issue` → 403 ✗
+5. `/api/v1/issue` 경로의 핸들러 매핑 조사 → 두 개의 다른 컨트롤러에 분산 매핑 발견
+
+### 변경 파일 (1개)
+
+| # | 파일 | 변경 유형 |
+|---|------|----------|
+| 1 | `WebSecurityConfig.java` | `requestMatchers`를 `AntPathRequestMatcher` 명시 사용 |
+
+---
+
+### 1. WebSecurityConfig.java
+
+**경로:** `src/main/java/com/debateseason_backend_v1/config/WebSecurityConfig.java`
+
+**변경 내용:**
+- `requestMatchers(String...)` (MvcRequestMatcher 암시 사용) → `requestMatchers(RequestMatcher...)` (AntPathRequestMatcher 명시 사용)
+- `toAntMatchers()` 헬퍼 메서드 추가
+- 미사용 import 정리 (`@Profile`, `SessionCreationPolicy`)
+
+**추가된 헬퍼 메서드:**
+```java
+private static RequestMatcher[] toAntMatchers(String[] patterns) {
+    return Arrays.stream(patterns)
+        .map(AntPathRequestMatcher::new)
+        .toArray(RequestMatcher[]::new);
+}
+```
+
+**변경된 filterChain():**
+```java
+// 변경 전: MvcRequestMatcher 암시 사용 (HandlerMappingIntrospector 의존)
+.authorizeHttpRequests(auth -> auth
+    .requestMatchers(PUBLIC_URLS).permitAll()
+    .requestMatchers(OPTIONAL_AUTH_URLS).permitAll()
+    .anyRequest().authenticated()
+)
+
+// 변경 후: AntPathRequestMatcher 명시 사용 (servlet path 기준 단순 매칭)
+RequestMatcher[] publicMatchers = toAntMatchers(PUBLIC_URLS);
+RequestMatcher[] optionalMatchers = toAntMatchers(OPTIONAL_AUTH_URLS);
+
+.authorizeHttpRequests(auth -> auth
+    .requestMatchers(publicMatchers).permitAll()
+    .requestMatchers(optionalMatchers).permitAll()
+    .anyRequest().authenticated()
+)
+```
+
+**왜 `AntPathRequestMatcher`인가:**
+- `MvcRequestMatcher`는 `HandlerMappingIntrospector`에 의존하여 핸들러 매핑을 조회 → 동일 경로가 여러 컨트롤러에 분산되면 해석 실패 가능
+- `AntPathRequestMatcher`는 요청의 servlet path를 Ant 패턴으로 단순 매칭 → 핸들러 매핑과 무관하게 안정적
+- `SecurityPathMatcher`(커스텀 필터용)도 이미 `AntPathMatcher`를 사용하므로 매칭 로직이 일관됨

@@ -103,6 +103,10 @@ public class CommunitySorterV4 {
 		// 1. 특정 이슈방에 대한 userList 가져오기
 		List<UserDTO> userList = usersByIssue.get(issueId);
 
+		if (userList == null) {
+			return new LinkedHashMap<>();
+		}
+
 		// 특정 이슈방에 대한 community를 센다. -> { community : number }
 		HashMap<String, Integer> map = new HashMap<>();
 

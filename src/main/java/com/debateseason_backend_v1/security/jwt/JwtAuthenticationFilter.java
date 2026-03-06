@@ -39,6 +39,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 	) throws ServletException, IOException {
 
 		String requestURI = request.getRequestURI();
+		String resolvedPath = securityPathMatcher.resolvePath(request);
+
+		log.info("[Auth Filter] requestURI={}, servletPath={}, contextPath={}, resolvedPath={}",
+			requestURI, request.getServletPath(), request.getContextPath(), resolvedPath);
 
 		if (securityPathMatcher.isPublicUrl(request)) {
 			filterChain.doFilter(request, response);
@@ -47,6 +51,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
 		// Optional Auth: 토큰 있으면 파싱, 없으면 anonymous로 통과
 		if (securityPathMatcher.isOptionalAuthUrl(request)) {
+			log.info("[Auth Filter] Optional Auth 통과: {}", resolvedPath);
 			tryOptionalAuthentication(request);
 			filterChain.doFilter(request, response);
 			return;
@@ -56,7 +61,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 		String authorizationHeader = request.getHeader(AUTHORIZATION_HEADER);
 
 		if (!containsValidHeader(authorizationHeader)) {
-			log.debug("JWT 토큰이 없습니다, uri: {}", requestURI);
+			log.warn("[Auth Filter] 토큰 없음 → 401 반환. resolvedPath={}", resolvedPath);
 			errorHandler.handleMissingToken(response, requestURI);
 			return;
 		}

@@ -23,13 +23,13 @@ public class SecurityPathMatcher {
 	}
 
 	public boolean isPublicUrl(HttpServletRequest request) {
-		String path = stripContextPath(request);
+		String path = resolvePath(request);
 		return Arrays.stream(PUBLIC_URLS)
 			.anyMatch(pattern -> pathMatcher.match(pattern, path));
 	}
 
 	public boolean isOptionalAuthUrl(HttpServletRequest request) {
-		String path = stripContextPath(request);
+		String path = resolvePath(request);
 
 		// /api/v1/room은 GET만 Optional, POST는 Required Auth
 		if (pathMatcher.match("/api/v1/room", path)) {
@@ -40,7 +40,14 @@ public class SecurityPathMatcher {
 			.anyMatch(pattern -> pathMatcher.match(pattern, path));
 	}
 
-	private String stripContextPath(HttpServletRequest request) {
+	public String resolvePath(HttpServletRequest request) {
+		// getServletPath()는 context-path가 이미 제거된 경로를 반환
+		String servletPath = request.getServletPath();
+		if (servletPath != null && !servletPath.isEmpty()) {
+			return servletPath;
+		}
+
+		// fallback: 수동으로 context-path 제거
 		String uri = request.getRequestURI();
 		String contextPath = request.getContextPath();
 		if (contextPath != null && !contextPath.isEmpty() && uri.startsWith(contextPath)) {

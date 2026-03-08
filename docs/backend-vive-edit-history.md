@@ -1137,3 +1137,275 @@ youtube_live-api-key: ${YOUTUBE_API_KEY}
 - **GitHub Actions DEV CI/CD**: build → test 통과 (deploy 없음)
 - **서버 상태**: `sudo systemctl status toronchul` → active (running)
 - **헬스 체크**: `curl http://localhost:8080/prod/actuator/health` → 정상 응답
+
+---
+
+## 2026-03-06: SecurityPathMatcher context-path 버그 수정 + CI/CD 고스트 프로세스 방어
+
+### 목적
+웹(Next.js)에서 비로그인 상태로 `GET /api/v1/home/recommend`, `GET /api/v1/issue-map` 호출 시 401 반환되던 문제 수정.
+
+### 근본 원인
+
+**2가지 문제가 중첩**되어 있었다:
+
+| # | 문제 | 영향 |
+|---|------|------|
+| 1 | CI/CD 마이그레이션(3/3) 이전에 수동 실행된 **구 Java 프로세스가 포트 8080을 점유** | `systemctl restart toronchul`로 새 서비스를 시작해도 포트를 잡지 못함. 헬스체크는 구 프로세스가 응답하여 통과 |
+| 2 | `SecurityPathMatcher`가 `@Value("${server.servlet.context-path:}")`로 context-path를 주입받았으나 **런타임에 빈 문자열로 resolve** | `/prod/api/v1/home/recommend`에서 `/prod`가 제거되지 않아 Optional Auth URL 패턴 매칭 실패 → 401 |
+
+### 진단 과정
+
+1. 백엔드 코드 검토 → Optional Auth 구현은 올바름 (WebSecurityConfig, SecurityPathMatcher, JwtAuthenticationFilter, Controller 모두 정상)
+2. 서버에서 직접 curl 테스트 → 401 확인
+3. main 브랜치에 코드 push → CI/CD 배포 성공 → 여전히 401
+4. `SecurityPathMatcher`를 `request.getContextPath()` 사용으로 변경 → 배포 성공 → 여전히 401
+5. 디버깅 로그(`log.info`) 추가 → 배포 후 로그 출력 없음 → **새 코드가 실행되고 있지 않음** 의심
+6. `sudo lsof -i :8080` → **구 프로세스(PID 259905)**가 포트 점유 확인, `toronchul` 서비스(PID 464396)는 별도 PID
+7. 구 프로세스 kill 후 서비스 재시작 → 200 정상 응답
+
+### 변경 파일 목록 (4개)
+
+| # | 파일 | 변경 유형 |
+|---|------|----------|
+| 1 | `SecurityPathMatcher.java` | `@Value` 제거, `request.getServletPath()` 사용 |
+| 2 | `JwtAuthenticationFilter.java` | `SecurityPathMatcher` 호출 시 `HttpServletRequest` 전달 |
+| 3 | `RateLimitFilter.java` | `isExcluded()` context-path 처리 |
+| 4 | `PROD_CICD.yml` | 배포 시 포트 8080 고스트 프로세스 kill 로직 추가 |
+
+---
+
+### 1. SecurityPathMatcher.java
+
+**경로:** `src/main/java/com/debateseason_backend_v1/security/component/SecurityPathMatcher.java`
+
+**변경 내용:**
+- `@Value("${server.servlet.context-path:}")` 생성자 주입 **제거**
+- 메서드 시그니처를 `String` → `HttpServletRequest`로 변경
+- `resolvePath()`: `request.getServletPath()` 우선 사용 (context-path가 이미 제거된 경로), fallback으로 `request.getRequestURI()` + `request.getContextPath()` 수동 제거
+
+**변경 전:**
+```java
+public SecurityPathMatcher(@Value("${server.servlet.context-path:}") String contextPath) {
+    this.pathMatcher = new AntPathMatcher();
+    this.contextPath = contextPath;
+}
+
+public boolean isPublicUrl(String requestURI) {
+    String path = removeContextPath(requestURI);
+    // ...
+}
+
+public boolean isOptionalAuthUrl(String requestURI, String method) {
+    String path = removeContextPath(requestURI);
+    // ...
+}
+
+private String removeContextPath(String requestURI) {
+    if (!contextPath.isEmpty() && requestURI.startsWith(contextPath)) {
+        return requestURI.substring(contextPath.length());
+    }
+    return requestURI;
+}
+```
+
+**변경 후:**
+```java
+public SecurityPathMatcher() {
+    this.pathMatcher = new AntPathMatcher();
+}
+
+public boolean isPublicUrl(HttpServletRequest request) {
+    String path = resolvePath(request);
+    // ...
+}
+
+public boolean isOptionalAuthUrl(HttpServletRequest request) {
+    String path = resolvePath(request);
+    // ...
+}
+
+public String resolvePath(HttpServletRequest request) {
+    String servletPath = request.getServletPath();
+    if (servletPath != null && !servletPath.isEmpty()) {
+        return servletPath;
+    }
+    String uri = request.getRequestURI();
+    String contextPath = request.getContextPath();
+    if (contextPath != null && !contextPath.isEmpty() && uri.startsWith(contextPath)) {
+        return uri.substring(contextPath.length());
+    }
+    return uri;
+}
+```
+
+**왜 `@Value` 대신 `request.getServletPath()`인가:**
+- `@Value("${server.servlet.context-path:}")` 가 프로덕션 런타임에 빈 문자열로 resolve되는 현상 발생
+- `request.getServletPath()`는 서블릿 컨테이너(Tomcat)가 context-path를 이미 제거한 경로를 반환하므로 가장 신뢰할 수 있음
+- `request.getContextPath()`를 이용한 수동 제거는 fallback으로 유지
+
+---
+
+### 2. JwtAuthenticationFilter.java
+
+**경로:** `src/main/java/com/debateseason_backend_v1/security/jwt/JwtAuthenticationFilter.java`
+
+**변경 내용:**
+- `securityPathMatcher.isPublicUrl(requestURI)` → `securityPathMatcher.isPublicUrl(request)`
+- `securityPathMatcher.isOptionalAuthUrl(requestURI, request.getMethod())` → `securityPathMatcher.isOptionalAuthUrl(request)`
+
+---
+
+### 3. RateLimitFilter.java
+
+**경로:** `src/main/java/com/debateseason_backend_v1/security/filter/RateLimitFilter.java`
+
+**변경 내용:**
+- `isExcluded(String requestURI)` → `isExcluded(HttpServletRequest request)`
+- 내부에서 `request.getRequestURI()` + `request.getContextPath()`로 context-path 제거 후 패턴 매칭
+
+---
+
+### 4. PROD_CICD.yml
+
+**경로:** `.github/workflows/PROD_CICD.yml`
+
+**변경 내용:**
+- `systemctl restart` 직전에 포트 8080을 점유하는 고스트 프로세스를 kill하는 로직 추가
+
+**추가된 코드:**
+```bash
+# Kill any orphan java process occupying port 8080
+ORPHAN_PID=$(sudo lsof -ti :8080 || true)
+if [ -n "$ORPHAN_PID" ]; then
+  echo "Killing orphan process on port 8080: PID=$ORPHAN_PID"
+  sudo kill "$ORPHAN_PID" || true
+  sleep 2
+fi
+```
+
+**설계 의도:**
+- CI/CD 마이그레이션 이전에 수동 실행된 Java 프로세스가 남아있는 경우 방어
+- `|| true`로 프로세스가 없어도 스크립트 실패하지 않음
+- `sleep 2`로 포트 해제 대기 후 `systemctl restart` 실행
+
+---
+
+### 빌드 결과
+
+- **컴파일**: `./gradlew build -x test` → BUILD SUCCESSFUL
+- **테스트**: GitHub Actions 60개 전체 통과
+- **서버 검증**:
+  - `curl http://localhost:8080/prod/api/v1/home/recommend` → 200 (비로그인 정상 응답)
+  - `curl http://localhost:8080/prod/api/v1/issue-map` → 200 (비로그인 정상 응답)
+
+---
+
+## 2026-03-07: authorizeHttpRequests 간소화 + CommunitySorterV4 NPE 수정
+
+### 목적
+비로그인 상태로 `GET /api/v1/issue` 호출 시 403 반환, 이후 보안 통과 후 500(NPE) 발생하던 문제 수정.
+
+### 근본 원인 (2가지)
+
+| # | 문제 | 영향 |
+|---|------|------|
+| 1 | Spring Security 6.x `authorizeHttpRequests`의 `requestMatchers(String...)`가 내부적으로 `MvcRequestMatcher`를 사용. `/api/v1/issue`가 두 컨트롤러(`IssueControllerV1` GET, `AdminIssueControllerV1` POST)에 분산 매핑되어 `HandlerMappingIntrospector` 해석 실패 → 403 | `AntPathRequestMatcher` 명시 사용으로도 해결 안 됨 → `anyRequest().permitAll()`로 전환 |
+| 2 | `CommunitySorterV4.getSortedCommunity()`에서 비로그인 시 `record()`가 호출되지 않아 `usersByIssue.get(issueId)` → null → for문 NPE → 500 | null 체크 추가로 빈 맵 반환 |
+
+### 진단 과정
+
+1. 서버에서 curl 테스트 → `/api/v1/issue` 403, `/api/v1/room` 404(정상), `/api/v1/issue-map` 200(정상)
+2. 403 + Content-Length: 0 = Spring Security `Http403ForbiddenEntryPoint` (formLogin/httpBasic 비활성 시 기본)
+3. 같은 `OPTIONAL_AUTH_URLS` 배열인데 `/api/v1/issue`만 실패 → 핸들러 매핑 조사
+4. `/api/v1/issue`가 두 컨트롤러에 분산 매핑 발견 → `AntPathRequestMatcher` 시도 → 여전히 403
+5. `authorizeHttpRequests`를 `anyRequest().permitAll()`로 변경 → 403 해결, 500 발생
+6. 500 로그: `CommunitySorterV4.getSortedCommunity()` NPE → null 방어 추가 → 200 정상
+
+### 설계 결정: `anyRequest().permitAll()`
+
+**`JwtAuthenticationFilter`가 이미 모든 인증 로직을 처리:**
+- Public URL → skip (인증 없이 통과)
+- Optional Auth URL → 토큰 있으면 파싱, 없으면 anonymous 통과
+- 그 외 → 토큰 필수 (없으면 401 응답, `filterChain.doFilter()` 호출 안 함)
+
+따라서 `authorizeHttpRequests`의 URL별 `permitAll()` / `authenticated()` 설정은 **중복**이었으며, Spring Security의 `MvcRequestMatcher` 버그에 취약했다. `anyRequest().permitAll()`로 변경하여 URL 매칭 의존성을 제거하고, 접근 제어를 `JwtAuthenticationFilter`에 일원화.
+
+### 변경 파일 (2개)
+
+| # | 파일 | 변경 유형 |
+|---|------|----------|
+| 1 | `WebSecurityConfig.java` | `authorizeHttpRequests` 간소화 |
+| 2 | `CommunitySorterV4.java` | NPE 방어 |
+
+---
+
+### 1. WebSecurityConfig.java
+
+**경로:** `src/main/java/com/debateseason_backend_v1/config/WebSecurityConfig.java`
+
+**변경 내용:**
+- `authorizeHttpRequests` 내 URL별 `requestMatchers(...).permitAll()` 제거
+- `anyRequest().permitAll()`로 단순화
+- `AntPathRequestMatcher`, `RequestMatcher`, `Arrays` 등 미사용 import 정리
+
+**변경 전:**
+```java
+.authorizeHttpRequests(auth -> auth
+    .requestMatchers(PUBLIC_URLS).permitAll()
+    .requestMatchers(OPTIONAL_AUTH_URLS).permitAll()
+    .anyRequest().authenticated()
+)
+```
+
+**변경 후:**
+```java
+.authorizeHttpRequests(auth -> auth
+    .anyRequest().permitAll()
+)
+```
+
+**`PUBLIC_URLS`, `OPTIONAL_AUTH_URLS` 상수 배열은 유지** — `JwtAuthenticationFilter`와 `SecurityPathMatcher`가 참조하므로 삭제 불가.
+
+---
+
+### 2. CommunitySorterV4.java
+
+**경로:** `src/main/java/com/debateseason_backend_v1/domain/issue/community/CommunitySorterV4.java`
+
+**변경 내용:**
+- `getSortedCommunity()` 메서드에 `userList` null 체크 추가
+
+**변경 전 (L101-109):**
+```java
+public LinkedHashMap<String, Integer> getSortedCommunity(Long issueId) {
+    List<UserDTO> userList = usersByIssue.get(issueId);
+    HashMap<String, Integer> map = new HashMap<>();
+    for (UserDTO u : userList) {  // userList가 null이면 NPE
+```
+
+**변경 후 (L101-113):**
+```java
+public LinkedHashMap<String, Integer> getSortedCommunity(Long issueId) {
+    List<UserDTO> userList = usersByIssue.get(issueId);
+
+    if (userList == null) {
+        return new LinkedHashMap<>();
+    }
+
+    HashMap<String, Integer> map = new HashMap<>();
+    for (UserDTO u : userList) {
+```
+
+**발생 조건:**
+- 비로그인 사용자가 이슈를 조회할 때, `record()`가 호출되지 않아 `usersByIssue`에 해당 issueId 엔트리가 없음
+- `ConcurrentHashMap.get()` → null 반환 → for문 NPE
+
+---
+
+### 서버 검증
+
+- `curl http://localhost:8080/prod/api/v1/issue?issue-id=1` → 200 (비로그인 정상 응답, `map: {}`, `bookMarkState: "no"`)
+- `curl http://localhost:8080/prod/api/v1/room?chatroom-id=1` → 404 (해당 chatroom 미존재, 보안 통과)
+- `curl http://localhost:8080/prod/api/v1/issue-map` → 200 (기존 정상)
+- `curl http://localhost:8080/prod/api/v1/home/recommend` → 200 (기존 정상)

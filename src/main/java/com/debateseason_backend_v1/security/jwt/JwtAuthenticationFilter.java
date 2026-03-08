@@ -40,13 +40,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
 		String requestURI = request.getRequestURI();
 
-		if (securityPathMatcher.isPublicUrl(requestURI)) {
+		if (securityPathMatcher.isPublicUrl(request)) {
 			filterChain.doFilter(request, response);
 			return;
 		}
 
 		// Optional Auth: 토큰 있으면 파싱, 없으면 anonymous로 통과
-		if (securityPathMatcher.isOptionalAuthUrl(requestURI, request.getMethod())) {
+		if (securityPathMatcher.isOptionalAuthUrl(request)) {
 			tryOptionalAuthentication(request);
 			filterChain.doFilter(request, response);
 			return;

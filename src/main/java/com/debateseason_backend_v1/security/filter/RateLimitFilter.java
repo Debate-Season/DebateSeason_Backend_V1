@@ -80,7 +80,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
 		FilterChain filterChain
 	) throws ServletException, IOException {
 
-		if (isExcluded(request.getRequestURI())) {
+		if (isExcluded(request)) {
 			filterChain.doFilter(request, response);
 			return;
 		}
@@ -121,10 +121,15 @@ public class RateLimitFilter extends OncePerRequestFilter {
 			&& authentication.getPrincipal() instanceof CustomUserDetails;
 	}
 
-	private boolean isExcluded(String requestURI) {
+	private boolean isExcluded(HttpServletRequest request) {
+		String uri = request.getRequestURI();
+		String contextPath = request.getContextPath();
+		if (contextPath != null && !contextPath.isEmpty() && uri.startsWith(contextPath)) {
+			uri = uri.substring(contextPath.length());
+		}
 		org.springframework.util.AntPathMatcher pathMatcher = new org.springframework.util.AntPathMatcher();
 		for (String pattern : EXCLUDED_PATHS) {
-			if (pathMatcher.match(pattern, requestURI)) {
+			if (pathMatcher.match(pattern, uri)) {
 				return true;
 			}
 		}

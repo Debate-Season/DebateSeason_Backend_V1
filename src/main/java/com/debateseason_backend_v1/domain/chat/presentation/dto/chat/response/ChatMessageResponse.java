@@ -45,6 +45,8 @@ public class ChatMessageResponse {
     private OpinionType opinionType;
     @Schema(description = "사용자 소속 커뮤니티", example = "에펨코리아")
     private String userCommunity;
+    @Schema(description = "프로필 색상", example = "RED")
+    private String profileColor;
 
     @JsonSerialize(using = LocalDateTimeSerializer.class) // 직렬화 시 필요
     @JsonDeserialize(using = LocalDateTimeDeserializer.class) // 역직렬화 시 필요
@@ -67,6 +69,10 @@ public class ChatMessageResponse {
     }
 
     public static ChatMessageResponse from(ChatEntity chat, Long currentUserId, ChatReactionRepository chatReactionRepository) {
+        return from(chat, currentUserId, chatReactionRepository, null);
+    }
+
+    public static ChatMessageResponse from(ChatEntity chat, Long currentUserId, ChatReactionRepository chatReactionRepository, String profileColor) {
         // 반응 수 조회
         int logicCount = chatReactionRepository.countByChatIdAndReactionType(
                 chat.getId(), ChatReactionRequest.ReactionType.LOGIC);
@@ -92,6 +98,7 @@ public class ChatMessageResponse {
                 .sender(chat.getSender())
                 .opinionType(chat.getOpinionType())
                 .userCommunity(chat.getUserCommunity())
+                .profileColor(profileColor)
                 .timeStamp(chat.getTimeStamp())
                 .reactions(ChatReactionResponse.builder()
                         .logicCount(logicCount)
@@ -103,6 +110,10 @@ public class ChatMessageResponse {
     }
 
     public static ChatMessageResponse from(ChatEntity chat) {
+        return from(chat, (String) null);
+    }
+
+    public static ChatMessageResponse from(ChatEntity chat, String profileColor) {
         // 빈 ReactionResponse 객체 생성
         ChatReactionResponse emptyReaction = ChatReactionResponse.builder()
                 .logicCount(0)
@@ -119,6 +130,7 @@ public class ChatMessageResponse {
                 .sender(chat.getSender())
                 .opinionType(chat.getOpinionType())
                 .userCommunity(chat.getUserCommunity())
+                .profileColor(profileColor)
                 .timeStamp(chat.getTimeStamp())
                 .reactions(emptyReaction)
                 .build();
@@ -140,37 +152,25 @@ public class ChatMessageResponse {
             ChatEntity chat,
             Long currentUserId,
             Map<Long, Map<ChatReactionRequest.ReactionType, Integer>> reactionCountsMap,
-            Map<Long, Set<ChatReactionRequest.ReactionType>> userReactionsMap) {
+            Map<Long, Set<ChatReactionRequest.ReactionType>> userReactionsMap,
+            Map<Long, String> profileColorMap) {
 
-        /**
-         * Map에서 반응 수 가져오기
-         *
-         * getOrDefault 사용 이유
-         * 1. 반응이 하나도 없는 메시지일 수 있음
-         * 2. null 체크 없이 안전하게 기본값 반환
-         * 3. 함수형 프로그래밍 스타일로 가독성 향상
-         */
         Map<ChatReactionRequest.ReactionType, Integer> reactionCounts =
                 reactionCountsMap.getOrDefault(chat.getId(), Collections.emptyMap());
 
-        // 각 타입별 반응 수 (없으면 0)
         int logicCount = reactionCounts.getOrDefault(ChatReactionRequest.ReactionType.LOGIC, 0);
         int attitudeCount = reactionCounts.getOrDefault(ChatReactionRequest.ReactionType.ATTITUDE, 0);
 
-        /**
-         * 사용자 반응 여부 확인
-         *
-         * Set.contains() 사용 이유
-         * 1. O(1) 시간 복잡도로 빠른 조회
-         * 2. null-safe (빈 Set은 항상 false 반환)
-         */
         Set<ChatReactionRequest.ReactionType> userReactions =
                 userReactionsMap.getOrDefault(chat.getId(), Collections.emptySet());
 
         boolean userReactedLogic = userReactions.contains(ChatReactionRequest.ReactionType.LOGIC);
         boolean userReactedAttitude = userReactions.contains(ChatReactionRequest.ReactionType.ATTITUDE);
 
-        // 빌더 패턴으로 응답 객체 생성
+        String profileColor = chat.getUserId() != null
+                ? profileColorMap.getOrDefault(chat.getUserId(), null)
+                : null;
+
         return ChatMessageResponse.builder()
                 .id(chat.getId())
                 .roomId(chat.getChatRoomId().getId())
@@ -179,6 +179,7 @@ public class ChatMessageResponse {
                 .sender(chat.getSender())
                 .opinionType(chat.getOpinionType())
                 .userCommunity(chat.getUserCommunity())
+                .profileColor(profileColor)
                 .timeStamp(chat.getTimeStamp())
                 .reactions(ChatReactionResponse.builder()
                         .logicCount(logicCount)

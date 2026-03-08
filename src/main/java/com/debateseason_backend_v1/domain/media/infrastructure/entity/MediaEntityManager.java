@@ -22,6 +22,9 @@ public class MediaEntityManager {
 			.supplier(mediaEntity.getMedia())
 			.outdated(mediaEntity.getCreatedAt())
 			.type(mediaEntity.getType())
+			.category(mediaEntity.getCategory())
+			.media(mediaEntity.getMedia())
+			.createdAt(mediaEntity.getCreatedAt())
 			.build();
 	}
 

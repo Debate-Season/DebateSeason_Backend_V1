@@ -67,7 +67,7 @@ public class MediaEntity {
 			.title(mediaEntity.getTitle())
 			.url(mediaEntity.getUrl())
 			.src(mediaEntity.getSrc())
-			.category(mediaEntity.getSrc())
+			.category(mediaEntity.getCategory())
 			.media(mediaEntity.getMedia())
 			.type(mediaEntity.getType())
 			.count(mediaEntity.getCount())

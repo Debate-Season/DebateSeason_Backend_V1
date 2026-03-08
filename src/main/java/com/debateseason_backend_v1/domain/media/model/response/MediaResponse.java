@@ -40,5 +40,14 @@ public class MediaResponse {
 	@Schema(description = "type",example = "news")
 	private String type;
 
+	@Schema(description = "카테고리", example = "정치")
+	private String category;
+
+	@Schema(description = "미디어", example = "중앙일보")
+	private String media;
+
+	@Schema(description = "생성일시", example = "2024-12-03T08:51:57")
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "Asia/Seoul")
+	private LocalDateTime createdAt;
 
 }

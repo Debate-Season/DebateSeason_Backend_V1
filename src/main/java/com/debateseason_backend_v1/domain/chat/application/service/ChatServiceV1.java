@@ -19,6 +19,8 @@ import com.debateseason_backend_v1.domain.chat.application.repository.ReportRepo
 import com.debateseason_backend_v1.domain.chat.domain.model.report.Report;
 import com.debateseason_backend_v1.domain.chat.domain.model.report.ReportStatus;
 import com.debateseason_backend_v1.domain.chat.domain.model.report.ReportTargetType;
+import com.debateseason_backend_v1.domain.profile.infrastructure.ProfileEntity;
+import com.debateseason_backend_v1.domain.profile.infrastructure.ProfileJpaRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
@@ -30,6 +32,7 @@ import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -46,6 +49,7 @@ public class ChatServiceV1 {
 	private final ChatReactionRepository chatReactionRepository;
 	private final ReportRepository reportRepository;
     private final NotificationServiceV1 notificationService;
+	private final ProfileJpaRepository profileJpaRepository;
 
 	// ---------- WebSocket 실시간 메시지 처리 ----------
 	
@@ -67,12 +71,16 @@ public class ChatServiceV1 {
 		ChatEntity chat = ChatEntity.from(message, chatRoom, userId);
 		ChatEntity savedchat = chatRepository.save(chat);
 
-		// 비동기 FCM 알림 전송 (오프라인 사용자 푸시)
-		// notificationService.sendChatMessageNotification(savedchat);
-		// log.debug("채팅 메시지 저장 완료: roomId={}, sender={}", roomId, message.getSender());
+		// 프로필 색상 조회
+		String profileColor = null;
+		if (userId != null) {
+			profileColor = profileJpaRepository.findByUserId(userId)
+				.map(ProfileEntity::getProfileImage)
+				.orElse(null);
+		}
 
 		// 빈 반응 정보를 포함한 응답 생성
-		return ChatMessageResponse.from(savedchat);
+		return ChatMessageResponse.from(savedchat, profileColor);
 	}
 
 	public ChatMessageResponse processJoinMessage(ChatMessageRequest joinRequest) {
@@ -125,6 +133,15 @@ public class ChatServiceV1 {
 		boolean hasMore = chats.size() > PAGE_SIZE;
 		List<ChatEntity> displayChats = hasMore ? chats.subList(0, PAGE_SIZE) : chats;
 		
+		// 프로필 색상 배치 조회
+		List<Long> userIds = displayChats.stream()
+				.map(ChatEntity::getUserId)
+				.filter(Objects::nonNull)
+				.distinct()
+				.toList();
+		Map<Long, String> profileColorMap = profileJpaRepository.findByUserIdIn(userIds).stream()
+				.collect(Collectors.toMap(ProfileEntity::getUserId, ProfileEntity::getProfileImage, (a, b) -> a));
+
 		// 신고된 메시지 목록 조회
 		Set<Long> acceptedReportChatIds = reportRepository.findByTargetTypeAndStatus(
 				ReportTargetType.CHAT, ReportStatus.ACCEPTED)
@@ -138,6 +155,9 @@ public class ChatServiceV1 {
 		// 응답 생성 - 신고된 메시지 마스킹 적용
 		List<ChatMessageResponse> messageResponses = displayChats.stream()
 				.map(chatEntity -> {
+					String profileColor = chatEntity.getUserId() != null
+							? profileColorMap.getOrDefault(chatEntity.getUserId(), null)
+							: null;
 					// 신고 처리된 메시지인지 확인
 					if (acceptedReportChatIds.contains(chatEntity.getId())) {
 						// 마스킹된 엔티티 생성
@@ -152,9 +172,9 @@ public class ChatServiceV1 {
 								.userCommunity(chatEntity.getUserCommunity())
 								.timeStamp(chatEntity.getTimeStamp())
 								.build();
-						return ChatMessageResponse.from(maskedEntity, userId, chatReactionRepository);
+						return ChatMessageResponse.from(maskedEntity, userId, chatReactionRepository, profileColor);
 					}
-					return ChatMessageResponse.from(chatEntity, userId, chatReactionRepository);
+					return ChatMessageResponse.from(chatEntity, userId, chatReactionRepository, profileColor);
 				})
 				.collect(Collectors.toList());
 		
@@ -201,6 +221,15 @@ public class ChatServiceV1 {
 		//chatIds 메시지들 사용자 반응
 		Map<Long, Set<ChatReactionRequest.ReactionType>> userReactionsMap = chatReactionRepository.findUserReactionsByChatIdsIn(chatIds, userId);
 
+		// 프로필 색상 배치 조회
+		List<Long> userIds = displayChats.stream()
+				.map(ChatEntity::getUserId)
+				.filter(Objects::nonNull)
+				.distinct()
+				.toList();
+		Map<Long, String> profileColorMap = profileJpaRepository.findByUserIdIn(userIds).stream()
+				.collect(Collectors.toMap(ProfileEntity::getUserId, ProfileEntity::getProfileImage, (a, b) -> a));
+
 		//신고 메시지 처리 로직
 		Set<Long> acceptedReportChatIds = reportRepository.findByTargetTypeAndStatus(
 						ReportTargetType.CHAT, ReportStatus.ACCEPTED)
@@ -215,12 +244,11 @@ public class ChatServiceV1 {
 				.map(chatEntity -> {
 					if (acceptedReportChatIds.contains(chatEntity.getId())) {
 						ChatEntity maskedEntity = createMaskedEntity(chatEntity);
-						// 새로운 최적화된 메서드 사용
 						return ChatMessageResponse.fromOptimized(
-								maskedEntity, userId, reactionCountsMap, userReactionsMap);
+								maskedEntity, userId, reactionCountsMap, userReactionsMap, profileColorMap);
 					}
 					return ChatMessageResponse.fromOptimized(
-							chatEntity, userId, reactionCountsMap, userReactionsMap);
+							chatEntity, userId, reactionCountsMap, userReactionsMap, profileColorMap);
 				})
 				.toList();
 

@@ -1409,3 +1409,329 @@ public LinkedHashMap<String, Integer> getSortedCommunity(Long issueId) {
 - `curl http://localhost:8080/prod/api/v1/room?chatroom-id=1` → 404 (해당 chatroom 미존재, 보안 통과)
 - `curl http://localhost:8080/prod/api/v1/issue-map` → 200 (기존 정상)
 - `curl http://localhost:8080/prod/api/v1/home/recommend` → 200 (기존 정상)
+
+---
+
+## 2026-03-08: Media API 응답 필드 추가 + category 매핑 버그 수정
+
+### 목적
+Media API 응답에 `category`, `media`, `createdAt` 필드를 추가하여 프론트엔드에서 카테고리 필터링 및 미디어 출처 표시가 가능하도록 함.
+또한 `MediaEntity.toModel()`에서 `category`에 `getSrc()` 값이 들어가던 버그를 수정.
+
+### 변경 파일 목록 (3개)
+
+| # | 파일 | 변경 유형 |
+|---|------|----------|
+| 1 | `MediaResponse.java` | 응답 필드 추가 |
+| 2 | `MediaEntityManager.java` | 매퍼에 필드 매핑 추가 |
+| 3 | `MediaEntity.java` | category 매핑 버그 수정 |
+
+---
+
+### 1. MediaResponse.java
+
+**경로:** `src/main/java/com/debateseason_backend_v1/domain/media/model/response/MediaResponse.java`
+
+**변경 내용:**
+- `category`, `media`, `createdAt` 필드 3개 추가
+
+**추가된 코드:**
+```java
+@Schema(description = "카테고리", example = "정치")
+private String category;
+
+@Schema(description = "미디어", example = "중앙일보")
+private String media;
+
+@Schema(description = "생성일시", example = "2024-12-03T08:51:57")
+@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "Asia/Seoul")
+private LocalDateTime createdAt;
+```
+
+---
+
+### 2. MediaEntityManager.java
+
+**경로:** `src/main/java/com/debateseason_backend_v1/domain/media/infrastructure/entity/MediaEntityManager.java`
+
+**변경 내용:**
+- `toMediaResponse()` 빌더에 `category`, `media`, `createdAt` 매핑 추가
+
+**변경 전:**
+```java
+return MediaResponse.builder()
+    .id(mediaEntity.getId())
+    .url(mediaEntity.getUrl())
+    .src(mediaEntity.getSrc())
+    .title(mediaEntity.getTitle())
+    .supplier(mediaEntity.getMedia())
+    .outdated(mediaEntity.getCreatedAt())
+    .type(mediaEntity.getType())
+    .build();
+```
+
+**변경 후:**
+```java
+return MediaResponse.builder()
+    .id(mediaEntity.getId())
+    .url(mediaEntity.getUrl())
+    .src(mediaEntity.getSrc())
+    .title(mediaEntity.getTitle())
+    .supplier(mediaEntity.getMedia())
+    .outdated(mediaEntity.getCreatedAt())
+    .type(mediaEntity.getType())
+    .category(mediaEntity.getCategory())
+    .media(mediaEntity.getMedia())
+    .createdAt(mediaEntity.getCreatedAt())
+    .build();
+```
+
+---
+
+### 3. MediaEntity.java
+
+**경로:** `src/main/java/com/debateseason_backend_v1/domain/media/infrastructure/entity/MediaEntity.java`
+
+**변경 내용:**
+- `toModel()`에서 `.category(mediaEntity.getSrc())` → `.category(mediaEntity.getCategory())` 버그 수정
+
+**변경 전:**
+```java
+.category(mediaEntity.getSrc())  // 버그: src 값이 category에 들어감
+```
+
+**변경 후:**
+```java
+.category(mediaEntity.getCategory())
+```
+
+---
+
+## 2026-03-08: 채팅 메시지 응답에 프로필 색상(profileColor) 반영
+
+### 목적
+프로필에서 설정한 색상이 채팅방에서 다른 사용자에게도 반영되도록 채팅 메시지 API 응답에 `profileColor` 필드를 추가.
+기존에는 모든 사용자의 프로필 색상이 클라이언트에서 노란색으로 고정 표시되었음.
+
+### 변경 파일 목록 (3개)
+
+| # | 파일 | 변경 유형 |
+|---|------|----------|
+| 1 | `ChatMessageResponse.java` | 응답 필드 + 팩토리 메서드 추가 |
+| 2 | `ChatServiceV1.java` | 프로필 색상 조회 로직 추가 |
+| 3 | `ProfileJpaRepository.java` | 배치 조회 메서드 추가 |
+
+---
+
+### 1. ChatMessageResponse.java
+
+**경로:** `src/main/java/com/debateseason_backend_v1/domain/chat/presentation/dto/chat/response/ChatMessageResponse.java`
+
+**변경 내용:**
+- `profileColor` 필드 추가
+- 기존 팩토리 메서드들에 `profileColor` 파라미터를 받는 오버로드 추가
+- `fromOptimized()`에 `Map<Long, String> profileColorMap` 파라미터 추가
+
+**추가된 필드:**
+```java
+@Schema(description = "프로필 색상", example = "RED")
+private String profileColor;
+```
+
+**추가/변경된 팩토리 메서드:**
+```java
+// 기존 호환용 (profileColor = null)
+public static ChatMessageResponse from(ChatEntity chat) {
+    return from(chat, (String) null);
+}
+
+// profileColor 포함
+public static ChatMessageResponse from(ChatEntity chat, String profileColor) {
+    // ... .profileColor(profileColor) 포함
+}
+
+// 기존 호환용 (profileColor = null)
+public static ChatMessageResponse from(ChatEntity chat, Long currentUserId, ChatReactionRepository repo) {
+    return from(chat, currentUserId, repo, null);
+}
+
+// profileColor 포함
+public static ChatMessageResponse from(ChatEntity chat, Long currentUserId, ChatReactionRepository repo, String profileColor) {
+    // ... .profileColor(profileColor) 포함
+}
+
+// 최적화 메서드 — profileColorMap 파라미터 추가
+public static ChatMessageResponse fromOptimized(
+        ChatEntity chat, Long currentUserId,
+        Map<Long, Map<ReactionType, Integer>> reactionCountsMap,
+        Map<Long, Set<ReactionType>> userReactionsMap,
+        Map<Long, String> profileColorMap) {
+    // chat.getUserId()로 profileColorMap에서 조회
+}
+```
+
+---
+
+### 2. ChatServiceV1.java
+
+**경로:** `src/main/java/com/debateseason_backend_v1/domain/chat/application/service/ChatServiceV1.java`
+
+**변경 내용:**
+- `ProfileJpaRepository` 의존성 주입 추가
+- WebSocket 실시간 메시지(`processChatMessage`): 발신자 프로필 색상 단건 조회
+- REST 메시지 조회(`getChatMessages`, `getChatMessagesV2`): userId 배치 조회로 N+1 없이 프로필 색상 매핑
+
+**WebSocket 실시간 메시지 (processChatMessage):**
+```java
+// 프로필 색상 조회
+String profileColor = null;
+if (userId != null) {
+    profileColor = profileJpaRepository.findByUserId(userId)
+        .map(ProfileEntity::getProfileImage)
+        .orElse(null);
+}
+
+return ChatMessageResponse.from(savedchat, profileColor);
+```
+
+**REST 메시지 조회 (getChatMessages, getChatMessagesV2) — 배치 조회:**
+```java
+// 프로필 색상 배치 조회
+List<Long> userIds = displayChats.stream()
+    .map(ChatEntity::getUserId)
+    .filter(Objects::nonNull)
+    .distinct()
+    .toList();
+Map<Long, String> profileColorMap = profileJpaRepository.findByUserIdIn(userIds).stream()
+    .collect(Collectors.toMap(ProfileEntity::getUserId, ProfileEntity::getProfileImage, (a, b) -> a));
+```
+
+**설계 의도:**
+- WebSocket(단건): 실시간성이 중요하므로 발신자 1명만 단건 조회
+- REST(배치): 20건 메시지의 userId를 모아 `findByUserIdIn()`으로 1번만 쿼리 → N+1 방지
+
+---
+
+### 3. ProfileJpaRepository.java
+
+**경로:** `src/main/java/com/debateseason_backend_v1/domain/profile/infrastructure/ProfileJpaRepository.java`
+
+**변경 내용:**
+- `findByUserIdIn(List<Long> userIds)` 배치 조회 메서드 추가
+
+**추가된 코드:**
+```java
+List<ProfileEntity> findByUserIdIn(List<Long> userIds);
+```
+
+---
+
+### 빌드 결과
+
+- **컴파일**: `./gradlew compileJava` → BUILD SUCCESSFUL (4 warnings, 기존과 동일)
+
+### 프론트엔드 연동 필요
+
+백엔드에서 `profileColor` 필드를 내려주지만, 프론트(모바일/웹)에서 이 필드를 사용하는 코드가 있어야 실제로 색상이 반영된다.
+- 모바일: 채팅 메시지 렌더링 시 하드코딩된 색상 대신 `profileColor` 값 사용하도록 수정 필요 (앱 재배포 필요)
+- 웹: 동일하게 `profileColor` 필드 사용하도록 수정 필요
+
+## 2026-04-06: 카카오 웹 로그인 audience 검증 실패 수정
+
+### 목적
+프론트엔드(웹)에서 카카오 OAuth 로그인 시 `ID_TOKEN_SIGNATURE_VALIDATION_FAILED` 에러 발생.
+원인은 서명 검증 실패가 아니라 **audience(client_id) 불일치**.
+모바일 SDK와 웹 REST API가 서로 다른 카카오 앱 키를 사용하며, 백엔드가 모바일 앱 키 하나만 허용하고 있었음.
+
+### 원인 분석
+
+```
+[모바일 id_token]
+  aud: 18af8def9522316a9c30d75d997df2b1 (네이티브 앱 키)
+  → backend audience 설정과 일치 → ✅ 통과
+
+[웹 id_token]
+  aud: eb083b8a5c3da84061858b88f8ff22d6 (REST API 키)
+  → backend audience 설정과 불일치 → ❌ JWTVerificationException
+```
+
+`JWTVerificationException`은 서명/issuer/audience 검증을 모두 포괄하는 상위 예외이므로, catch 블록에서 `ID_TOKEN_SIGNATURE_VALIDATION_FAILED`로 응답했지만 실제 원인은 audience 미스매치.
+
+### 변경 파일 목록 (2개)
+
+| # | 파일 | 변경 유형 |
+|---|------|----------|
+| 1 | `application.yml` | 설정 변경 |
+| 2 | `AbstractOidcProvider.java` | 검증 로직 수정 |
+
+---
+
+### 1. application.yml
+
+**경로:** `src/main/resources/application.yml`
+
+**변경 내용:**
+- 카카오 audience에 웹 REST API 키 추가 (쉼표 구분)
+
+**변경 전:**
+```yaml
+social:
+  kakao:
+    audience: 18af8def9522316a9c30d75d997df2b1
+```
+
+**변경 후:**
+```yaml
+social:
+  kakao:
+    audience: 18af8def9522316a9c30d75d997df2b1,eb083b8a5c3da84061858b88f8ff22d6
+```
+
+---
+
+### 2. AbstractOidcProvider.java
+
+**경로:** `src/main/java/com/debateseason_backend_v1/domain/user/component/provider/AbstractOidcProvider.java`
+
+**변경 내용:**
+- `audience` 필드를 `String` → `String[]` 배열로 변경
+- 생성자에서 `split(",")` 로 파싱
+- `withAudience()` → `withAnyOfAudience()` 로 변경
+
+**변경 전:**
+```java
+protected final String audience;
+
+// 생성자
+this.audience = audience;
+
+// 검증기
+JWT.require(Algorithm.RSA256(publicKey, null))
+    .withIssuer(issuer)
+    .withAudience(audience)  // 단일 audience만 허용
+    .build();
+```
+
+**변경 후:**
+```java
+protected final String[] audiences;
+
+// 생성자
+this.audiences = audience.split(",");
+
+// 검증기
+JWT.require(Algorithm.RSA256(publicKey, null))
+    .withIssuer(issuer)
+    .withAnyOfAudience(audiences)  // 복수 audience 중 하나만 일치하면 통과
+    .build();
+```
+
+**`withAudience` vs `withAnyOfAudience` (auth0 java-jwt 4.5.0):**
+- `withAudience(String...)`: 토큰의 aud가 지정된 **모든** 값을 포함해야 함
+- `withAnyOfAudience(String...)`: 토큰의 aud가 지정된 값 중 **하나라도** 포함하면 통과
+
+---
+
+### 빌드 결과
+
+- **컴파일**: `./gradlew compileJava` → BUILD SUCCESSFUL

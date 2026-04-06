@@ -29,7 +29,7 @@ public abstract class AbstractOidcProvider implements OidcProvider {
 
 	protected final JwkProvider jwkProvider;
 	protected final String issuer;
-	protected final String audience;
+	protected final String[] audiences;
 
 	/**
 	 * 생성자
@@ -41,7 +41,7 @@ public abstract class AbstractOidcProvider implements OidcProvider {
 	protected AbstractOidcProvider(String jwksUrl, String issuer, String audience) {
 
 		this.issuer = issuer;
-		this.audience = audience;
+		this.audiences = audience.split(",");
 
 		try {
 			// JWK 제공자 초기화 및 캐싱 설정
@@ -161,7 +161,7 @@ public abstract class AbstractOidcProvider implements OidcProvider {
 
 		return JWT.require(Algorithm.RSA256(publicKey, null))
 			.withIssuer(issuer)
-			.withAudience(audience)
+			.withAnyOfAudience(audiences)
 			.build();
 	}
 }

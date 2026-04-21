@@ -38,6 +38,6 @@ social:
   kakao:
     audience: 18af8def9522316a9c30d75d997df2b1,eb083b8a5c3da84061858b88f8ff22d6
   apple:
-    audience: com.rosyocean.debateseason
+    audience: com.rosyocean.debateseason,com.rosyocean.debateseason.web.auth
 
 

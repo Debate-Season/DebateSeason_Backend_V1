@@ -87,10 +87,17 @@ server:
   port: 8080
 
 # 환경별로 스웨거 요청 분리
-swagger-base-url: "https://toronchul.app/prod"
+swagger-base-url: "https://api.toronchul.app/prod"
 
 #stomp 연결 환경분리
 stomp-connect-url: "/ws-stomp"
+
+# 채팅 WebSocket 인증 강제 여부.
+# false: 토큰 있으면 사용자 식별, 없으면 익명 연결 허용(기존 앱 호환).
+# true: 토큰 없는/유효하지 않은 CONNECT 거부 → 앱 강제 업데이트 배포 완료 후에만 켤 것.
+chat:
+  websocket:
+    auth-required: false
 
 # 유튜브 라이브 api key (환경변수로 관리)
 youtube_live-api-key: ${YOUTUBE_API_KEY}

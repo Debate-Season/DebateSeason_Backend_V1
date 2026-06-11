@@ -11,10 +11,12 @@ public class WebConfig implements WebMvcConfigurer {
 	@Override
 	public void addCorsMappings(CorsRegistry registry) {
 		registry.addMapping("/**") //모든 경로 허용
-			.allowedOrigins(
+			.allowedOriginPatterns(
 				"https://debate-season.click",
 				"http://localhost:3000",
-				"https://toronchul.app"
+				"https://toronchul.app",
+				"https://www.toronchul.app",
+				"https://*.vercel.app"
 			)
 			.allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH")
 			.allowedHeaders("*")

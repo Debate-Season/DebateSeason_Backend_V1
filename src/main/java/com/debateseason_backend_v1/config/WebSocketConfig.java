@@ -44,6 +44,12 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Value("${stomp-connect-url}")
     private String stompConnectUrl;
 
+    // true 이면 토큰 없는/유효하지 않은 STOMP CONNECT 를 거부한다.
+    // 기존(미업데이트) 앱은 CONNECT 에 토큰을 싣지 않으므로, 앱 강제 업데이트 배포가 끝난 뒤에만 true 로 켠다.
+    // 기본값 false: 토큰이 있으면 사용자 식별, 없으면 익명 연결 허용(기존 클라이언트 호환).
+    @Value("${chat.websocket.auth-required:false}")
+    private boolean webSocketAuthRequired;
+
     @Override
     public void configureMessageBroker(MessageBrokerRegistry config) {
         config.enableSimpleBroker("/topic", "/queue");
@@ -84,36 +90,45 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
             @Override
             public Message<?> preSend(Message<?> message, MessageChannel channel) {
                 StompHeaderAccessor accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
-                
-                if (StompCommand.CONNECT.equals(accessor.getCommand())) {
-                    String token = accessor.getFirstNativeHeader("Authorization");
-                    log.info("WebSocket 연결 시도 - 토큰: {}", token != null ? "존재함" : "없음");
-                    
-                    if (token != null && token.startsWith("Bearer ")) {
-                        token = token.substring(7);
-                        try {
-                            // 토큰 검증
-                            jwtUtil.validate(token);
-                            
-                            // 사용자 ID 추출
-                            Long userId = jwtUtil.getUserId(token);
-                            log.info("WebSocket 인증 성공 - 사용자 ID: {}", userId);
-                            
-                            accessor.setUser(new Principal() {
-                                @Override
-                                public String getName() {
-                                    return userId.toString();
-                                }
-                            });
-                        } catch (Exception e) {
-                            // 토큰 검증 실패 시 처리
-                            log.error("토큰 검증 실패: {}", e.getMessage());
-                            throw new MessageDeliveryException("Invalid JWT token");
-                        }
-                    } else {
-                        log.warn("Authorization 헤더가 없거나 Bearer 토큰이 아닙니다");
-                    }
+
+                if (accessor == null || !StompCommand.CONNECT.equals(accessor.getCommand())) {
+                    return message;
                 }
+
+                // 채팅 메시지에 user_id 를 저장하려면 CONNECT 시점에 사용자를 식별해야 한다.
+                // (식별 실패 시 메시지가 익명으로 저장되어 프로필 색상이 전부 null 이 된다.)
+                String authorization = accessor.getFirstNativeHeader("Authorization");
+
+                if (authorization == null || !authorization.startsWith("Bearer ")) {
+                    if (webSocketAuthRequired) {
+                        log.warn("WebSocket CONNECT 거부 - Authorization 헤더 없음 또는 형식 오류");
+                        throw new MessageDeliveryException("WebSocket 연결에는 인증 토큰이 필요합니다.");
+                    }
+                    // 비강제 모드: 기존 클라이언트 호환을 위해 익명 연결 허용
+                    log.warn("WebSocket 익명 연결 - Authorization 헤더 없음 (메시지가 user_id 없이 저장됨)");
+                    return message;
+                }
+
+                String token = authorization.substring(7);
+                try {
+                    jwtUtil.validate(token);
+                    Long userId = jwtUtil.getUserId(token);
+
+                    accessor.setUser(new Principal() {
+                        @Override
+                        public String getName() {
+                            return userId.toString();
+                        }
+                    });
+                    log.info("WebSocket 인증 성공 - 사용자 ID: {}", userId);
+                } catch (Exception e) {
+                    log.error("WebSocket CONNECT - 토큰 검증 실패: {}", e.getMessage());
+                    if (webSocketAuthRequired) {
+                        throw new MessageDeliveryException("유효하지 않은 인증 토큰입니다.");
+                    }
+                    // 비강제 모드: 토큰이 유효하지 않아도 익명으로 연결 허용
+                }
+
                 return message;
             }
         });

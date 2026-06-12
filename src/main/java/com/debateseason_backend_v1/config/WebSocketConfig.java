@@ -99,7 +99,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                 // (식별 실패 시 메시지가 익명으로 저장되어 프로필 색상이 전부 null 이 된다.)
                 String authorization = accessor.getFirstNativeHeader("Authorization");
 
-                if (authorization == null || !authorization.startsWith("Bearer ")) {
+                if (authorization == null || authorization.isBlank()) {
                     if (webSocketAuthRequired) {
                         log.warn("WebSocket CONNECT 거부 - Authorization 헤더 없음 또는 형식 오류");
                         throw new MessageDeliveryException("WebSocket 연결에는 인증 토큰이 필요합니다.");
@@ -109,7 +109,10 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                     return message;
                 }
 
-                String token = authorization.substring(7);
+                // 앱(raw 토큰)과 "Bearer <token>" 형식 모두 허용
+                String token = authorization.startsWith("Bearer ")
+                    ? authorization.substring(7)
+                    : authorization;
                 try {
                     jwtUtil.validate(token);
                     Long userId = jwtUtil.getUserId(token);

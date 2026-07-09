@@ -45,3 +45,16 @@ out/
 *.pem
 *.key
 .env
+
+### macOS ###
+.DS_Store
+
+### Local tooling ###
+.claude/
+.solosquad/
+.ultraContextAI
+
+### Local docs / ops context (not shared) ###
+/CLAUDE.md
+/docs/2026-04-05-mobile-tls-incident.md
+/docs/api-optional-authentication-architecture.md

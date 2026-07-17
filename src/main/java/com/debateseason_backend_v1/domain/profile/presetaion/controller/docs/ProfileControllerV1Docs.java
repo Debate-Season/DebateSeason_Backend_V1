@@ -58,6 +58,7 @@ public interface ProfileControllerV1Docs {
 		ErrorCode.EXPIRED_ACCESS_TOKEN,
 		ErrorCode.INVALID_ACCESS_TOKEN,
 		ErrorCode.NOT_FOUND_PROFILE,
+		ErrorCode.NOT_FOUND_USER,
 	})
 	public ApiResult<ProfileResponse> getMyProfile(
 		@AuthenticationPrincipal CustomUserDetails userDetails

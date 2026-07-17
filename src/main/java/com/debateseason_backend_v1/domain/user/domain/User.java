@@ -83,4 +83,8 @@ public class User {
 	public Long getId() {
 		return this.id;
 	}
+
+	public SocialType getSocialType() {
+		return this.socialType;
+	}
 }

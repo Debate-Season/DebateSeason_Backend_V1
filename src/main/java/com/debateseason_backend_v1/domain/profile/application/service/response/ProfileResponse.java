@@ -4,6 +4,7 @@ import com.debateseason_backend_v1.domain.profile.domain.AgeRangeType;
 import com.debateseason_backend_v1.domain.profile.domain.CommunityType;
 import com.debateseason_backend_v1.domain.profile.domain.GenderType;
 import com.debateseason_backend_v1.domain.profile.domain.Profile;
+import com.debateseason_backend_v1.domain.user.domain.SocialType;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
@@ -23,6 +24,9 @@ public record ProfileResponse(
 	@Schema(description = "연령대", example = "20대")
 	AgeRangeType ageRange,
 
+	@Schema(description = "가입한 소셜 로그인 종류", example = "kakao", allowableValues = {"kakao", "apple"})
+	SocialType socialType,
+
 	@Schema(description = "프로필에 등록된 커뮤니티 응답")
 	CommunityResponse community,
 
@@ -39,13 +43,14 @@ public record ProfileResponse(
 	String hometownDistrict
 ) {
 
-	public static ProfileResponse of(Profile profile, CommunityType communityType) {
+	public static ProfileResponse of(Profile profile, CommunityType communityType, SocialType socialType) {
 
 		return ProfileResponse.builder()
 			.profileImage(profile.getProfileImage())
 			.nickname(profile.getNickname().value())
 			.gender(profile.getGender())
 			.ageRange(profile.getAgeRange())
+			.socialType(socialType)
 			.residenceProvince(profile.getResidence().getProvinceType().getCode())
 			.residenceDistrict(profile.getResidence().getDistrictType().getCode())
 			.hometownProvince(profile.getHometown().getProvinceType().getCode())

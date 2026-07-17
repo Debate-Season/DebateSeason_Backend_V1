@@ -17,6 +17,9 @@ import com.debateseason_backend_v1.domain.profile.domain.Nickname;
 import com.debateseason_backend_v1.domain.profile.domain.Profile;
 import com.debateseason_backend_v1.domain.profile.domain.ProvinceType;
 import com.debateseason_backend_v1.domain.profile.domain.Region;
+import com.debateseason_backend_v1.domain.user.application.UserRepository;
+import com.debateseason_backend_v1.domain.user.domain.SocialType;
+import com.debateseason_backend_v1.domain.user.domain.User;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,6 +31,7 @@ import lombok.extern.slf4j.Slf4j;
 public class ProfileServiceV1 {
 
 	private final ProfileRepository profileRepository;
+	private final UserRepository userRepository;
 
 	@Transactional
 	public void create(ProfileCreateServiceRequest request) {
@@ -68,9 +72,13 @@ public class ProfileServiceV1 {
 		Profile profile = profileRepository.findByUserId(userId)
 			.orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_PROFILE));
 
-		CommunityType communityType = profile.getCommunityType();
+		User user = userRepository.findById(userId)
+			.orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_USER));
 
-		return ProfileResponse.of(profile, communityType);
+		CommunityType communityType = profile.getCommunityType();
+		SocialType socialType = user.getSocialType();
+
+		return ProfileResponse.of(profile, communityType, socialType);
 	}
 
 	@Transactional

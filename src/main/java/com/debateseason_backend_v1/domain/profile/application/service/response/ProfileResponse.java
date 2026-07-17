@@ -24,7 +24,7 @@ public record ProfileResponse(
 	@Schema(description = "연령대", example = "20대")
 	AgeRangeType ageRange,
 
-	@Schema(description = "가입한 소셜 로그인 종류", example = "kakao", allowableValues = {"kakao", "apple"})
+	@Schema(description = "가입한 소셜 로그인 종류", example = "kakao")
 	SocialType socialType,
 
 	@Schema(description = "프로필에 등록된 커뮤니티 응답")

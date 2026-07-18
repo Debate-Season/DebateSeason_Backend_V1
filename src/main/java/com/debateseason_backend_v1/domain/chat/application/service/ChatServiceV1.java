@@ -1,6 +1,8 @@
 package com.debateseason_backend_v1.domain.chat.application.service;
 
 import com.debateseason_backend_v1.common.enums.MessageType;
+import com.debateseason_backend_v1.common.exception.CustomException;
+import com.debateseason_backend_v1.common.exception.ErrorCode;
 import com.debateseason_backend_v1.common.response.ApiResult;
 import com.debateseason_backend_v1.domain.chat.application.repository.ChatReactionRepository;
 import com.debateseason_backend_v1.domain.chat.application.repository.ChatRepository;
@@ -60,27 +62,35 @@ public class ChatServiceV1 {
 		// 채팅방 존재 여부 확인
 		ChatRoom chatRoom = chatRoomService.findChatRoomById(roomId);
 
-		// 인증 정보에서 사용자 ID 가져오기
-		Long userId = null;
-		Principal principal = headerAccessor.getUser();
-		if (principal != null) {
-			userId = Long.valueOf(principal.getName());
-		}
+		// 인증 정보에서 사용자 ID 가져오기 (발신자를 식별할 수 없는 메시지는 저장하지 않는다)
+		Long userId = resolveUserId(headerAccessor);
+
+		// 발신자는 서버가 프로필에서 채운다. 클라이언트가 보낸 sender 값은 신뢰하지 않는다.
+		ProfileEntity profile = profileJpaRepository.findByUserId(userId)
+			.orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_PROFILE));
+		message.setSender(profile.getNickname());
 
 		// 메시지 저장
 		ChatEntity chat = ChatEntity.from(message, chatRoom, userId);
 		ChatEntity savedchat = chatRepository.save(chat);
 
 		// 프로필 색상 조회
-		String profileColor = null;
-		if (userId != null) {
-			profileColor = profileJpaRepository.findByUserId(userId)
-				.map(ProfileEntity::getProfileImage)
-				.orElse(null);
-		}
+		String profileColor = profile.getProfileImage();
 
 		// 빈 반응 정보를 포함한 응답 생성
 		return ChatMessageResponse.from(savedchat, profileColor);
+	}
+
+	private Long resolveUserId(SimpMessageHeaderAccessor headerAccessor) {
+		Principal principal = headerAccessor.getUser();
+		if (principal == null) {
+			throw new CustomException(ErrorCode.MISSING_ACCESS_TOKEN);
+		}
+		try {
+			return Long.valueOf(principal.getName());
+		} catch (NumberFormatException e) {
+			throw new CustomException(ErrorCode.INVALID_ACCESS_TOKEN);
+		}
 	}
 
 	public ChatMessageResponse processJoinMessage(ChatMessageRequest joinRequest) {

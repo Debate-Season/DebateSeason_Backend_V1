@@ -46,7 +46,7 @@ nano /home/ubuntu/app/.env
 ```
 # Database
 DB_DRIVER_CLASS_NAME=org.mariadb.jdbc.Driver
-DB_URL=jdbc:mariadb://your-db-host:3306/debateseason
+DB_URL=jdbc:mariadb://127.0.0.1:3306/debate_season
 DB_USERNAME=your_user
 DB_PASSWORD=your_password
 
@@ -65,16 +65,21 @@ YOUTUBE_API_KEY=your_youtube_api_key
 chmod 600 /home/ubuntu/app/.env
 ```
 
-### 3. Java 포트 80 바인딩 허용
+### 3. (불필요) Java 포트 80 바인딩 허용
+
+애플리케이션은 8080에서 뜨고 80/443은 Nginx가 담당하므로 이 단계는 **실행하지 않는다.**
+아래는 포트 80 직접 바인딩을 쓰던 시절의 잔여 절차이며, 실행하면 java 바이너리에
+불필요한 capability가 붙는다.
 
 ```bash
-sudo setcap 'cap_net_bind_service=+ep' $(readlink -f $(which java))
+# 실행 금지 (이력 보존용)
+# sudo setcap 'cap_net_bind_service=+ep' $(readlink -f $(which java))
 ```
 
 ### 4. systemd 서비스 파일 생성
 
 ```bash
-sudo nano /etc/systemd/system/debateseason.service
+sudo nano /etc/systemd/system/toronchul.service
 ```
 
 ```ini
@@ -99,7 +104,7 @@ WantedBy=multi-user.target
 
 ```bash
 sudo systemctl daemon-reload
-sudo systemctl enable debateseason
+sudo systemctl enable toronchul
 ```
 
 ### 5. 서비스 시작
@@ -111,14 +116,14 @@ sudo pkill -f 'java.*jar' || true
 # 현재 jar를 app.jar로 복사 (기존 파일명에 맞게 수정)
 cp /home/ubuntu/app/기존파일명.jar /home/ubuntu/app/app.jar
 
-sudo systemctl start debateseason
+sudo systemctl start toronchul
 ```
 
 ### 6. 동작 확인
 
 ```bash
-sudo systemctl status debateseason
-curl http://localhost:80/prod/actuator/health
+sudo systemctl status toronchul
+curl http://localhost:8080/prod/actuator/health
 # 기대 결과: {"status":"UP"}
 ```
 
@@ -177,7 +182,7 @@ GitHub 리포지토리 → **Settings** → **Secrets and variables** → **Acti
 1. SCP: jar를 app.jar.new로 전송
 2. 기존 app.jar → app.jar.backup으로 백업
 3. app.jar.new → app.jar로 atomic swap (mv)
-4. systemctl restart debateseason
+4. systemctl restart toronchul
 5. health check: 12회 × 5초 간격 = 최대 60초 대기
 6. 성공 → 배포 완료
 7. 실패 → app.jar.backup을 app.jar로 복원 후 재시작
@@ -195,18 +200,18 @@ ssh -i [key] ubuntu@[LIGHTSAIL_HOST]
 mv /home/ubuntu/app/app.jar.backup /home/ubuntu/app/app.jar
 
 # 서비스 재시작
-sudo systemctl restart debateseason
+sudo systemctl restart toronchul
 
 # 복구 확인
-curl http://localhost:80/prod/actuator/health
+curl http://localhost:8080/prod/actuator/health
 ```
 
 ---
 
 ## 검증
 
-1. `sudo systemctl status debateseason` → active (running)
-2. `curl http://localhost:80/prod/actuator/health` → `{"status":"UP"}`
+1. `sudo systemctl status toronchul` → active (running)
+2. `curl http://localhost:8080/prod/actuator/health` → `{"status":"UP"}`
 3. main 브랜치에 커밋 push → GitHub Actions deploy job 성공
 4. 헬스 체크 실패 테스트 → 자동 롤백 후 서비스 복구 확인
 5. 모바일 앱에서 API 정상 호출 확인

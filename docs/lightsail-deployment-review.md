@@ -32,7 +32,7 @@
    - **Transfer:** SCP를 통해 `/home/ubuntu/app/app.jar.new`로 전송.
    - **Backup:** 기존 `app.jar`을 `app.jar.backup`으로 백업.
    - **Swap:** `app.jar.new` → `app.jar`로 atomic swap (`mv`).
-   - **Restart:** SSH 명령으로 `sudo systemctl restart debateseason` 실행.
+   - **Restart:** SSH 명령으로 `sudo systemctl restart toronchul` 실행.
    - **Health Check:** 자동 헬스 체크 (60초간 12회 x 5초 간격) 실행.
    - **Auto Rollback:** 헬스 체크 실패 시 `app.jar.backup`으로 자동 롤백.
 
@@ -40,9 +40,9 @@
 
 배포 직후 아래 명령어를 통해 서비스가 정상적으로 올라왔는지 확인합니다.
 
-1. **서비스 상태 확인:** `sudo systemctl status debateseason` 명령 결과가 `active (running)`이어야 합니다.
-2. **헬스 체크:** `curl http://localhost:80/prod/actuator/health` 호출 시 `{"status":"UP"}` 응답을 확인합니다.
-3. **로그 모니터링:** 오류 발생 시 `sudo journalctl -u debateseason -f`로 실시간 로그를 추적합니다.
+1. **서비스 상태 확인:** `sudo systemctl status toronchul` 명령 결과가 `active (running)`이어야 합니다.
+2. **헬스 체크:** `curl http://localhost:8080/prod/actuator/health` 호출 시 `{"status":"UP"}` 응답을 확인합니다.
+3. **로그 모니터링:** 오류 발생 시 `sudo journalctl -u toronchul -f`로 실시간 로그를 추적합니다.
 
 ---
 
@@ -55,7 +55,7 @@
 | 빌드 실패 | GitHub Actions 로그 확인 후 로컬에서 수정하여 재푸시. |
 | 서비스 기동 실패 | `.env` 파일 설정 누락 여부 확인 및 `journalctl` 로그 분석. |
 | 헬스 체크 실패 (자동 롤백 성공) | CI/CD가 `app.jar.backup`으로 자동 복구. 원인 분석 후 재배포. |
-| 자동 롤백도 실패 | SSH 접속 후 수동 롤백: `cp app.jar.backup app.jar && sudo systemctl restart debateseason` |
+| 자동 롤백도 실패 | SSH 접속 후 수동 롤백: `cp app.jar.backup app.jar && sudo systemctl restart toronchul` |
 | 긴급 롤백 필요 | 이전 배포 성공 시점의 커밋으로 `git revert` 후 다시 push하여 자동 배포 유도. |
 
 ### 수동 긴급 롤백 절차
@@ -68,10 +68,10 @@ ssh -i [key] ubuntu@[LIGHTSAIL_HOST]
 cp /home/ubuntu/app/app.jar.backup /home/ubuntu/app/app.jar
 
 # 3. 서비스 재시작
-sudo systemctl restart debateseason
+sudo systemctl restart toronchul
 
 # 4. 복구 확인
-curl http://localhost:80/prod/actuator/health
+curl http://localhost:8080/prod/actuator/health
 ```
 
 ---

@@ -11,6 +11,12 @@ on:
 env:
   GRADLE_OPTS: "-Dorg.gradle.parallel=true -Dorg.gradle.workers.max=4"
 
+# 연속 push 시 두 배포가 같은 app.jar / 백업 파일을 동시에 건드리는 것을 막는다.
+# 배포 중인 작업은 끊지 않고(cancel-in-progress: false) 뒤에 줄을 세운다.
+concurrency:
+  group: prod-deploy
+  cancel-in-progress: false
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -94,6 +100,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # systemd 유닛 원본(deploy/toronchul.service)을 가져오기 위해 필요
+      - name: Checkout
+        uses: actions/checkout@v5
+
       - name: Download build artifact
         uses: actions/download-artifact@v8
         with:
@@ -111,6 +121,41 @@ jobs:
         run: |
           JAR_FILE=$(ls build/libs/*.jar | grep -v plain | head -1)
           scp -i ~/.ssh/lightsail_key "$JAR_FILE" ubuntu@${{ secrets.LIGHTSAIL_HOST }}:/home/ubuntu/app/app.jar.new
+          scp -i ~/.ssh/lightsail_key deploy/toronchul.service ubuntu@${{ secrets.LIGHTSAIL_HOST }}:/home/ubuntu/app/toronchul.service.new
+
+      # 유닛 파일이 바뀐 경우에만 반영한다. 실제 재시작은 다음 스텝에서 한 번만 일어난다.
+      - name: Sync systemd unit
+        run: |
+          ssh -T -i ~/.ssh/lightsail_key ubuntu@${{ secrets.LIGHTSAIL_HOST }} 'bash -s' << 'UNIT_SCRIPT'
+          set -e
+          NEW=/home/ubuntu/app/toronchul.service.new
+          CUR=/etc/systemd/system/toronchul.service
+
+          if cmp -s "$NEW" "$CUR"; then
+            echo "systemd unit unchanged"
+            rm -f "$NEW"
+            exit 0
+          fi
+
+          echo "systemd unit changed — verifying before applying"
+
+          # systemd-analyze verify는 파일명이 .service로 끝나야 동작한다.
+          # 운영 유닛을 건드리기 전에 임시 경로에서 먼저 검증한다.
+          CHECK_DIR=$(mktemp -d)
+          cp "$NEW" "$CHECK_DIR/toronchul.service"
+          if ! sudo systemd-analyze verify "$CHECK_DIR/toronchul.service"; then
+            echo "unit verify failed — 운영 유닛을 건드리지 않고 중단한다"
+            rm -rf "$CHECK_DIR"
+            exit 1
+          fi
+          rm -rf "$CHECK_DIR"
+
+          sudo cp "$CUR" "/home/ubuntu/app/toronchul.service.backup"
+          sudo cp "$NEW" "$CUR"
+          sudo systemctl daemon-reload
+          rm -f "$NEW"
+          echo "systemd unit applied"
+          UNIT_SCRIPT
 
       - name: Deploy and health check
         run: |
@@ -118,12 +163,19 @@ jobs:
           APP_DIR=/home/ubuntu/app
           JAR=$APP_DIR/app.jar
           JAR_NEW=$APP_DIR/app.jar.new
-          JAR_BACKUP=$APP_DIR/app.jar.backup
+          BACKUP_DIR=$APP_DIR/jar-backups
+          KEEP=5
 
-          # Backup current jar
+          # 이전 버전을 타임스탬프별로 보관한다.
+          # 단일 app.jar.backup만 두면 두 버전 전으로는 되돌릴 수 없고,
+          # 롤백이 그 하나를 소비해 버려 롤백 직후 백업이 없는 상태가 됐다.
+          mkdir -p "$BACKUP_DIR"
           if [ -f "$JAR" ]; then
-            cp "$JAR" "$JAR_BACKUP"
+            cp "$JAR" "$BACKUP_DIR/app.jar.$(date -u '+%Y%m%d-%H%M%S')"
           fi
+
+          # 최근 $KEEP개만 남기고 정리
+          ls -1t "$BACKUP_DIR"/app.jar.* 2>/dev/null | tail -n "+$((KEEP + 1))" | xargs -r rm -f
 
           # Atomic swap
           mv "$JAR_NEW" "$JAR"
@@ -159,10 +211,33 @@ jobs:
 
           # Health check failed — rollback
           echo "Health check failed after 60 seconds. Rolling back..."
-          if [ -f "$JAR_BACKUP" ]; then
-            mv "$JAR_BACKUP" "$JAR"
-            sudo systemctl restart toronchul
-            echo "Rollback complete."
+          LATEST_BACKUP=$(ls -1t "$BACKUP_DIR"/app.jar.* 2>/dev/null | head -1)
+
+          if [ -z "$LATEST_BACKUP" ]; then
+            echo "FATAL: 롤백할 백업이 없다. 수동 개입 필요."
+            exit 1
+          fi
+
+          # cp로 되돌린다(mv 아님). 백업 세대를 보존해 재롤백이 가능하도록.
+          echo "Rolling back to $LATEST_BACKUP"
+          cp "$LATEST_BACKUP" "$JAR"
+          sudo systemctl restart toronchul
+
+          # 롤백이 실제로 살아났는지 반드시 확인한다.
+          # 이전에는 재시작만 하고 검증 없이 종료해, 롤백 실패를 알 수 없었다.
+          ROLLBACK_OK=false
+          for i in $(seq 1 12); do
+            sleep 5
+            if curl -sf http://localhost:8080/prod/actuator/health > /dev/null 2>&1; then
+              ROLLBACK_OK=true
+              break
+            fi
+          done
+
+          if [ "$ROLLBACK_OK" = true ]; then
+            echo "Rollback complete — service healthy on previous version."
+          else
+            echo "FATAL: 롤백 후에도 헬스체크 실패. 서비스가 내려가 있다. 수동 개입 필요."
           fi
           exit 1
           DEPLOY_SCRIPT

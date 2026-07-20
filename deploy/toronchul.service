@@ -1,0 +1,36 @@
+# 운영(Lightsail) systemd 유닛의 원본(source of truth).
+#
+# 이 파일이 배포 시 /etc/systemd/system/toronchul.service 로 동기화된다.
+# 서버에서 직접 수정하지 말 것 — 다음 배포 때 이 파일 내용으로 덮어써진다.
+#
+# 서버에만 두면 인스턴스 재생성 시 유실된다. 실제로 2026-03-03 ECS → Lightsail
+# 전환 때 Dockerfile의 ENV TZ=Asia/Seoul과 JVM 튜닝 플래그가 그렇게 사라졌다.
+# (타임존은 이후 애플리케이션 코드로 옮겨 고정했다)
+
+[Unit]
+Description=DebateSeason Backend
+After=network.target
+
+[Service]
+User=ubuntu
+WorkingDirectory=/home/ubuntu/app
+EnvironmentFile=/home/ubuntu/app/.env
+
+# -XX:+UseSerialGC
+#   인스턴스가 2 vCPU / 1.9GB라 JVM 기본 ergonomics는 G1GC를 고르지만,
+#   힙 상한이 512MB로 작고 같은 인스턴스에 MariaDB가 함께 떠 있어
+#   G1의 region 메타데이터 오버헤드가 아깝다.
+#   ECS 시절 Dockerfile이 명시했던 선택이며 전환 때 유실된 것을 복원한 것.
+ExecStart=/usr/bin/java \
+    -Dspring.profiles.active=prod \
+    -Xms256m \
+    -Xmx512m \
+    -XX:+UseSerialGC \
+    -jar app.jar
+
+Restart=on-failure
+RestartSec=10
+TimeoutStopSec=30
+
+[Install]
+WantedBy=multi-user.target

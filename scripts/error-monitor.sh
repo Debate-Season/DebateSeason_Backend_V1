@@ -12,8 +12,13 @@
 #   4. 웹훅 URL이 없으면 로컬 파일에만 기록하고 조용히 종료한다
 #
 # 웹훅 설정: /home/ubuntu/app/.env 에 아래 한 줄을 추가한다.
-#   ALERT_WEBHOOK_URL=https://hooks.slack.com/services/...
-#   (Discord를 쓰면 웹훅 URL 뒤에 /slack 을 붙이면 같은 형식으로 동작한다)
+#   ALERT_WEBHOOK_URL=https://discord.com/api/webhooks/...   (Discord)
+#   ALERT_WEBHOOK_URL=https://hooks.slack.com/services/...   (Slack)
+#
+# URL을 보고 형식을 자동으로 맞춘다. Discord는 {"content":...} + **굵게**,
+# Slack은 {"text":...} + *굵게* 를 쓴다. Discord 채널 웹훅은
+# 디스코드 앱의 [채널 편집 > 연동 > 웹후크]에서 만든다.
+# (개발자 포털의 "Webhook Events"는 반대 방향 기능이라 여기에 쓸 수 없다)
 #
 set -uo pipefail
 
@@ -103,7 +108,18 @@ GROUPED=$(printf '%s\n' "$ERRORS" \
 	| sort | uniq -c | sort -rn)
 
 # ── 알림 본문 구성 ───────────────────────────────────────────
-BODY="🚨 *toronchul 에러 감지* — ${COUNT}건"$'\n'
+# 굵게 표시 문법이 플랫폼마다 다르다. Discord는 **, Slack은 *.
+set -a
+# shellcheck disable=SC1091
+[ -f "$APP_DIR/.env" ] && . "$APP_DIR/.env"
+set +a
+
+case "${ALERT_WEBHOOK_URL:-}" in
+	*discord.com*|*discordapp.com*) PLATFORM=discord; B='**' ;;
+	*)                              PLATFORM=slack;   B='*'  ;;
+esac
+
+BODY="🚨 ${B}toronchul 에러 감지${B} — ${COUNT}건"$'\n'
 i=0
 while IFS= read -r line; do
 	i=$((i + 1))
@@ -123,29 +139,35 @@ log "감지 ${COUNT}건 / ${GROUP_TOTAL}개 유형"
 printf '%s\n\n' "$BODY" >> "$LOG"
 
 # ── 발송 ─────────────────────────────────────────────────────
-set -a
-# shellcheck disable=SC1091
-[ -f "$APP_DIR/.env" ] && . "$APP_DIR/.env"
-set +a
-
 if [ -z "${ALERT_WEBHOOK_URL:-}" ]; then
 	log "ALERT_WEBHOOK_URL 미설정 - 로컬 기록만 함"
 	exit 0
 fi
 
+# Discord는 본문 2000자 제한이 있어 넘기면 400을 돌려준다. 여유를 두고 자른다.
+if [ "$PLATFORM" = discord ] && [ "${#BODY}" -gt 1900 ]; then
+	BODY="${BODY:0:1900}"$'\n'"…(길이 제한으로 잘림)"
+fi
+
 # JSON 문자열 이스케이프 (따옴표/역슬래시/개행)
 ESCAPED=$(printf '%s' "$BODY" | python3 -c 'import json,sys; print(json.dumps(sys.stdin.read()))')
 
+if [ "$PLATFORM" = discord ]; then
+	PAYLOAD="{\"content\": $ESCAPED}"
+else
+	PAYLOAD="{\"text\": $ESCAPED}"
+fi
+
 HTTP=$(curl -s -o /dev/null -w '%{http_code}' -X POST \
 	-H 'Content-Type: application/json' \
-	-d "{\"text\": $ESCAPED}" \
+	-d "$PAYLOAD" \
 	--max-time 10 \
 	"$ALERT_WEBHOOK_URL" 2>/dev/null)
 
 if [ "$HTTP" = "200" ] || [ "$HTTP" = "204" ]; then
-	log "웹훅 발송 성공 (HTTP $HTTP)"
+	log "웹훅 발송 성공 ($PLATFORM, HTTP $HTTP)"
 else
-	log "웹훅 발송 실패 (HTTP $HTTP)"
+	log "웹훅 발송 실패 ($PLATFORM, HTTP $HTTP)"
 fi
 
 exit 0

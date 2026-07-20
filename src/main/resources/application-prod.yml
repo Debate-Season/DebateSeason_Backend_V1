@@ -16,6 +16,10 @@ spring:
       maximum-pool-size: 5
       minimum-idle: 2
       connection-timeout: 20000
+      # DB 세션 타임존을 KST로 고정.
+      # 네이티브 쿼리의 NOW()/DATE(NOW())가 앱의 LocalDateTime.now()와 같은 기준을 쓰게 한다.
+      # (모든 시간 컬럼이 DATETIME이라 이 설정이 기존 저장값을 변환하지는 않는다)
+      connection-init-sql: "SET time_zone = '+09:00'"
 
 jwt:
   secret:

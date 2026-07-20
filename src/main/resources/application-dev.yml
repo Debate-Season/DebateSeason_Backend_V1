@@ -16,6 +16,8 @@ spring:
       maximum-pool-size: 5
       minimum-idle: 2
       connection-timeout: 20000
+      # DB 세션 타임존을 KST로 고정 (prod와 동일). 상세 주석은 application-prod.yml 참고.
+      connection-init-sql: "SET time_zone = '+09:00'"
 
 jwt:
   secret:

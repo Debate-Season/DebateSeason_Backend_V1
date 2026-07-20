@@ -1,7 +1,6 @@
 package com.debateseason_backend_v1.domain.youtubeLive.scheduler.entertainment;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 
 
 import org.springframework.stereotype.Component;
@@ -108,16 +107,8 @@ public class LckLive {
 
 			Snippet snippet = item.getSnippet();
 
-			// 수정해야함!!!!!
-			String createdAt = snippet.getPublishedAt(); // 2
-
-			// 'Z' 제거
-			if (createdAt.endsWith("Z")) {
-				createdAt = createdAt.substring(0, createdAt.length() - 1);
-			}
-
-			// 파싱
-			LocalDateTime localDateTime = LocalDateTime.parse(createdAt, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+			// publishedAt은 UTC(Z)이므로 KST로 변환해서 저장한다.
+			LocalDateTime localDateTime = YoutubePublishedAt.toKst(snippet.getPublishedAt());
 
 			String title = snippet.getTitle(); // 3
 			//String content = snippet.getDescription(); // 4

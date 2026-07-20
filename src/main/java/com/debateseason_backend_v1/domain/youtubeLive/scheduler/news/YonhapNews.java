@@ -1,7 +1,6 @@
 package com.debateseason_backend_v1.domain.youtubeLive.scheduler.news;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import org.springframework.scheduling.annotation.Scheduled;
@@ -11,6 +10,7 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
+import com.debateseason_backend_v1.domain.youtubeLive.scheduler.support.YoutubePublishedAt;
 import com.debateseason_backend_v1.config.YouTubeConfig;
 import com.debateseason_backend_v1.domain.youtubeLive.scheduler.mapper.Id;
 import com.debateseason_backend_v1.domain.youtubeLive.scheduler.mapper.Item;
@@ -101,16 +101,8 @@ public class YonhapNews extends NewsTemplate {
 
 			Snippet snippet = item.getSnippet();
 
-			// 수정해야함!!!!!
-			String createdAt = snippet.getPublishedAt(); // 2
-
-			// 'Z' 제거
-			if (createdAt.endsWith("Z")) {
-				createdAt = createdAt.substring(0, createdAt.length() - 1);
-			}
-
-			// 파싱
-			LocalDateTime localDateTime = LocalDateTime.parse(createdAt, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+			// publishedAt은 UTC(Z)이므로 KST로 변환해서 저장한다.
+			LocalDateTime localDateTime = YoutubePublishedAt.toKst(snippet.getPublishedAt());
 
 			String title = snippet.getTitle(); // 3
 			//String content = snippet.getDescription(); // 4

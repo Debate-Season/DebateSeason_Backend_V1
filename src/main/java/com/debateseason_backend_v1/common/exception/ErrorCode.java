@@ -103,7 +103,10 @@ public enum ErrorCode implements CodeInterface {
 	PAGE_OUT_OF_RANGE(404, HttpStatus.NOT_FOUND, "검색범위를 넘어섰습니다. 내용을 불러올 수 없습니다."),
 
 	// Media 관련 오류
-	MEDIA_NOT_FOUND(404, HttpStatus.NOT_FOUND, "요청하신 미디어는 존재하지 않습니다.");
+	MEDIA_NOT_FOUND(404, HttpStatus.NOT_FOUND, "요청하신 미디어는 존재하지 않습니다."),
+
+	// 제거된 API
+	REMOVED_API(410, HttpStatus.GONE, "지원이 종료된 API입니다. 앱을 최신 버전으로 업데이트해주세요.");
 
 	private final Integer code;
 	private final HttpStatus httpStatus;

@@ -8,7 +8,6 @@ import com.debateseason_backend_v1.common.response.ApiResult;
 import com.debateseason_backend_v1.common.response.VoidApiResult;
 import com.debateseason_backend_v1.common.swagger.ApiErrorCode;
 import com.debateseason_backend_v1.domain.user.presentation.controller.request.LogoutRequest;
-import com.debateseason_backend_v1.domain.user.presentation.controller.request.SocialLoginRequest;
 import com.debateseason_backend_v1.domain.user.application.service.response.LoginResponse;
 import com.debateseason_backend_v1.security.CustomUserDetails;
 
@@ -34,7 +33,7 @@ public interface UserControllerV1Docs {
 		ErrorCode.MISSING_REQUIRED_SOCIAL_TYPE,
 		ErrorCode.NOT_SUPPORTED_SOCIAL_TYPE,
 	})
-	public ApiResult<LoginResponse> login(@RequestBody SocialLoginRequest request);
+	public ApiResult<LoginResponse> login();
 
 	@Operation(
 		summary = "로그아웃",

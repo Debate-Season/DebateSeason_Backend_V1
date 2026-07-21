@@ -12,7 +12,6 @@ import com.debateseason_backend_v1.domain.repository.entity.RefreshToken;
 import com.debateseason_backend_v1.domain.terms.service.TermsServiceV1;
 import com.debateseason_backend_v1.domain.user.application.UserRepository;
 import com.debateseason_backend_v1.domain.user.application.service.request.LogoutServiceRequest;
-import com.debateseason_backend_v1.domain.user.application.service.request.SocialLoginServiceRequest;
 import com.debateseason_backend_v1.domain.user.application.service.response.LoginResponse;
 import com.debateseason_backend_v1.domain.user.domain.User;
 import com.debateseason_backend_v1.security.jwt.JwtUtil;
@@ -32,36 +31,6 @@ public class UserServiceV1 {
 	private final ProfileJpaRepository profileRepository;
 	private final RefreshTokenRepository refreshTokenRepository;
 
-	@Transactional
-	public LoginResponse socialLogin(SocialLoginServiceRequest request) {
-
-		User user = userRepository.findByIdentifier(request.identifier());
-
-		if (user == User.EMPTY) {
-			user = User.create(request.identifier(), request.socialType());
-		} else {
-			user.login();
-		}
-
-		user = userRepository.save(user);
-
-		String accessToken = jwtUtil.createAccessToken(user.getId(), user.getRole());
-		String refreshToken = jwtUtil.createRefreshToken(user.getId());
-		RefreshToken token = RefreshToken.create(user.getId(), refreshToken, refreshToken);
-
-		refreshTokenRepository.save(token);
-
-		boolean profileStatus = profileRepository.existsByUserId(user.getId());
-		boolean termsStatus = termsService.hasAgreedToAllRequiredTerms(user.getId());
-
-		return LoginResponse.builder()
-			.accessToken(accessToken)
-			.refreshToken(refreshToken)
-			.socialType(request.socialType().getDescription())
-			.profileStatus(profileStatus)
-			.termsStatus(termsStatus)
-			.build();
-	}
 
 	@Transactional
 	public void logout(LogoutServiceRequest request) {

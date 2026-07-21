@@ -9,6 +9,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import com.debateseason_backend_v1.domain.user.domain.SocialType;
 import com.debateseason_backend_v1.domain.user.domain.User;
 import com.debateseason_backend_v1.domain.user.domain.UserMappingData;
+import com.debateseason_backend_v1.domain.user.domain.UserRole;
 import com.debateseason_backend_v1.domain.user.domain.UserStatus;
 
 import jakarta.persistence.Column;
@@ -48,6 +49,10 @@ public class UserEntity {
 	@Column(name = "status", nullable = false)
 	private UserStatus status;
 
+	@Enumerated(EnumType.STRING)
+	@Column(name = "role", nullable = false)
+	private UserRole role;
+
 	@CreatedDate
 	@Column(name = "created_at", updatable = false)
 	private LocalDateTime createdAt;
@@ -57,11 +62,12 @@ public class UserEntity {
 	private LocalDateTime updatedAt;
 
 	@Builder
-	private UserEntity(Long id, String identifier, SocialType socialType, UserStatus status) {
+	private UserEntity(Long id, String identifier, SocialType socialType, UserStatus status, UserRole role) {
 		this.id = id;
 		this.identifier = identifier;
 		this.socialType = socialType;
 		this.status = status;
+		this.role = role == null ? UserRole.USER : role;
 	}
 
 	public static UserEntity from(User user) {
@@ -72,6 +78,7 @@ public class UserEntity {
 			.identifier(data.identifier())
 			.socialType(data.socialType())
 			.status(data.status())
+			.role(data.role())
 			.build();
 	}
 
@@ -81,6 +88,7 @@ public class UserEntity {
 			.identifier(identifier)
 			.socialType(socialType)
 			.status(status)
+			.role(role == null ? UserRole.USER : role)
 			.updatedAt(updatedAt)
 			.build();
 	}

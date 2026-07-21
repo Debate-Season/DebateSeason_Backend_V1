@@ -42,7 +42,7 @@ public class UserServiceV2 {
 
 		user = userRepository.save(user);
 
-		String accessToken = jwtUtil.createAccessToken(user.getId());
+		String accessToken = jwtUtil.createAccessToken(user.getId(), user.getRole());
 		String refreshToken = jwtUtil.createRefreshToken(user.getId());
 		RefreshToken token = RefreshToken.create(user.getId(), refreshToken, refreshToken);
 

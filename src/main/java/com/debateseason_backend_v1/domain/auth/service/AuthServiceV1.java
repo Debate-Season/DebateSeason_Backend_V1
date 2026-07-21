@@ -13,6 +13,8 @@ import com.debateseason_backend_v1.domain.auth.service.request.TokenReissueServi
 import com.debateseason_backend_v1.domain.auth.service.response.TokenReissueResponse;
 import com.debateseason_backend_v1.domain.repository.RefreshTokenRepository;
 import com.debateseason_backend_v1.domain.repository.entity.RefreshToken;
+import com.debateseason_backend_v1.domain.user.domain.UserRole;
+import com.debateseason_backend_v1.domain.user.infrastructure.UserJpaRepository;
 import com.debateseason_backend_v1.security.jwt.JwtUtil;
 
 import lombok.RequiredArgsConstructor;
@@ -26,6 +28,7 @@ public class AuthServiceV1 {
 
 	private final JwtUtil jwtUtil;
 	private final RefreshTokenRepository refreshTokenRepository;
+	private final UserJpaRepository userJpaRepository;
 
 	@Transactional
 	public TokenReissueResponse reissueToken(TokenReissueServiceRequest request) {
@@ -36,14 +39,14 @@ public class AuthServiceV1 {
 			refreshToken.getPreviousToken().equals(request.refreshToken()) &&
 				refreshToken.getUpdatedAt().isAfter(LocalDateTime.now().minusSeconds(10))
 		) {
-			String accessToken = jwtUtil.createAccessToken(refreshToken.getUserId());
+			String accessToken = jwtUtil.createAccessToken(refreshToken.getUserId(), resolveRole(refreshToken.getUserId()));
 			return TokenReissueResponse.builder()
 				.accessToken(accessToken)
 				.refreshToken(refreshToken.getCurrentToken())
 				.build();
 		}
 
-		String newAccessToken = jwtUtil.createAccessToken(refreshToken.getUserId());
+		String newAccessToken = jwtUtil.createAccessToken(refreshToken.getUserId(), resolveRole(refreshToken.getUserId()));
 		String newRefreshToken = jwtUtil.createRefreshToken(refreshToken.getUserId());
 
 		refreshToken.update(newRefreshToken);
@@ -52,6 +55,14 @@ public class AuthServiceV1 {
 			.accessToken(newAccessToken)
 			.refreshToken(newRefreshToken)
 			.build();
+	}
+
+	// refresh token 에는 role 을 싣지 않으므로 재발급 시점에 조회한다.
+	// 덕분에 권한 변경이 다음 재발급에 반영된다.
+	private UserRole resolveRole(Long userId) {
+		return userJpaRepository.findById(userId)
+			.map(user -> user.toModel().getRole())
+			.orElse(UserRole.USER);
 	}
 
 	public Long getCurrentUserId() {

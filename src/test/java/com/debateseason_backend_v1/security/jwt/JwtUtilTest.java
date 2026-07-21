@@ -10,6 +10,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
 import com.debateseason_backend_v1.common.enums.TokenType;
+import com.debateseason_backend_v1.domain.user.domain.UserRole;
 
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
@@ -30,7 +31,7 @@ class JwtUtilTest {
 		@Test
 		@DisplayName("Access 토큰 생성 성공")
 		void createAccessToken_Success() {
-			String accessToken = jwtUtil.createAccessToken(TEST_USER_ID);
+			String accessToken = jwtUtil.createAccessToken(TEST_USER_ID, UserRole.USER);
 
 			assertThat(accessToken).isNotNull();
 			assertThat(jwtUtil.getUserId(accessToken)).isEqualTo(TEST_USER_ID);
@@ -52,7 +53,7 @@ class JwtUtilTest {
 		@Test
 		@DisplayName("토큰 검증 성공")
 		void validateToken_Success() {
-			String token = jwtUtil.createAccessToken(TEST_USER_ID);
+			String token = jwtUtil.createAccessToken(TEST_USER_ID, UserRole.USER);
 
 			assertThat(jwtUtil.validate(token)).isTrue();
 		}
@@ -64,7 +65,7 @@ class JwtUtilTest {
 		@Test
 		@DisplayName("만료된 토큰 검증 실패")
 		void validateToken_WhenExpired_ShouldThrow() {
-			String expiredToken = jwtUtil.createJwt(TokenType.ACCESS, TEST_USER_ID, -1000L);
+			String expiredToken = jwtUtil.createJwt(TokenType.ACCESS, TEST_USER_ID, -1000L, UserRole.USER);
 
 			assertThatThrownBy(() -> jwtUtil.validate(expiredToken))
 				.isInstanceOf(ExpiredJwtException.class);
@@ -83,7 +84,7 @@ class JwtUtilTest {
 		@Test
 		@DisplayName("시그니처가 변조된 토큰 검증 실패")
 		void validateToken_WhenSignatureInvalid_ShouldThrow() {
-			String token = jwtUtil.createAccessToken(TEST_USER_ID) + "invalid";
+			String token = jwtUtil.createAccessToken(TEST_USER_ID, UserRole.USER) + "invalid";
 
 			assertThatThrownBy(() -> jwtUtil.validate(token))
 				.isInstanceOf(SignatureException.class);

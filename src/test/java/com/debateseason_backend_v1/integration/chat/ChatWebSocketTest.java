@@ -10,6 +10,7 @@ import com.debateseason_backend_v1.domain.profile.infrastructure.ProfileEntity;
 import com.debateseason_backend_v1.domain.profile.infrastructure.ProfileJpaRepository;
 import com.debateseason_backend_v1.domain.repository.ChatRoomRepository;
 import com.debateseason_backend_v1.domain.repository.entity.ChatRoom;
+import com.debateseason_backend_v1.domain.user.domain.UserRole;
 import com.debateseason_backend_v1.security.jwt.JwtUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
@@ -94,7 +95,7 @@ public class ChatWebSocketTest {
                                 .nickname(TEST_NICKNAME)
                                 .build()
                 ));
-        accessToken = jwtUtil.createAccessToken(TEST_USER_ID);
+        accessToken = jwtUtil.createAccessToken(TEST_USER_ID, UserRole.USER);
     }
 
     private StompSession connect(String token) throws Exception {

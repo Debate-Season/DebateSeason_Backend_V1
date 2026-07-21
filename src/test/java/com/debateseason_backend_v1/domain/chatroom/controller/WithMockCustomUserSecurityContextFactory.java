@@ -13,7 +13,7 @@ public class WithMockCustomUserSecurityContextFactory implements WithSecurityCon
 	public SecurityContext createSecurityContext(WithMockCustomUser annotation) {
 		final SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
 
-		CustomUserDetails principal = CustomUserDetails.from(1L);
+		CustomUserDetails principal = CustomUserDetails.from(annotation.userId(), annotation.role());
 
 		// 비밀번호 설정 안함.
 		Authentication authentication =

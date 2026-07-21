@@ -11,6 +11,7 @@ import com.debateseason_backend_v1.domain.issue.infrastructure.entity.IssueEntit
 import com.debateseason_backend_v1.domain.issue.infrastructure.repository.IssueJpaRepository;
 import com.debateseason_backend_v1.domain.repository.ChatRoomRepository;
 import com.debateseason_backend_v1.domain.repository.entity.ChatRoom;
+import com.debateseason_backend_v1.domain.user.domain.UserRole;
 import com.debateseason_backend_v1.security.jwt.JwtUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -92,7 +93,7 @@ public class ChatApiTest {
         System.out.println("@@@ apiUrl: " + apiUrl);
         //when
         HttpHeaders headers = new HttpHeaders();
-        headers.add("Authorization", "Bearer " + jwtUtil.createAccessToken(userId));
+        headers.add("Authorization", "Bearer " + jwtUtil.createAccessToken(userId, UserRole.USER));
         HttpEntity<String> entity = new HttpEntity<>(headers);
 
         ResponseEntity<String> response = testRestTemplate.exchange(

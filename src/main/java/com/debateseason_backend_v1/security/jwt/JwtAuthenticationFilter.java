@@ -110,7 +110,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 	private void setupUserAuthentication(String token, String requestURI) {
 
 		Long userId = jwtUtil.getUserId(token);
-		CustomUserDetails principal = CustomUserDetails.from(userId);
+		CustomUserDetails principal = CustomUserDetails.from(userId, jwtUtil.getRole(token));
 
 		Authentication authentication =
 			new UsernamePasswordAuthenticationToken(

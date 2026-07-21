@@ -11,6 +11,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 import com.debateseason_backend_v1.security.component.SecurityPathMatcher;
 import com.debateseason_backend_v1.security.error.JwtAuthenticationErrorHandler;
+import com.debateseason_backend_v1.security.filter.ClientInfoFilter;
 import com.debateseason_backend_v1.security.filter.RateLimitFilter;
 import com.debateseason_backend_v1.security.jwt.JwtAuthenticationFilter;
 import com.debateseason_backend_v1.security.jwt.JwtUtil;
@@ -71,6 +72,10 @@ public class WebSecurityConfig {
 			.authorizeHttpRequests(auth -> auth
 				.anyRequest().permitAll()
 			)
+			// addFilterBefore 의 앵커는 Spring Security 가 아는 필터여야 하므로
+			// 커스텀 필터(JwtAuthenticationFilter)를 앵커로 쓸 수 없다.
+			// 같은 앵커에 등록하면 등록 순서가 유지되므로 ClientInfoFilter 를 먼저 등록한다.
+			.addFilterBefore(new ClientInfoFilter(), UsernamePasswordAuthenticationFilter.class)
 			.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
 			.addFilterAfter(rateLimitFilter, JwtAuthenticationFilter.class)
 			.build();

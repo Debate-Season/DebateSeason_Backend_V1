@@ -9,21 +9,24 @@ import lombok.Builder;
 
 public class User {
 
-	public static final User EMPTY = new User(null, null, null, null, null);
+	public static final User EMPTY = new User(null, null, null, null, null, null);
 	private static final int ANONYMIZATION_WAITING_DAYS = 5;
 
 	private Long id;
 	private String identifier;
 	private SocialType socialType;
 	private UserStatus status;
+	private UserRole role;
 	private LocalDateTime updatedAt;
 
 	@Builder
-	private User(Long id, String identifier, SocialType socialType, UserStatus status, LocalDateTime updatedAt) {
+	private User(Long id, String identifier, SocialType socialType, UserStatus status, UserRole role,
+		LocalDateTime updatedAt) {
 		this.id = id;
 		this.identifier = identifier;
 		this.socialType = socialType;
 		this.status = status;
+		this.role = role;
 		this.updatedAt = updatedAt;
 	}
 
@@ -32,6 +35,7 @@ public class User {
 			.identifier(identifier)
 			.socialType(socialType)
 			.status(UserStatus.ACTIVE)
+			.role(UserRole.USER)
 			.build();
 	}
 
@@ -77,6 +81,7 @@ public class User {
 			.identifier(identifier)
 			.socialType(socialType)
 			.status(status)
+			.role(role)
 			.build();
 	}
 
@@ -86,5 +91,9 @@ public class User {
 
 	public SocialType getSocialType() {
 		return this.socialType;
+	}
+
+	public UserRole getRole() {
+		return this.role == null ? UserRole.USER : this.role;
 	}
 }

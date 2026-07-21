@@ -7,6 +7,7 @@ public record UserMappingData(
 	Long id,
 	String identifier,
 	SocialType socialType,
-	UserStatus status
+	UserStatus status,
+	UserRole role
 ) {
 }

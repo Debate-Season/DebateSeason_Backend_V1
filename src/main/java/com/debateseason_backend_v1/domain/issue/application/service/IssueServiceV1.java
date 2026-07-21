@@ -16,6 +16,7 @@ import com.debateseason_backend_v1.domain.issue.community.CommunitySorterV4;
 import com.debateseason_backend_v1.domain.issue.infrastructure.entity.IssueMapper;
 import com.debateseason_backend_v1.domain.issue.model.response.PaginationDTO;
 import com.debateseason_backend_v1.domain.issue.infrastructure.entity.IssueEntity;
+import com.debateseason_backend_v1.domain.issue.model.IssueStatus;
 import com.debateseason_backend_v1.domain.issue.infrastructure.manager.IssueProcessorManager;
 import com.debateseason_backend_v1.domain.issue.infrastructure.manager.IssuePaginationManager;
 import com.debateseason_backend_v1.domain.issue.application.repository.IssueRepository;
@@ -66,13 +67,15 @@ public class IssueServiceV1 {
 	private final CommunitySorterV4 communityMananger;
 
 	// 1. save 이슈방
-	public ApiResult<Object> save(IssueRequest issueRequest) {
+	public ApiResult<Object> save(IssueRequest issueRequest, Long createdBy) {
 
 		// JPA 엔티티
 		IssueEntity issueEntity = IssueEntity.builder()
 			.title(issueRequest.getTitle())
 			.majorCategory(issueRequest.getMajorCategory())
 			//.middleCategory(issueDTO.getMiddleCategory())
+			.createdBy(createdBy)
+			.status(IssueStatus.PUBLISHED)
 			.build();
 		
 		issueRepository.save(issueEntity);

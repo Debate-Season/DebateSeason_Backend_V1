@@ -59,7 +59,7 @@ public class AdminIssueControllerV1TestEntity {
 		// When & Then
 
 		// RESPONSE
-		Mockito.when(issueServiceV1.save(Mockito.any(IssueRequest.class)))
+		Mockito.when(issueServiceV1.save(Mockito.any(IssueRequest.class), Mockito.any()))
 			.thenReturn(response);
 
 		// REQUEST

@@ -38,7 +38,8 @@ public interface ChatRoomControllerV1Docs {
 	)
 	public ApiResult<Object> save(
 		@RequestBody ChatRoomRequest chatRoomRequest,
-		@RequestParam(name = "issue-id") Long issue_id
+		@RequestParam(name = "issue-id") Long issue_id,
+		@AuthenticationPrincipal CustomUserDetails principal
 	);
 
 

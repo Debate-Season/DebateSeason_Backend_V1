@@ -13,6 +13,7 @@ import com.debateseason_backend_v1.common.exception.CustomException;
 import com.debateseason_backend_v1.common.exception.ErrorCode;
 import com.debateseason_backend_v1.common.response.ApiResult;
 
+import com.debateseason_backend_v1.domain.chatroom.domain.ChatRoomStatus;
 import com.debateseason_backend_v1.domain.chatroom.domain.TimeProcessor;
 import com.debateseason_backend_v1.domain.chatroom.infrastructure.entity.manager.ChatRoomManager;
 import com.debateseason_backend_v1.domain.chatroom.infrastructure.entity.processor.ChatRoomProcessor;
@@ -62,7 +63,7 @@ public class ChatRoomServiceV1 {
 	private final ChatRoomProcessor chatRoomProcessor;// ChatRoomRepo에서 가져온 것을 후처리를 한다.
 
 	// 1. 채팅방 저장하기
-	public ApiResult<Object> save(ChatRoomRequest chatRoomRequest, Long issueId) {
+	public ApiResult<Object> save(ChatRoomRequest chatRoomRequest, Long issueId, Long createdBy) {
 
 		// 1. Issue 찾기
 		IssueEntity issueEntity = issueJpaRepository.findById(issueId).orElseThrow(
@@ -75,6 +76,8 @@ public class ChatRoomServiceV1 {
 			.issueEntity(issueEntity)
 			.title(chatRoomRequest.getTitle())
 			.content(chatRoomRequest.getContent())
+			.createdBy(createdBy)
+			.status(ChatRoomStatus.OPEN)
 			.build();
 
 		// 3. save ChatRoom

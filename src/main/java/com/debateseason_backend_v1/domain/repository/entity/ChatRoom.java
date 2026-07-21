@@ -3,19 +3,24 @@ package com.debateseason_backend_v1.domain.repository.entity;
 import java.time.LocalDateTime;
 
 import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import com.debateseason_backend_v1.domain.chatroom.domain.ChatRoomStatus;
 import com.debateseason_backend_v1.domain.issue.infrastructure.entity.IssueEntity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -48,8 +53,29 @@ public class ChatRoom {
 	private String title;
 	private String content;
 
+	// 레거시 행은 NULL(= 시스템/수동 생성). 소유권 판정 시 NULL 이면 ADMIN 만 수정 가능.
+	@Column(name = "created_by")
+	private Long createdBy;
+
+	@Enumerated(EnumType.STRING)
+	@Column(name = "status", nullable = false)
+	private ChatRoomStatus status;
+
 	@CreatedDate
 	@Column(name = "created_at", updatable = false)
 	private LocalDateTime createdAt;
+
+	@LastModifiedDate
+	@Column(name = "updated_at")
+	private LocalDateTime updatedAt;
+
+	// @Builder 는 필드 초기화식을 무시하므로, 생성 경로마다 status 를 빠뜨릴 수 있다.
+	// 엔티티가 스스로 기본값을 보장한다.
+	@PrePersist
+	private void applyDefaultStatus() {
+		if (status == null) {
+			status = ChatRoomStatus.OPEN;
+		}
+	}
 
 }

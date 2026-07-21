@@ -32,8 +32,14 @@ public class ChatRoomControllerV1 implements ChatRoomControllerV1Docs {
 	@PostMapping("/room")
 	public ApiResult<Object> save(
 		@Valid @RequestBody ChatRoomRequest chatRoomRequest,
-		@Valid @RequestParam(name = "issue-id") Long issue_id) {
-		return chatRoomServiceV1.save(chatRoomRequest, issue_id);
+		@Valid @RequestParam(name = "issue-id") Long issue_id,
+		@AuthenticationPrincipal CustomUserDetails principal) {
+
+		// 이 경로는 인증 필수 구간이라 principal 이 항상 존재한다.
+		// 작성자를 기록해야 이후 수정/삭제 권한을 판정할 수 있다.
+		Long createdBy = principal != null ? principal.getUserId() : null;
+
+		return chatRoomServiceV1.save(chatRoomRequest, issue_id, createdBy);
 	}
 
 	// 2. 채팅방 찬성/반대 투표하기, opinion, chatroomid = 쿼리스트링

@@ -28,10 +28,18 @@ class GlobalExceptionHandlerLogLevelTest {
 
 	private Logger logger;
 	private ListAppender<ILoggingEvent> appender;
+	private Level originalLevel;
 
 	@BeforeEach
 	void attachAppender() {
 		logger = (Logger)LoggerFactory.getLogger(GlobalExceptionHandler.class);
+
+		// application-test.yml 이 root 를 error 로 두고 있어, Spring 컨텍스트를 띄우는
+		// 테스트가 먼저 실행되면 Logback 전역 레벨이 ERROR 가 되어 WARN 이 잘린다.
+		// 실행 순서에 따라 결과가 달라지므로 이 테스트가 자기 레벨을 직접 고정한다.
+		originalLevel = logger.getLevel();
+		logger.setLevel(Level.TRACE);
+
 		appender = new ListAppender<>();
 		appender.start();
 		logger.addAppender(appender);
@@ -40,6 +48,7 @@ class GlobalExceptionHandlerLogLevelTest {
 	@AfterEach
 	void detachAppender() {
 		logger.detachAppender(appender);
+		logger.setLevel(originalLevel);
 	}
 
 	@Test

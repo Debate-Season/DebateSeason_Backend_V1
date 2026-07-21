@@ -1,6 +1,5 @@
 package com.debateseason_backend_v1.domain.chat.presentation.controller;
 
-import java.time.LocalDateTime;
 
 import com.debateseason_backend_v1.common.exception.CustomException;
 import com.debateseason_backend_v1.domain.chat.presentation.dto.chat.response.ChatMessageErrorResponse;
@@ -20,7 +19,6 @@ import com.debateseason_backend_v1.common.enums.MessageType;
 import com.debateseason_backend_v1.domain.chat.presentation.dto.chat.request.ChatMessageRequest;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -87,29 +85,5 @@ public class WebSocketControllerV1 {
             .messageType(MessageType.ERROR)
             .message("메시지 처리 중 오류가 발생 했습니다")
             .build();
-    }
-
-    @Operation(summary = "채팅 메시지 전송")
-    @MessageMapping("chat.sendMessage")
-    @SendTo("/topic/public")
-    public ChatMessageRequest broadcastChatMessage(
-            @Parameter(description = "사용자 입장 정보")
-            @Payload @Valid ChatMessageRequest chatMessage) {
-
-        return ChatMessageRequest.builder()
-                .messageType(MessageType.CHAT)
-                .sender(chatMessage.getSender())
-                .content(chatMessage.getContent())
-                .opinionType(chatMessage.getOpinionType())
-                .userCommunity(chatMessage.getUserCommunity())
-                .timeStamp(LocalDateTime.now())
-                .build();
-    }
-
-    @Operation(summary = "사용자 입장")
-    @MessageMapping("/chat.join")
-    @SendTo("/topic/public")
-    public ChatMessageResponse handleUserJoin(@Valid @Payload ChatMessageRequest joinRequest) {
-        return chatService.processJoinMessage(joinRequest);
     }
 }

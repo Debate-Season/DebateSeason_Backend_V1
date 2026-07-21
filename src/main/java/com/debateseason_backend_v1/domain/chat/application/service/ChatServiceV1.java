@@ -93,17 +93,6 @@ public class ChatServiceV1 {
 		}
 	}
 
-	public ChatMessageResponse processJoinMessage(ChatMessageRequest joinRequest) {
-		return ChatMessageResponse.builder()
-			.messageType(MessageType.JOIN)
-			.sender(joinRequest.getSender())
-			.content(joinRequest.getSender() + " joined!")
-			.opinionType(joinRequest.getOpinionType())
-			.userCommunity(joinRequest.getUserCommunity())
-			.timeStamp(LocalDateTime.now())
-			.build();
-	}
-
 	// ---------- 채팅 메시지 영속성 처리 ----------
 
 	@Transactional

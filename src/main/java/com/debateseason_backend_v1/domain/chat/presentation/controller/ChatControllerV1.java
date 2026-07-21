@@ -5,7 +5,7 @@ import com.debateseason_backend_v1.common.response.ErrorResponse;
 import com.debateseason_backend_v1.domain.chat.presentation.dto.chat.request.ChatReactionRequest;
 import com.debateseason_backend_v1.domain.chat.presentation.dto.chat.response.ChatMessagesResponse;
 import com.debateseason_backend_v1.domain.chat.application.service.ChatReactionServiceV1;
-import com.debateseason_backend_v1.security.jwt.JwtUtil;
+import com.debateseason_backend_v1.security.CustomUserDetails;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -26,8 +26,6 @@ import io.swagger.v3.oas.annotations.media.ExampleObject;
 
 import com.debateseason_backend_v1.common.exception.CustomException;
 import com.debateseason_backend_v1.common.exception.ErrorCode;
-import org.springframework.util.StringUtils;
-import jakarta.servlet.http.HttpServletRequest;
 
 @Slf4j
 @Tag(name = "Chat API", description = "V1 Chat API")
@@ -38,7 +36,6 @@ public class ChatControllerV1 {
 
 	private final ChatServiceV1 chatService;
 	private final ChatReactionServiceV1 chatReactionService;
-	private final JwtUtil jwtUtil;
 
 
 	/*
@@ -107,26 +104,10 @@ public class ChatControllerV1 {
 		@RequestParam(required = false) Long cursor,
 		
 		@Parameter(hidden = true)
-		@AuthenticationPrincipal Long userId,
-		HttpServletRequest httpRequest
+		@AuthenticationPrincipal CustomUserDetails principal
 	) {
-				// userId가 null인 경우 직접 토큰에서 추출
-				if (userId == null) {
-					String token = getJwtFromRequest(httpRequest);
-					if (token != null) {
-						try {
-							userId = jwtUtil.getUserId(token);
-							log.info("토큰에서 직접 추출한 userId: {}", userId);
-						} catch (Exception e) {
-							log.error("토큰에서 userId 추출 실패", e);
-							throw new CustomException(ErrorCode.INVALID_ACCESS_TOKEN, "인증 정보를 확인할 수 없습니다");
-						}
-					}
-					
-					if (userId == null) {
-						throw new CustomException(ErrorCode.NOT_FOUND_USER, "userId 가 null 입니다.");
-					}
-				}
+		Long userId = requireUserId(principal);
+
 		return chatService.getChatMessagesV2(roomId, cursor, userId);
 	}
 
@@ -160,40 +141,23 @@ public class ChatControllerV1 {
 		@Valid @RequestBody ChatReactionRequest request,
 		
 		@Parameter(hidden = true)
-		@AuthenticationPrincipal Long userId,
-		
-		HttpServletRequest httpRequest
+		@AuthenticationPrincipal CustomUserDetails principal
 	) {
-		log.info("반응 처리 요청: messageId={}, reactionType={}, action={}, userId={}", 
+		Long userId = requireUserId(principal);
+
+		log.info("반응 처리 요청: messageId={}, reactionType={}, action={}, userId={}",
 				 messageId, request.getReactionType(), request.getAction(), userId);
-		
-		// userId가 null인 경우 직접 토큰에서 추출
-		if (userId == null) {
-			String token = getJwtFromRequest(httpRequest);
-			if (token != null) {
-				try {
-					userId = jwtUtil.getUserId(token);
-					log.info("토큰에서 직접 추출한 userId: {}", userId);
-				} catch (Exception e) {
-					log.error("토큰에서 userId 추출 실패", e);
-					throw new CustomException(ErrorCode.INVALID_ACCESS_TOKEN, "인증 정보를 확인할 수 없습니다");
-				}
-			}
-			
-			if (userId == null) {
-				throw new CustomException(ErrorCode.NOT_FOUND_USER, "userId 가 null 입니다.");
-			}
-		}
-		
+
 		return chatReactionService.processReaction(messageId, request, userId);
 	}
 
-	private String getJwtFromRequest(HttpServletRequest request) {
-		String bearerToken = request.getHeader("Authorization");
-		if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
-			return bearerToken.substring(7);
+	// 이 경로들은 PUBLIC/OPTIONAL_AUTH 대상이 아니므로 JwtAuthenticationFilter 가
+	// 토큰을 이미 강제한다. principal 이 비는 경우는 설정 실수뿐이라 방어만 한다.
+	private Long requireUserId(CustomUserDetails principal) {
+		if (principal == null) {
+			throw new CustomException(ErrorCode.INVALID_ACCESS_TOKEN, "인증 정보를 확인할 수 없습니다");
 		}
-		return null;
+		return principal.getUserId();
 	}
 
 }

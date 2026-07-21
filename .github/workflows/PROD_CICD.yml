@@ -11,6 +11,10 @@ on:
 env:
   GRADLE_OPTS: "-Dorg.gradle.parallel=true -Dorg.gradle.workers.max=4"
 
+# main 단일 브랜치 운영이다. develop 은 dev 서버 폐지 후 용도가 사라져 제거했다.
+#   - PR(main 대상): build + test 만 실행 (deploy 잡에 push 가드가 있다)
+#   - push(main):    build + test + deploy
+#
 # 연속 push 시 두 배포가 같은 app.jar / 백업 파일을 동시에 건드리는 것을 막는다.
 # 배포 중인 작업은 끊지 않고(cancel-in-progress: false) 뒤에 줄을 세운다.
 concurrency:

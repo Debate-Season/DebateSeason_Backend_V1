@@ -28,11 +28,20 @@ public class SecurityPathMatcher {
 			.anyMatch(pattern -> pathMatcher.match(pattern, path));
 	}
 
+	// 조회는 비로그인에 열려 있지만 생성은 ADMIN 전용인 경로들.
+	// POST 를 Optional 로 두면 비로그인 요청이 인가 단계까지 흘러가 403 이 되는데,
+	// "로그인이 필요하다"는 사실을 알리는 401 이 더 정확하다.
+	private static final String[] GET_ONLY_OPTIONAL_URLS = {
+		"/api/v1/room",
+		"/api/v1/issue"
+	};
+
 	public boolean isOptionalAuthUrl(HttpServletRequest request) {
 		String path = resolvePath(request);
 
-		// /api/v1/room은 GET만 Optional, POST는 Required Auth
-		if (pathMatcher.match("/api/v1/room", path)) {
+		boolean getOnly = Arrays.stream(GET_ONLY_OPTIONAL_URLS)
+			.anyMatch(pattern -> pathMatcher.match(pattern, path));
+		if (getOnly) {
 			return "GET".equalsIgnoreCase(request.getMethod());
 		}
 

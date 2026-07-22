@@ -21,9 +21,15 @@
 --   JwtUtil.getRole() 이 클레임 부재 시 USER 로 fallback 하므로
 --   구버전 앱은 재로그인 없이 그대로 동작하고, access token 만료 주기 내에 자연 수렴한다.
 --
--- 적용 후 할 일:
---   운영자 계정에만 수동으로 ADMIN 을 부여한다. 대상 user_id 는 사전에 확인할 것.
+-- 적용 후 할 일: 완료 (2026-07-23)
+--   운영자 계정 1건을 ADMIN 으로 승격했다. 현재 ADMIN 1 / USER 230.
 --     UPDATE users SET role = 'ADMIN' WHERE user_id IN (...);
+--   대상 user_id 는 운영자가 실제 로그인해 발급받은 access token 의 sub 클레임으로 확정했다.
+--   (DB 를 훑어 추측하지 않고 본인 인증으로 특정 — 잘못 주면 타인에게 관리자 권한이 간다)
+--
+--   승격 직후 POST /api/v1/auth/reissue 로 role=ADMIN 이 실리는 것을 확인했다.
+--   재로그인 없이 반영되는 이유는 AuthServiceV1.resolveRole() 이
+--   refresh token 대신 DB 를 조회하기 때문이다. 이 경로의 첫 실동작 검증이기도 하다.
 --
 -- 이 프로젝트는 Flyway/Liquibase 를 쓰지 않고 ddl-auto: none 이므로
 -- 스키마 변경은 수동 적용하고 이 디렉터리에 이력을 남긴다.

@@ -40,10 +40,12 @@ public class NotificationServiceV1 {
             return;
         }
 
-        Long roomId = chat.getChatRoomId().getId();
+        // v1.3.5: 알림 대상은 주제(스레드) 단위. 이관 후 chat_room_id 는 컨테이너이므로
+        // thread_id 가 있으면 그 방(옛 주제)을, 없으면 chat_room_id 를 대상 방으로 쓴다.
+        Long roomId = chat.getThreadId() != null ? chat.getThreadId() : chat.getChatRoomId().getId();
         Long senderUserId = chat.getUserId();
 
-        List<UserChatRoom> participants = userChatRoomRepository.findByChatRoom(chat.getChatRoomId());
+        List<UserChatRoom> participants = userChatRoomRepository.findByChatRoom_Id(roomId);
 
         List<Long> recipientUserIds = participants.stream()
                 .map(ucr -> ucr.getUser().getId())

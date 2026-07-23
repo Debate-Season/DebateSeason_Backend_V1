@@ -14,6 +14,7 @@ import com.debateseason_backend_v1.domain.chat.presentation.dto.chat.request.Cha
 import com.debateseason_backend_v1.domain.chat.presentation.dto.chat.response.ChatMessageResponse;
 import com.debateseason_backend_v1.domain.chat.presentation.dto.chat.response.ChatMessagesResponse;
 import com.debateseason_backend_v1.domain.chat.validation.ChatValidate;
+import com.debateseason_backend_v1.domain.chatroom.domain.ChatRoomType;
 import com.debateseason_backend_v1.domain.chatroom.service.ChatRoomServiceV1;
 import com.debateseason_backend_v1.domain.notification.application.service.NotificationServiceV1;
 import com.debateseason_backend_v1.domain.repository.entity.ChatRoom;
@@ -59,8 +60,11 @@ public class ChatServiceV1 {
 		// 메시지 유효성 검사
 		chatValidate.validateMessageLength(message);
 		
-		// 채팅방 존재 여부 확인
-		ChatRoom chatRoom = chatRoomService.findChatRoomById(roomId);
+		// 채팅방 존재 여부 확인 + 스레드 통합 라우팅
+		// 구 앱이 옛 방(=스레드)으로 보내면 컨테이너에 저장하고 이 방을 thread_id 로 태그한다.
+		ChatRoom target = chatRoomService.findChatRoomById(roomId);
+		RoutedTarget routed = resolveRouting(target, message.getThreadId());
+		message.setThreadId(routed.threadId());
 
 		// 인증 정보에서 사용자 ID 가져오기 (발신자를 식별할 수 없는 메시지는 저장하지 않는다)
 		Long userId = resolveUserId(headerAccessor);
@@ -70,15 +74,30 @@ public class ChatServiceV1 {
 			.orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_PROFILE));
 		message.setSender(profile.getNickname());
 
-		// 메시지 저장
-		ChatEntity chat = ChatEntity.from(message, chatRoom, userId);
+		// 메시지 저장 (chat_room_id = 컨테이너, thread_id = 스레드)
+		ChatEntity chat = ChatEntity.from(message, routed.container(), userId);
 		ChatEntity savedchat = chatRepository.save(chat);
 
 		// 프로필 색상 조회
 		String profileColor = profile.getProfileImage();
 
-		// 빈 반응 정보를 포함한 응답 생성
-		return ChatMessageResponse.from(savedchat, profileColor);
+		// 브로드캐스트 roomId 는 클라이언트가 구독 중인 주소(원래 roomId)로 유지 → 구 앱 실시간 호환
+		return ChatMessageResponse.from(savedchat, profileColor, roomId);
+	}
+
+	// 스레드 통합 라우팅: 발신 대상 방으로부터 (저장할 컨테이너 방, thread_id) 를 결정한다.
+	// 이관 전(레거시, room_type=NULL)에는 대상 방을 그대로 반환하므로 기존 동작과 동일하다.
+	private RoutedTarget resolveRouting(ChatRoom target, Long requestedThreadId) {
+		if (target.getRoomType() == ChatRoomType.THREAD && target.getContainerRoomId() != null) {
+			// 옛 방(스레드)로 온 발신 → 컨테이너에 저장, 이 방이 곧 스레드
+			ChatRoom container = chatRoomService.findChatRoomById(target.getContainerRoomId());
+			return new RoutedTarget(container, target.getId());
+		}
+		// CONTAINER 또는 레거시: 그대로. threadId 는 클라이언트 지정값(없으면 null = 전체)
+		return new RoutedTarget(target, requestedThreadId);
+	}
+
+	private record RoutedTarget(ChatRoom container, Long threadId) {
 	}
 
 	private Long resolveUserId(SimpMessageHeaderAccessor headerAccessor) {
@@ -97,11 +116,13 @@ public class ChatServiceV1 {
 
 	@Transactional
 	public void saveMessage(ChatMessageRequest chatMessage) {
-		ChatRoom chatRoom = chatRoomService.findChatRoomById(chatMessage.getRoomId());
-		ChatEntity chat = convertToEntity(chatMessage, chatRoom);
-		
+		ChatRoom target = chatRoomService.findChatRoomById(chatMessage.getRoomId());
+		RoutedTarget routed = resolveRouting(target, chatMessage.getThreadId());
+		chatMessage.setThreadId(routed.threadId());
+		ChatEntity chat = convertToEntity(chatMessage, routed.container());
+
 		chatRepository.save(chat);
-		log.debug("채팅 메시지 저장 완료: roomId={}, sender={}", 
+		log.debug("채팅 메시지 저장 완료: roomId={}, sender={}",
 				chatMessage.getRoomId(), chatMessage.getSender());
 	}
 
@@ -199,14 +220,27 @@ public class ChatServiceV1 {
 
 	// ---------- 채팅 메시지 조회 v2 배치쿼리 ----------
 	@Transactional(readOnly = true)
-	public ApiResult<ChatMessagesResponse> getChatMessagesV2(Long roomId, Long cursor, Long userId) {
+	public ApiResult<ChatMessagesResponse> getChatMessagesV2(Long roomId, Long threadId, Long cursor, Long userId) {
 		cursor = (cursor == null) ? Long.MAX_VALUE : cursor;
 
-		chatRoomService.findChatRoomById(roomId);
+		ChatRoom target = chatRoomService.findChatRoomById(roomId);
 
-		// 메시지 조회 (최대 20개 + 1개 더 조회하여 hasMore 확인)
-		List<ChatEntity> chats = chatRepository.findByRoomIdAndCursor(
-				roomId, cursor, PageRequest.of(0, PAGE_SIZE + 1));
+		// 조회 라우팅 (최대 20개 + 1개 더 조회하여 hasMore 확인)
+		// - THREAD(옛 방): 구 앱 히스토리 = thread_id 필터 (메시지는 컨테이너에 저장돼 있음)
+		// - CONTAINER + threadId: 웹 스레드 탭
+		// - CONTAINER/레거시: 전체 스트림 (기존 동작)
+		List<ChatEntity> chats;
+		int totalCount;
+		if (target.getRoomType() == ChatRoomType.THREAD) {
+			chats = chatRepository.findByThreadIdAndCursor(roomId, cursor, PageRequest.of(0, PAGE_SIZE + 1));
+			totalCount = chatRepository.countByThreadId(roomId);
+		} else if (threadId != null) {
+			chats = chatRepository.findByRoomIdAndThreadIdAndCursor(roomId, threadId, cursor, PageRequest.of(0, PAGE_SIZE + 1));
+			totalCount = chatRepository.countByRoomIdAndThreadId(roomId, threadId);
+		} else {
+			chats = chatRepository.findByRoomIdAndCursor(roomId, cursor, PageRequest.of(0, PAGE_SIZE + 1));
+			totalCount = chatRepository.countByRoomId(roomId);
+		}
 
 		boolean hasMore = chats.size() > PAGE_SIZE;
 
@@ -258,8 +292,6 @@ public class ChatServiceV1 {
 		if (!displayChats.isEmpty()) {
 			nextCursor = String.valueOf(displayChats.get(displayChats.size() - 1).getId());
 		}
-
-		int totalCount = chatRepository.countByRoomId(roomId);
 
 		ChatMessagesResponse response = ChatMessagesResponse.builder()
 				.items(messageResponses)

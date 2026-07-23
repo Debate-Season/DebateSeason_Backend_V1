@@ -54,6 +54,38 @@ public interface ChatJpaRepository extends JpaRepository<ChatEntity,Long> {
     int countByRoomId(Long roomId);
 
 
+    // ---- v1.3.5 스레드 통합: 스레드 단위 조회 ----
+
+    // 구 앱 히스토리 보존용: 옛 방(=스레드) id 로 조회하면 그 스레드 메시지만 돌려준다.
+    // 이관 후 메시지의 chat_room_id 는 컨테이너지만 thread_id 는 옛 방 id 로 남는다.
+    @Query("""
+           SELECT c FROM chat c
+           WHERE c.threadId = :threadId AND c.id < :cursor
+           ORDER BY c.id DESC
+           """)
+    List<ChatEntity> findByThreadIdAndCursor(Long threadId, Long cursor, Pageable pageable);
+
+    @Query("""
+           SELECT COUNT(c) FROM chat c
+           WHERE c.threadId = :threadId
+           """)
+    int countByThreadId(Long threadId);
+
+    // 웹 스레드 탭: 컨테이너 안에서 특정 스레드만 필터.
+    @Query("""
+           SELECT c FROM chat c
+           WHERE c.chatRoomId.id = :roomId AND c.threadId = :threadId AND c.id < :cursor
+           ORDER BY c.id DESC
+           """)
+    List<ChatEntity> findByRoomIdAndThreadIdAndCursor(Long roomId, Long threadId, Long cursor, Pageable pageable);
+
+    @Query("""
+           SELECT COUNT(c) FROM chat c
+           WHERE c.chatRoomId.id = :roomId AND c.threadId = :threadId
+           """)
+    int countByRoomIdAndThreadId(Long roomId, Long threadId);
+
+
     // 가장 최근대화 불러오기.
     @Query("""
             SELECT c.timeStamp FROM chat c

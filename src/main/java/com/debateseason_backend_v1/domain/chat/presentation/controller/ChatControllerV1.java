@@ -102,13 +102,21 @@ public class ChatControllerV1 {
 			example = "1234"
 		)
 		@RequestParam(required = false) Long cursor,
-		
+
+		@Parameter(
+			description = "스레드 ID (선택). 지정 시 컨테이너 채팅방 안에서 해당 스레드만 필터링(웹 탭). " +
+						"미입력 시 전체 스트림",
+			required = false,
+			example = "12"
+		)
+		@RequestParam(required = false) Long threadId,
+
 		@Parameter(hidden = true)
 		@AuthenticationPrincipal CustomUserDetails principal
 	) {
 		Long userId = requireUserId(principal);
 
-		return chatService.getChatMessagesV2(roomId, cursor, userId);
+		return chatService.getChatMessagesV2(roomId, threadId, cursor, userId);
 	}
 
 	@Operation(

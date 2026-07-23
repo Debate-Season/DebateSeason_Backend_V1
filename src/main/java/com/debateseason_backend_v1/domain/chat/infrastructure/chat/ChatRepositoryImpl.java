@@ -46,6 +46,26 @@ public class ChatRepositoryImpl implements ChatRepository {
     }
 
     @Override
+    public List<ChatEntity> findByThreadIdAndCursor(Long threadId, Long cursor, Pageable pageable) {
+        return chatJpaRepository.findByThreadIdAndCursor(threadId, cursor, pageable);
+    }
+
+    @Override
+    public int countByThreadId(Long threadId) {
+        return chatJpaRepository.countByThreadId(threadId);
+    }
+
+    @Override
+    public List<ChatEntity> findByRoomIdAndThreadIdAndCursor(Long roomId, Long threadId, Long cursor, Pageable pageable) {
+        return chatJpaRepository.findByRoomIdAndThreadIdAndCursor(roomId, threadId, cursor, pageable);
+    }
+
+    @Override
+    public int countByRoomIdAndThreadId(Long roomId, Long threadId) {
+        return chatJpaRepository.countByRoomIdAndThreadId(roomId, threadId);
+    }
+
+    @Override
     public ChatEntity findById(Long id) {
         return chatJpaRepository.findById(id).orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_MESSAGE));
     }

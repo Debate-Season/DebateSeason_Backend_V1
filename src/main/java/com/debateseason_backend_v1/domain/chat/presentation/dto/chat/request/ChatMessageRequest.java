@@ -26,6 +26,8 @@ public class ChatMessageRequest {
 
     @Schema(description = "룸ID",example = "1L")
     private Long roomId;
+    @Schema(description = "스레드ID (선택). 웹은 선택 탭, 모바일은 미전송→기본 스레드. 미전송 시 null", example = "1L")
+    private Long threadId;
     @Schema(description = "메시지 타입", example = "CHAT")
     private MessageType messageType;
     @Schema(description = "메시지 내용 (메시지는 1자 이상 500자 이하여야 합니다.)" , example = "안녕하세요.")

@@ -45,14 +45,22 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 			return;
 		}
 
-		// Optional Auth: 토큰 있으면 파싱, 없으면 anonymous로 통과
+		// Optional Auth: 헤더가 없으면 익명으로 통과, 헤더가 있으면 토큰 유효성을 강제한다.
+		// "헤더 없음(진짜 비로그인)" 과 "토큰은 있으나 만료/무효" 를 구분해, 후자는 익명으로
+		// 조용히 강등하지 않고 401 을 돌려준다. 그래야 클라이언트의 401 기반 리프레시가 동작한다.
 		if (securityPathMatcher.isOptionalAuthUrl(request)) {
-			tryOptionalAuthentication(request);
+			String authorizationHeader = request.getHeader(AUTHORIZATION_HEADER);
+			if (containsValidHeader(authorizationHeader)
+				&& !authenticateFromHeader(authorizationHeader, response, requestURI)) {
+				// 헤더는 있으나 토큰이 만료/무효 -> 401 을 이미 기록했으므로 체인 중단
+				return;
+			}
+			// 헤더가 없으면 순수 비로그인 -> 익명 응답 유지
 			filterChain.doFilter(request, response);
 			return;
 		}
 
-		// 1. Authorization 헤더 검증
+		// Authorization 헤더 검증 (필수 인증)
 		String authorizationHeader = request.getHeader(AUTHORIZATION_HEADER);
 
 		if (!containsValidHeader(authorizationHeader)) {
@@ -61,24 +69,44 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 			return;
 		}
 
-		// 2. Bearer 토큰 추출
+		if (!authenticateFromHeader(authorizationHeader, response, requestURI)) {
+			return;
+		}
+
+		filterChain.doFilter(request, response);
+	}
+
+	/**
+	 * 헤더에 실린 Bearer 토큰을 검증해 SecurityContext 에 인증을 세팅한다.
+	 * 성공하면 {@code true}, 실패하면 401(만료/무효)을 응답에 기록하고 {@code false} 를 반환한다.
+	 * (호출 측은 {@code false} 면 필터 체인을 중단해야 한다.)
+	 *
+	 * <p>검증 실패 처리는 필수 인증과 optional 인증이 공유한다 -> 두 경로의 정책이 항상 일치한다.
+	 * 인증 처리만 try 로 감싸고 {@code filterChain.doFilter} 는 호출 측에 두므로,
+	 * 다운스트림 컨트롤러가 던진 예외를 여기서 삼켜 401 로 오인하는 일은 없다.
+	 */
+	private boolean authenticateFromHeader(
+		String authorizationHeader,
+		HttpServletResponse response,
+		String requestURI
+	) throws IOException {
+
 		String token = removeBearerPrefix(authorizationHeader);
 		if (token == null) {
 			log.debug("유효한 JWT 토큰 형식이 아닙니다, uri: {}", requestURI);
 			errorHandler.handleInvalidToken(response, requestURI);
-			return;
+			return false;
 		}
 
-		// 3. 토큰 유효성 검증 및 인증 처리
 		try {
 			authenticateWithAccessToken(token, requestURI);
-			filterChain.doFilter(request, response);
+			return true;
 		} catch (ExpiredJwtException e) {
 			errorHandler.handleExpiredToken(response, requestURI);
-			return;
-		} catch (JwtException e) {
+			return false;
+		} catch (JwtException | IllegalArgumentException e) {
 			errorHandler.handleInvalidToken(response, requestURI);
-			return;
+			return false;
 		}
 	}
 
@@ -125,22 +153,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 			"Security Context에 '{}' 인증 정보를 저장했습니다, uri: {}",
 			authentication.getName(), requestURI
 		);
-	}
-
-	private void tryOptionalAuthentication(HttpServletRequest request) {
-		String authorizationHeader = request.getHeader(AUTHORIZATION_HEADER);
-		if (!containsValidHeader(authorizationHeader)) {
-			return;
-		}
-		String token = removeBearerPrefix(authorizationHeader);
-		if (token == null) {
-			return;
-		}
-		try {
-			authenticateWithAccessToken(token, request.getRequestURI());
-		} catch (Exception e) {
-			log.debug("Optional auth failed, continuing as anonymous: {}", e.getMessage());
-		}
 	}
 
 }

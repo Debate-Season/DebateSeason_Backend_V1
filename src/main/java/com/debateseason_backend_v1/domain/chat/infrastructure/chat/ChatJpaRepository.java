@@ -87,9 +87,10 @@ public interface ChatJpaRepository extends JpaRepository<ChatEntity,Long> {
 
 
     // 가장 최근대화 불러오기.
+    // v1.3.5: 호출부는 주제(스레드) id 를 넘긴다. 이관 전/후 모두 주제 메시지의 최신 시각을 반환.
     @Query("""
             SELECT c.timeStamp FROM chat c
-            WHERE c.chatRoomId.id = :chatRoomId
+            WHERE (c.threadId = :chatRoomId OR (c.threadId IS NULL AND c.chatRoomId.id = :chatRoomId))
             ORDER BY c.timeStamp
             DESC
             LIMIT 1

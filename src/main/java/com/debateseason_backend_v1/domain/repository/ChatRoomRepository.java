@@ -20,10 +20,11 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
 
 
 	// 2-1 이슈방 issue-id와 관련된 채팅방ID 가져오기
-	@Query(value = "SELECT chat_room_id FROM chat_room WHERE issue_id = :issueId ORDER BY chat_room_id DESC LIMIT 3", nativeQuery = true)
+	// v1.3.5: 컨테이너는 목록에서 제외(스레드=옛 방만 노출). 레거시(NULL)도 스레드로 취급.
+	@Query(value = "SELECT chat_room_id FROM chat_room WHERE issue_id = :issueId AND (room_type IS NULL OR room_type <> 'CONTAINER') ORDER BY chat_room_id DESC LIMIT 3", nativeQuery = true)
 	List<Long> findTop3ChatRoomIdsByIssueId(@Param("issueId") Long issueId);
 	// 2-2 이슈방 issue-id와 관련된 채팅방ID + 커서기반
-	@Query(value = "SELECT chat_room_id FROM chat_room WHERE issue_id = :issueId AND chat_room_id < :ChatRoomId ORDER BY chat_room_id DESC LIMIT 3", nativeQuery = true)
+	@Query(value = "SELECT chat_room_id FROM chat_room WHERE issue_id = :issueId AND chat_room_id < :ChatRoomId AND (room_type IS NULL OR room_type <> 'CONTAINER') ORDER BY chat_room_id DESC LIMIT 3", nativeQuery = true)
 	List<Long> findTop3ChatRoomIdsByIssueIdAndChatRoomId(
 		@Param("issueId") Long issueId,
 		@Param("ChatRoomId") Long ChatRoomId
@@ -55,14 +56,16 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
         INNER JOIN (
             SELECT chat_room_id
             FROM (
-                SELECT chat_room_id, COUNT(chat_room_id) AS chats 
+                -- v1.3.5: 이관 전/후 모두 주제 단위 랭킹 (post: thread_id / pre: chat_room_id)
+                SELECT COALESCE(thread_id, chat_room_id) AS chat_room_id, COUNT(*) AS chats
                 FROM chat
                 WHERE time_stamp <= NOW()
-                GROUP BY chat_room_id
+                GROUP BY COALESCE(thread_id, chat_room_id)
             ) tmp
             ORDER BY tmp.chats DESC
             LIMIT 5
         ) tmp2 ON cr.chat_room_id = tmp2.chat_room_id
+        WHERE cr.room_type IS NULL OR cr.room_type <> 'CONTAINER'
     ) chatroom ON iss.issue_id = chatroom.issue_id
 """, nativeQuery = true)
 	List<Object[]> findTop5ActiveChatRooms();
@@ -86,15 +89,17 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
             cr.created_at
         FROM chat_room cr
         INNER JOIN (
-            SELECT 
-                chat_room_id, 
-                COUNT(chat_room_id) AS chats 
+            -- v1.3.5: 이관 전/후 모두 주제 단위 랭킹 (post: thread_id / pre: chat_room_id).
+            -- 컨테이너는 votes(user_chat_room)가 없어 아래 INNER JOIN 에서 자연 제외된다.
+            SELECT
+                COALESCE(thread_id, chat_room_id) AS chat_room_id,
+                COUNT(*) AS chats
             FROM chat
             WHERE time_stamp <= NOW()
-            GROUP BY chat_room_id
+            GROUP BY COALESCE(thread_id, chat_room_id)
             ORDER BY chats DESC
-            LIMIT 5       
-        ) tmp2 
+            LIMIT 5
+        ) tmp2
         ON cr.chat_room_id = tmp2.chat_room_id
     ) tmp3
     ON ucr.chat_room_id = tmp3.chat_room_id
@@ -134,7 +139,7 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
         SELECT COUNT(CASE WHEN reaction_type = 'LOGIC' THEN 1 END) AS LOGIC,
                COUNT(CASE WHEN reaction_type = 'ATTITUDE' THEN 1 END) AS ATTITUDE
         FROM (
-            SELECT chat_id FROM chat WHERE chat_room_id = :chatRoomId AND opinion_type = :opinion
+            SELECT chat_id FROM chat WHERE (thread_id = :chatRoomId OR (thread_id IS NULL AND chat_room_id = :chatRoomId)) AND opinion_type = :opinion
         ) ch
         JOIN chat_reaction ch_r ON ch.chat_id = ch_r.chat_id
         GROUP BY ch.chat_id
@@ -156,7 +161,7 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
                     COUNT(CASE WHEN ch_r.reaction_type = 'ATTITUDE' THEN 1 END) AS score
                 FROM chat ch
                 JOIN chat_reaction ch_r ON ch.chat_id = ch_r.chat_id
-                WHERE ch.chat_room_id = :chatRoomId AND ch.opinion_type = :opinion
+                WHERE (ch.thread_id = :chatRoomId OR (ch.thread_id IS NULL AND ch.chat_room_id = :chatRoomId)) AND ch.opinion_type = :opinion
                 GROUP BY ch.chat_id
             ) s
             ORDER BY s.score DESC
@@ -174,8 +179,8 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
         COUNT(CASE WHEN ch_r.reaction_type = 'LOGIC' THEN 1 END) AS logic,
         COUNT(CASE WHEN ch_r.reaction_type = 'ATTITUDE' THEN 1 END) AS attitude
     FROM (
-        SELECT * FROM chat 
-        WHERE user_id = :userId AND chat_room_id = :chatRoomId
+        SELECT * FROM chat
+        WHERE user_id = :userId AND (thread_id = :chatRoomId OR (thread_id IS NULL AND chat_room_id = :chatRoomId))
     ) ch
     JOIN chat_reaction ch_r ON ch.chat_id = ch_r.chat_id
     GROUP BY ch.chat_id, ch.content

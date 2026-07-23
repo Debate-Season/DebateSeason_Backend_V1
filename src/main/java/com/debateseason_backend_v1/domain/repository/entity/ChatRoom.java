@@ -7,6 +7,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import com.debateseason_backend_v1.domain.chatroom.domain.ChatRoomStatus;
+import com.debateseason_backend_v1.domain.chatroom.domain.ChatRoomType;
 import com.debateseason_backend_v1.domain.issue.infrastructure.entity.IssueEntity;
 
 import jakarta.persistence.Column;
@@ -52,6 +53,16 @@ public class ChatRoom {
 
 	private String title;
 	private String content;
+
+	// v1.3.5 채팅방 스레드 통합. 레거시 행은 NULL = THREAD 로 해석한다.
+	// CONTAINER = 이슈당 1개(모바일이 보는 방, 메시지 버킷), THREAD = 강등된 기존 방.
+	@Enumerated(EnumType.STRING)
+	@Column(name = "room_type")
+	private ChatRoomType roomType;
+
+	// THREAD 가 소속된 CONTAINER 방 id. CONTAINER/레거시 행은 NULL.
+	@Column(name = "container_room_id")
+	private Long containerRoomId;
 
 	// 레거시 행은 NULL(= 시스템/수동 생성). 소유권 판정 시 NULL 이면 ADMIN 만 수정 가능.
 	@Column(name = "created_by")

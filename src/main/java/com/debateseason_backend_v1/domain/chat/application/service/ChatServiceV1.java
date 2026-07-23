@@ -108,6 +108,7 @@ public class ChatServiceV1 {
 	private ChatEntity convertToEntity(ChatMessageRequest message, ChatRoom chatRoom) {
 		return ChatEntity.builder()
 				.chatRoomId(chatRoom)
+				.threadId(message.getThreadId())
 				.sender(message.getSender())
 				.content(message.getContent())
 				.messageType(message.getMessageType())
@@ -163,6 +164,7 @@ public class ChatServiceV1 {
 						ChatEntity maskedEntity = ChatEntity.builder()
 								.id(chatEntity.getId())
 								.chatRoomId(chatEntity.getChatRoomId())
+								.threadId(chatEntity.getThreadId())
 								.userId(chatEntity.getUserId())
 								.messageType(chatEntity.getMessageType())
 								.content(Chat.REPORTED_MESSAGE_CONTENT)
@@ -275,6 +277,7 @@ public class ChatServiceV1 {
 		return ChatEntity.builder()
 				.id(original.getId())
 				.chatRoomId(original.getChatRoomId())
+				.threadId(original.getThreadId())
 				.userId(original.getUserId())
 				.messageType(original.getMessageType())
 				.content(Chat.REPORTED_MESSAGE_CONTENT)  // 신고된 메시지 내용으로 대체

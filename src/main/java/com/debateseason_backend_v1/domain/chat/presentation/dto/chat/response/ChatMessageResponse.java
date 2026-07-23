@@ -32,8 +32,10 @@ public class ChatMessageResponse {
 
     @Schema(description = "채팅 ID",example = "1L")
     private Long id;
-    @Schema(description = "룸ID",example = "1L")
+    @Schema(description = "룸ID(컨테이너)",example = "1L")
     private Long roomId;
+    @Schema(description = "스레드ID. 웹이 탭 필터에 사용. 미분류 메시지는 null", example = "1L")
+    private Long threadId;
     @Schema(description = "메시지 타입", example = "CHAT")
     private MessageType messageType;
     @NotBlank(message= "메시지 내용은 필수 입니다.")
@@ -59,6 +61,7 @@ public class ChatMessageResponse {
 
     public static ChatMessageResponse from(ChatMessageRequest request) {
         return ChatMessageResponse.builder()
+                .threadId(request.getThreadId())
                 .messageType(request.getMessageType())
                 .sender(request.getSender())
                 .content(request.getContent())
@@ -93,6 +96,7 @@ public class ChatMessageResponse {
         return ChatMessageResponse.builder()
                 .id(chat.getId())
                 .roomId(chat.getChatRoomId().getId())
+                .threadId(chat.getThreadId())
                 .messageType(chat.getMessageType())
                 .content(chat.getContent())
                 .sender(chat.getSender())
@@ -125,6 +129,7 @@ public class ChatMessageResponse {
         return ChatMessageResponse.builder()
                 .id(chat.getId())
                 .roomId(chat.getChatRoomId().getId())
+                .threadId(chat.getThreadId())
                 .messageType(chat.getMessageType())
                 .content(chat.getContent())
                 .sender(chat.getSender())
@@ -174,6 +179,7 @@ public class ChatMessageResponse {
         return ChatMessageResponse.builder()
                 .id(chat.getId())
                 .roomId(chat.getChatRoomId().getId())
+                .threadId(chat.getThreadId())
                 .messageType(chat.getMessageType())
                 .content(chat.getContent())
                 .sender(chat.getSender())

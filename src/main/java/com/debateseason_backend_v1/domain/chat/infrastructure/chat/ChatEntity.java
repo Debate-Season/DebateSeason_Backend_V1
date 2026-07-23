@@ -29,6 +29,11 @@ public class ChatEntity {
 	@JoinColumn(name = "chat_room_id", nullable = false)
 	private ChatRoom chatRoomId;
 
+	// v1.3.5 채팅방 스레드 통합. 이 메시지가 속한 스레드(= 강등된 기존 방)의 id.
+	// NULL = 미분류 (마이그레이션 전 메시지 / 구 앱 전송분). 조회 필터는 chat_room_id(컨테이너) + thread_id.
+	@Column(name = "thread_id")
+	private Long threadId;
+
 	@Column(name = "user_id")
 	private Long userId;
 
@@ -58,6 +63,7 @@ public class ChatEntity {
 	public static ChatEntity from(ChatMessageRequest request, ChatRoom chatRoom, Long userId) {
 		return ChatEntity.builder()
 				.chatRoomId(chatRoom)
+				.threadId(request.getThreadId())
 				.userId(userId)
 				.messageType(request.getMessageType())
 				.content(request.getContent())

@@ -117,6 +117,19 @@ public class ChatMessageResponse {
         return from(chat, (String) null);
     }
 
+    /**
+     * 실시간 브로드캐스트용. 저장은 컨테이너(chat_room_id)로 하되, 응답의 roomId 는 클라이언트가
+     * 실제로 구독/발신한 주소(addressedRoomId)로 맞춘다.
+     * - 구 앱: 옛 방(스레드) id 로 발신·구독 → roomId 를 그 방 id 로 유지해 호환.
+     * - 신 클라이언트: 컨테이너로 발신 → addressedRoomId == 컨테이너 == chat_room_id (동일).
+     * threadId 는 스레드 태그로 payload 에 함께 실려 웹 탭 필터에 쓰인다.
+     */
+    public static ChatMessageResponse from(ChatEntity chat, String profileColor, Long addressedRoomId) {
+        ChatMessageResponse base = from(chat, profileColor);
+        base.roomId = addressedRoomId != null ? addressedRoomId : base.roomId;
+        return base;
+    }
+
     public static ChatMessageResponse from(ChatEntity chat, String profileColor) {
         // 빈 ReactionResponse 객체 생성
         ChatReactionResponse emptyReaction = ChatReactionResponse.builder()

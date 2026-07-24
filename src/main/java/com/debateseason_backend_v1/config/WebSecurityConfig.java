@@ -57,7 +57,8 @@ public class WebSecurityConfig {
 		"/api/v1/home/recommend",
 		"/api/v1/home/media",
 		"/api/v1/room",
-		"/api/v1/users/home"
+		"/api/v1/users/home",
+		"/api/v2/room"
 	};
 
 	@Bean

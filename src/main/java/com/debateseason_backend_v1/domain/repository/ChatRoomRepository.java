@@ -1,12 +1,14 @@
 package com.debateseason_backend_v1.domain.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import com.debateseason_backend_v1.domain.chatroom.domain.ChatRoomType;
 import com.debateseason_backend_v1.domain.repository.entity.ChatRoom;
 import com.debateseason_backend_v1.domain.issue.infrastructure.entity.IssueEntity;
 
@@ -17,6 +19,15 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
 	List<ChatRoom> findByIssueEntity(IssueEntity issueEntity);
 
 	Long countByIssueEntity(IssueEntity issueEntity);
+
+	// v1.3.5 (Phase 3b-endpoint): 이슈의 컨테이너 방 1건.
+	// 이관 후 이슈당 컨테이너 1개가 존재하지만, 컨테이너가 없는 이슈(방이 없던 이슈 등)도 있을 수 있어 Optional.
+	Optional<ChatRoom> findFirstByIssueEntity_IdAndRoomType(Long issueId, ChatRoomType roomType);
+
+	// v1.3.5 (Phase 3b-endpoint): 이슈의 스레드(=옛 방) id 목록.
+	// 컨테이너 제외·레거시(NULL)는 스레드로 취급 — findTop3ChatRoomIdsByIssueId 와 동일 규칙(단 LIMIT 없음).
+	@Query(value = "SELECT chat_room_id FROM chat_room WHERE issue_id = :issueId AND (room_type IS NULL OR room_type <> 'CONTAINER') ORDER BY chat_room_id DESC", nativeQuery = true)
+	List<Long> findThreadRoomIdsByIssueId(@Param("issueId") Long issueId);
 
 
 	// 2-1 이슈방 issue-id와 관련된 채팅방ID 가져오기

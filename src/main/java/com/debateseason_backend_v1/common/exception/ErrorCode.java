@@ -106,6 +106,12 @@ public enum ErrorCode implements CodeInterface {
 	// Media 관련 오류
 	MEDIA_NOT_FOUND(404, HttpStatus.NOT_FOUND, "요청하신 미디어는 존재하지 않습니다."),
 
+	// 토론위키(v1.4.0) 관련 오류
+	NOT_FOUND_WIKI(404, HttpStatus.NOT_FOUND, "토론위키를 찾을 수 없습니다."),
+	NOT_FOUND_WIKI_REVISION(404, HttpStatus.NOT_FOUND, "토론위키 리비전을 찾을 수 없습니다."),
+	WIKI_GENERATION_UNAVAILABLE(503, HttpStatus.SERVICE_UNAVAILABLE,
+		"위키 생성기가 아직 구성되지 않았습니다. (ANTHROPIC_API_KEY 대기 중)"),
+
 	// 제거된 API
 	REMOVED_API(410, HttpStatus.GONE, "지원이 종료된 API입니다. 앱을 최신 버전으로 업데이트해주세요.");
 

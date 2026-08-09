@@ -3,7 +3,6 @@ package com.debateseason_backend_v1.domain.user.application.service;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.debateseason_backend_v1.common.enums.TokenType;
 import com.debateseason_backend_v1.common.exception.CustomException;
 import com.debateseason_backend_v1.common.exception.ErrorCode;
 import com.debateseason_backend_v1.domain.profile.infrastructure.ProfileJpaRepository;
@@ -35,15 +34,10 @@ public class UserServiceV1 {
 	@Transactional
 	public void logout(LogoutServiceRequest request) {
 
+		// 서명 불일치는 isExpired() 가 잡지 않아 그대로 500 이 됐다. 재발급과 같은 헬퍼로 통일한다.
+		jwtUtil.validateRefreshToken(request.refreshToken());
+
 		if (!refreshTokenRepository.existsByCurrentToken(request.refreshToken())) {
-			throw new CustomException(ErrorCode.INVALID_REFRESH_TOKEN);
-		}
-
-		if (jwtUtil.isExpired(request.refreshToken())) {
-			throw new CustomException(ErrorCode.EXPIRED_REFRESH_TOKEN);
-		}
-
-		if (jwtUtil.getTokenType(request.refreshToken()) != TokenType.REFRESH) {
 			throw new CustomException(ErrorCode.INVALID_REFRESH_TOKEN);
 		}
 

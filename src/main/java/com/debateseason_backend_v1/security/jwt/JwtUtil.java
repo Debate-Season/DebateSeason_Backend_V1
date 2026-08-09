@@ -10,18 +10,16 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import com.debateseason_backend_v1.common.enums.TokenType;
+import com.debateseason_backend_v1.common.exception.CustomException;
+import com.debateseason_backend_v1.common.exception.ErrorCode;
 import com.debateseason_backend_v1.domain.user.domain.UserRole;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtBuilder;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.MalformedJwtException;
-import io.jsonwebtoken.UnsupportedJwtException;
-import io.jsonwebtoken.security.SignatureException;
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
 @Component
 public class JwtUtil {
 
@@ -85,16 +83,39 @@ public class JwtUtil {
 		return createJwt(TokenType.REFRESH, userId, refreshTokenExpireTime, null);
 	}
 
+	// 검증 실패 로깅은 호출 측(JwtAuthenticationFilter / WebSocketConfig)이 담당한다.
+	// 예외 종류에 따라 심각도가 다른데(만료=정상 흐름, 서명 불일치=구 토큰) 여기서는
+	// 그 구분을 할 수 없고, 잡았다 다시 던지기만 하면 같은 사건이 두 줄로 남아
+	// 에러 알림이 중복 발화한다.
 	public boolean validate(String token) {
+
+		extractAllClaims(token);
+		return true;
+	}
+
+	/**
+	 * refresh token 을 검증하고, 실패 사유를 {@link CustomException} 으로 번역한다.
+	 *
+	 * <p>재발급(reissue)과 로그아웃이 공유한다 -> 두 경로의 판정이 어긋나지 않는다.
+	 * 예전에는 재발급이 아무 검증도 하지 않고 로그아웃만 검증해서, 같은 토큰이
+	 * 한쪽에서는 통하고 다른 쪽에서는 500 이 나는 상태였다.
+	 *
+	 * @throws CustomException 만료({@code EXPIRED_REFRESH_TOKEN}) 또는
+	 *                         서명 불일치·형식 오류·타입 불일치({@code INVALID_REFRESH_TOKEN})
+	 */
+	public void validateRefreshToken(String token) {
 
 		try {
 			extractAllClaims(token);
-			return true;
-		} catch (SecurityException | MalformedJwtException |
-				 UnsupportedJwtException | IllegalArgumentException |
-				 ExpiredJwtException | SignatureException e) {
-			log.error("JWT 토큰 검증 실패: {}", e.getMessage());
-			throw e;
+		} catch (ExpiredJwtException e) {
+			throw new CustomException(ErrorCode.EXPIRED_REFRESH_TOKEN);
+		} catch (JwtException | IllegalArgumentException e) {
+			throw new CustomException(ErrorCode.INVALID_REFRESH_TOKEN);
+		}
+
+		// access token 을 재발급에 쓰지 못하게 한다.
+		if (getTokenType(token) != TokenType.REFRESH) {
+			throw new CustomException(ErrorCode.INVALID_REFRESH_TOKEN);
 		}
 	}
 

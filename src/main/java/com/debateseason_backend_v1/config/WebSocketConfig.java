@@ -1,6 +1,7 @@
 package com.debateseason_backend_v1.config;
 
 import com.debateseason_backend_v1.security.jwt.JwtUtil;
+import io.jsonwebtoken.security.SignatureException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
@@ -124,8 +125,16 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                         }
                     });
                     log.info("WebSocket 인증 성공 - 사용자 ID: {}", userId);
+                } catch (SignatureException e) {
+                    // 시크릿 교체 이전에 발급된 토큰 = 휴면 사용자 복귀. HTTP 경로와 동일한 판정이다.
+                    // (JwtAuthenticationErrorHandler#handleStaleSignatureToken 주석 참고)
+                    log.info("WebSocket CONNECT - 휴면 사용자 복귀, 구 시크릿으로 서명된 토큰");
+                    if (webSocketAuthRequired) {
+                        throw new MessageDeliveryException("유효하지 않은 인증 토큰입니다.");
+                    }
+                    // 비강제 모드: 토큰이 유효하지 않아도 익명으로 연결 허용
                 } catch (Exception e) {
-                    log.error("WebSocket CONNECT - 토큰 검증 실패: {}", e.getMessage());
+                    log.warn("WebSocket CONNECT - 토큰 검증 실패: {}", e.getMessage());
                     if (webSocketAuthRequired) {
                         throw new MessageDeliveryException("유효하지 않은 인증 토큰입니다.");
                     }

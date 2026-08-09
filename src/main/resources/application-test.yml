@@ -35,7 +35,7 @@ jwt:
   secret:
     key: "yourTestSecretKeyMustBeLongEnoughForHS256Algorithm"
   access-token:
-    expire-time: 6000000   # 10분
+    expire-time: 6000000   # 100분
   refresh-token:
     expire-time: 86400000 # 24시간
 

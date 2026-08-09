@@ -32,6 +32,12 @@ public class AuthServiceV1 {
 
 	@Transactional
 	public TokenReissueResponse reissueToken(TokenReissueServiceRequest request) {
+		// 2026-08-09 추가. 이전에는 DB 문자열 매칭만 하고 토큰을 파싱조차 하지 않았다.
+		// 그래서 REFRESH_EXPIRE_TIME 설정이 아무 효력이 없었고(세션이 사실상 영구 유지),
+		// JWT 시크릿을 교체해도 기존 세션을 끊을 수 없었다.
+		// DB 조회보다 먼저 둔다 -> 만료·위조 토큰으로 테이블을 긁지 않는다.
+		jwtUtil.validateRefreshToken(request.refreshToken());
+
 		RefreshToken refreshToken = refreshTokenRepository.findByCurrentTokenOrPreviousToken(request.refreshToken())
 			.orElseThrow(() -> new CustomException(ErrorCode.INVALID_REFRESH_TOKEN));
 

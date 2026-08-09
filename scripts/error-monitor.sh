@@ -40,8 +40,12 @@ log() { echo "[$(date -u '+%Y-%m-%dT%H:%M:%SZ')] $*" >> "$LOG"; }
 # 여기 걸리는 로그는 알림을 보내지 않는다.
 # 클라이언트가 원인이거나 서버 결함이 아닌 것들만 넣을 것.
 # 새 소음이 생기면 이 배열에 추가하고 레포에도 반영한다.
+#
+# 2026-08-09: 인증 실패 로그는 대부분 앱에서 직접 레벨을 내렸다(아래 "레벨로 해결한 것" 참고).
+# 그쪽이 근본 해결이라 새 인증 소음은 여기에 추가하기 전에 로그 레벨부터 검토할 것.
 BENIGN_PATTERNS=(
 	# 만료된 토큰으로 온 요청. 정상적인 인증 흐름이다. (주 400건 수준)
+	# 앱에서 DEBUG 로 내렸지만, 배포 이전 버전이 남긴 로그를 위해 유지한다.
 	'JWT 토큰 검증 실패: JWT expired'
 	'WebSocket CONNECT - 토큰 검증 실패: JWT expired'
 	'Token has expired'
@@ -55,10 +59,14 @@ BENIGN_PATTERNS=(
 	# YouTube API 일일 할당량. 키/쿼터 이슈이지 서버 결함이 아니다.
 	'유튜브 API 할당량 모두 소진'
 )
-# 일부러 걸러내지 않는 것:
-#   'signature does not match' — 서명이 맞지 않는 토큰. 만료/형식오류와 달리
-#   위조 시도이거나 JWT 시크릿이 바뀐 뒤 남은 토큰일 수 있어 눈에 띄는 게 낫다.
-#   주 2건 수준이라 소음 부담도 없다. 거슬리면 위 배열에 추가하면 된다.
+# 레벨로 해결한 것 (여기서 걸러낼 필요가 없다):
+#   'signature does not match' — 시크릿 교체 이전에 발급된 토큰. 휴면 사용자가 오랜만에
+#   앱을 켜면 401 -> /auth/reissue -> 재시도로 1초 안에 스스로 복구한다. 서버 결함이 아니라
+#   JwtAuthenticationErrorHandler#handleStaleSignatureToken 에서 INFO 로 남기므로
+#   이 스크립트의 ERROR 필터에 아예 걸리지 않는다.
+#   단, 서명 불일치는 위조 시도와 구분되지 않는다. 로그가 사라진 게 아니라 레벨만 내려간 것이니
+#   급증이 의심되면 직접 확인할 것:
+#     journalctl -u toronchul.service -S '1 day ago' | grep -c '휴면 사용자 복귀'
 
 # ── 새 로그 수집 ─────────────────────────────────────────────
 if [ -f "$CURSOR_FILE" ] && [ -s "$CURSOR_FILE" ]; then

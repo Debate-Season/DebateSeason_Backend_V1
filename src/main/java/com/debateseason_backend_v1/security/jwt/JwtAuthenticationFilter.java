@@ -14,6 +14,7 @@ import com.debateseason_backend_v1.security.error.JwtAuthenticationErrorHandler;
 
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.security.SignatureException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -103,6 +104,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 			return true;
 		} catch (ExpiredJwtException e) {
 			errorHandler.handleExpiredToken(response, requestURI);
+			return false;
+		} catch (SignatureException e) {
+			// 서명 불일치 -> 시크릿 교체 이전에 발급된 토큰(휴면 사용자 복귀).
+			// 응답은 아래 무효 토큰과 동일한 401 INVALID_ACCESS_TOKEN 이다 —
+			// 클라이언트의 reissue 복구가 이 코드에 걸려 있으므로 바꾸면 안 된다.
+			errorHandler.handleStaleSignatureToken(response, requestURI);
 			return false;
 		} catch (JwtException | IllegalArgumentException e) {
 			errorHandler.handleInvalidToken(response, requestURI);

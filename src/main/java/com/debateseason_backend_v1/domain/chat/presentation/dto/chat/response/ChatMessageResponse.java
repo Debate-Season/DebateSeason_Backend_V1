@@ -36,6 +36,9 @@ public class ChatMessageResponse {
     private Long roomId;
     @Schema(description = "스레드ID. 웹이 탭 필터에 사용. 미분류 메시지는 null", example = "1L")
     private Long threadId;
+    @Schema(description = "작성자 user_id. 클라이언트가 JWT 의 sub(문자열)와 비교해 '내 메시지'를 판별한다. "
+        + "WebSocket 인증 게이트 이전 메시지는 null(판별 불가 → 남의 메시지로 취급).", example = "1")
+    private Long userId;
     @Schema(description = "메시지 타입", example = "CHAT")
     private MessageType messageType;
     @NotBlank(message= "메시지 내용은 필수 입니다.")
@@ -97,6 +100,7 @@ public class ChatMessageResponse {
                 .id(chat.getId())
                 .roomId(chat.getChatRoomId().getId())
                 .threadId(chat.getThreadId())
+                .userId(chat.getUserId())
                 .messageType(chat.getMessageType())
                 .content(chat.getContent())
                 .sender(chat.getSender())
@@ -143,6 +147,7 @@ public class ChatMessageResponse {
                 .id(chat.getId())
                 .roomId(chat.getChatRoomId().getId())
                 .threadId(chat.getThreadId())
+                .userId(chat.getUserId())
                 .messageType(chat.getMessageType())
                 .content(chat.getContent())
                 .sender(chat.getSender())
@@ -193,6 +198,7 @@ public class ChatMessageResponse {
                 .id(chat.getId())
                 .roomId(chat.getChatRoomId().getId())
                 .threadId(chat.getThreadId())
+                .userId(chat.getUserId())
                 .messageType(chat.getMessageType())
                 .content(chat.getContent())
                 .sender(chat.getSender())

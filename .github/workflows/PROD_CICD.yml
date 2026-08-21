@@ -127,6 +127,19 @@ jobs:
           scp -i ~/.ssh/lightsail_key "$JAR_FILE" ubuntu@${{ secrets.LIGHTSAIL_HOST }}:/home/ubuntu/app/app.jar.new
           scp -i ~/.ssh/lightsail_key deploy/toronchul.service ubuntu@${{ secrets.LIGHTSAIL_HOST }}:/home/ubuntu/app/toronchul.service.new
 
+      # nginx 설정 원본(deploy/nginx/)을 스테이징 디렉토리로 보낸다.
+      # scp 는 디렉토리를 만들지 못하므로 먼저 비우고 만든다.
+      - name: Transfer nginx config
+        run: |
+          ssh -T -i ~/.ssh/lightsail_key ubuntu@${{ secrets.LIGHTSAIL_HOST }} \
+            'rm -rf /home/ubuntu/app/nginx-stage && mkdir -p /home/ubuntu/app/nginx-stage'
+          scp -i ~/.ssh/lightsail_key \
+            deploy/nginx/nginx.conf \
+            deploy/nginx/conf.d/websocket_upgrade.conf \
+            deploy/nginx/sites-available/default \
+            deploy/nginx/www/_error.html \
+            ubuntu@${{ secrets.LIGHTSAIL_HOST }}:/home/ubuntu/app/nginx-stage/
+
       # 유닛 파일이 바뀐 경우에만 반영한다. 실제 재시작은 다음 스텝에서 한 번만 일어난다.
       - name: Sync systemd unit
         run: |
@@ -160,6 +173,206 @@ jobs:
           rm -f "$NEW"
           echo "systemd unit applied"
           UNIT_SCRIPT
+
+      # nginx 설정을 동기화한다.
+      #
+      # systemd 유닛과 달리 임시 경로에서 검증할 수 없다 — include 와 load_module 이
+      # 절대 경로라 실제 위치에 놓고 nginx -t 를 돌려야 의미가 있다.
+      # 그래서 "백업 → 적용 → 검증 → 실패 시 복구" 순서로 간다.
+      #
+      # 이 스텝은 jar 배포보다 먼저 돈다. 프록시가 깨진 채로 새 jar 를 올리면
+      # 장애 원인 구분이 어려워지므로, 문제가 있으면 jar 를 건드리기 전에 실패한다.
+      - name: Sync nginx config
+        run: |
+          ssh -T -i ~/.ssh/lightsail_key ubuntu@${{ secrets.LIGHTSAIL_HOST }} 'bash -s' << 'NGINX_SCRIPT'
+          set -u
+          STAGE=/home/ubuntu/app/nginx-stage
+          BACKUP_ROOT=/home/ubuntu/app/nginx-backups
+          BACKUP_DIR="$BACKUP_ROOT/$(date -u '+%Y%m%d-%H%M%S')"
+          KEEP=5
+          HOST_HDR=api.toronchul.app
+
+          # "스테이지 파일명:서버 경로"
+          # _error.html 을 가장 먼저 놓는다 — error_page 가 가리키는 파일이 없으면
+          # 에러 응답이 500 이 되는데, nginx -t 는 이걸 잡아내지 못한다.
+          PAIRS=(
+            "_error.html:/var/www/html/_error.html"
+            "nginx.conf:/etc/nginx/nginx.conf"
+            "websocket_upgrade.conf:/etc/nginx/conf.d/websocket_upgrade.conf"
+            "default:/etc/nginx/sites-enabled/default"
+          )
+
+          CHANGED=0
+          for P in "${PAIRS[@]}"; do
+            cmp -s "$STAGE/${P%%:*}" "${P#*:}" || CHANGED=1
+          done
+
+          if [ "$CHANGED" -eq 0 ]; then
+            echo "nginx config unchanged"
+            rm -rf "$STAGE"
+            exit 0
+          fi
+          echo "nginx config changed — 백업 후 적용한다"
+
+          # 앱이 지금 살아 있는지 8080 에 직접 물어 기록해 둔다(nginx 경유 아님).
+          # 이미 죽어 있었다면 아래 프록시 검증을 요구하지 않는다 —
+          # 그러지 않으면 앱 장애 때문에 멀쩡한 nginx 설정이 롤백된다.
+          APP_WAS_UP=false
+          if curl -sf --max-time 5 http://localhost:8080/prod/actuator/health >/dev/null 2>&1; then
+            APP_WAS_UP=true
+          fi
+          echo "app_was_up=$APP_WAS_UP"
+
+          # more_clear_headers 는 동적 모듈이 있어야 한다. 없으면 nginx 가 아예 뜨지 않는다.
+          # 서버를 재생성한 직후가 이 경우다. 설정을 건드리기 전에 먼저 확보한다.
+          # nginx-extras 는 nginx-core 를 교체해 버리므로 쓰지 않는다.
+          MODULE_INSTALLED=0
+          if grep -q 'more_clear_headers' "$STAGE/nginx.conf" \
+             && ! dpkg -s libnginx-mod-http-headers-more-filter >/dev/null 2>&1; then
+            echo "headers_more 모듈이 없다 — 설치한다"
+            sudo DEBIAN_FRONTEND=noninteractive apt-get update -qq
+            if ! sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -q libnginx-mod-http-headers-more-filter; then
+              echo "FATAL: headers_more 설치 실패 — 설정을 건드리지 않고 중단한다"
+              exit 1
+            fi
+            MODULE_INSTALLED=1
+          fi
+
+          # 백업. 아직 없는 파일(서버 재생성 직후)은 건너뛴다.
+          sudo mkdir -p "$BACKUP_DIR"
+          for P in "${PAIRS[@]}"; do
+            DST="${P#*:}"
+            if [ -f "$DST" ]; then
+              sudo cp -a "$DST" "$BACKUP_DIR/$(echo "$DST" | tr '/' '_')"
+            fi
+          done
+          echo "backup: $BACKUP_DIR"
+
+          # nginx 워커 PID 목록. reload 후 이 값이 바뀌면 새 설정이 실제로 뜬 것이다.
+          workers() {
+            pgrep -P "$(cat /run/nginx.pid 2>/dev/null || echo 0)" 2>/dev/null | sort | tr '\n' ' '
+          }
+
+          restore() {
+            echo "이전 nginx 설정으로 복구한다"
+            for P in "${PAIRS[@]}"; do
+              DST="${P#*:}"
+              B="$BACKUP_DIR/$(echo "$DST" | tr '/' '_')"
+              if [ -f "$B" ]; then
+                sudo cp -a "$B" "$DST"
+              fi
+            done
+            if sudo nginx -t && sudo systemctl reload nginx; then
+              echo "복구 완료 — 이전 설정으로 동작 중"
+            else
+              echo "FATAL: 복구 후에도 nginx 가 정상이 아니다. 수동 개입 필요."
+            fi
+          }
+
+          sudo mkdir -p /etc/nginx/conf.d /var/www/html
+          for P in "${PAIRS[@]}"; do
+            if ! sudo cp "$STAGE/${P%%:*}" "${P#*:}"; then
+              echo "FATAL: 복사 실패 — ${P#*:}"
+              restore
+              exit 1
+            fi
+          done
+          sudo chmod 644 /var/www/html/_error.html
+
+          if ! sudo nginx -t; then
+            echo "nginx -t 실패"
+            restore
+            exit 1
+          fi
+
+          # 반영 전 워커 PID 를 기록해 둔다. 아래에서 '새 설정이 실제로 떴는지'
+          # 판단하는 기준이 된다.
+          BEFORE_WORKERS=$(workers)
+
+          # load_module 은 reload 로 반영되지 않는다. 모듈을 방금 설치했다면
+          # 마스터 프로세스가 아직 그걸 모르므로 reload 는 unknown directive 로 깨진다.
+          if [ "$MODULE_INSTALLED" -eq 1 ]; then
+            echo "모듈을 새로 설치했으므로 restart 한다"
+            sudo systemctl restart nginx
+          else
+            sudo systemctl reload nginx
+          fi
+
+          # systemctl reload 는 시그널만 보내고 즉시 반환한다. 곧바로 요청을 던지면
+          # 아직 살아 있는 옛 워커가 '이전 설정'으로 응답해 검증이 그냥 통과해 버린다.
+          # (실제로 이 경쟁 때문에 잘못된 설정이 검증을 통과하는 걸 확인했다.)
+          # 워커 PID 가 실제로 교체될 때까지 기다린 뒤에 검증한다.
+          NEW_WORKERS=false
+          for i in $(seq 1 15); do
+            sleep 1
+            AFTER=$(workers)
+            if [ -n "$AFTER" ] && [ "$AFTER" != "$BEFORE_WORKERS" ]; then
+              NEW_WORKERS=true
+              break
+            fi
+          done
+          if [ "$NEW_WORKERS" != true ]; then
+            echo "워커가 교체되지 않았다 — 새 설정이 반영되지 않았을 수 있다"
+            restore
+            exit 1
+          fi
+
+          # 여기서부터는 새 설정으로 서빙된다.
+          #
+          # 검증은 '불변식'만 본다. 특정 경로가 몇 번을 돌려주는지 같은 건
+          # 오늘 설정의 성질일 뿐이라, 그걸 못박으면 나중에 그 설정을 정당하게
+          # 바꿨을 때 CI 가 올바른 변경을 롤백해 버린다.
+          if ! sudo systemctl is-active --quiet nginx; then
+            echo "nginx 가 active 가 아니다"
+            restore
+            exit 1
+          fi
+
+          # (1) nginx 가 TLS 를 물고 HTTP 응답을 만들어 내는가.
+          #     상태코드는 따지지 않는다 — 응답을 못 받는 것(000)만 실패로 본다.
+          #     앱이 죽어 있어도 유효한 검증이다.
+          NGINX_OK=false
+          for i in $(seq 1 6); do
+            CODE=$(curl -s -o /dev/null -w '%{http_code}' --max-time 5 \
+              --resolve "$HOST_HDR:443:127.0.0.1" "https://$HOST_HDR/" || echo 000)
+            if [ -n "$CODE" ] && [ "$CODE" != "000" ]; then
+              NGINX_OK=true
+              break
+            fi
+            sleep 3
+          done
+
+          if [ "$NGINX_OK" != true ]; then
+            echo "nginx 가 응답하지 않는다 (TLS/리스닝 실패)"
+            restore
+            exit 1
+          fi
+
+          # (2) 프록시 검증: 앱이 원래 살아 있었을 때만 요구한다.
+          if [ "$APP_WAS_UP" = true ]; then
+            PROXY_OK=false
+            for i in $(seq 1 6); do
+              if curl -sf --max-time 5 --resolve "$HOST_HDR:443:127.0.0.1" \
+                   "https://$HOST_HDR/prod/actuator/health" >/dev/null 2>&1; then
+                PROXY_OK=true
+                break
+              fi
+              sleep 3
+            done
+            if [ "$PROXY_OK" != true ]; then
+              echo "프록시 검증 실패 — 앱은 살아 있었는데 nginx 를 거치면 안 된다"
+              restore
+              exit 1
+            fi
+          else
+            echo "앱이 원래 내려가 있었다 — 프록시 검증은 건너뛴다"
+          fi
+
+          # 최근 $KEEP 세대만 남긴다
+          ls -1dt "$BACKUP_ROOT"/*/ 2>/dev/null | tail -n "+$((KEEP + 1))" | xargs -r sudo rm -rf
+          rm -rf "$STAGE"
+          echo "nginx config applied"
+          NGINX_SCRIPT
 
       - name: Deploy and health check
         run: |

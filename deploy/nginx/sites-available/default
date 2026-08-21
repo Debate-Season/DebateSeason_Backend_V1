@@ -1,0 +1,93 @@
+# Default server configuration
+server {
+    if ($host = api.toronchul.app) {
+        return 301 https://$host$request_uri;
+    } # managed by Certbot
+
+
+    if ($host = www.toronchul.app) {
+        return 301 https://$host$request_uri;
+    } # managed by Certbot
+
+
+    if ($host = toronchul.app) {
+        return 301 https://$host$request_uri;
+    } # managed by Certbot
+
+
+	listen 80;
+	server_name toronchul.app www.toronchul.app api.toronchul.app;
+
+	# ACME HTTP-01 challenge for Let's Encrypt (webroot method)
+	location /.well-known/acme-challenge/ {
+		root /var/www/html;
+		default_type "text/plain";
+		try_files $uri =404;
+	}
+
+	location / {
+		return 301 https://$host$request_uri;
+	}
+
+
+
+
+
+
+}
+
+server {
+	listen 443 ssl;
+	server_name toronchul.app www.toronchul.app api.toronchul.app;
+    ssl_certificate /etc/letsencrypt/live/toronchul.app/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/toronchul.app/privkey.pem; # managed by Certbot
+
+	# ACME challenge (safety net if any check hits HTTPS)
+	location /.well-known/acme-challenge/ {
+		root /var/www/html;
+		default_type "text/plain";
+		try_files $uri =404;
+	}
+
+	location /images/ {
+		alias /var/www/html/images/;
+		access_log off;
+	}
+
+	# nginx 기본 에러 페이지 본문에는 server_tokens off 를 켜도
+	# '<hr><center>nginx</center>' 서명이 남아 웹서버 종류가 노출된다.
+	# 서명 없는 최소 페이지로 대체한다. 원래 상태코드는 그대로 유지된다.
+	# proxy_intercept_errors 는 켜지 않으므로 /prod 하위 Spring 의
+	# JSON 에러 응답은 이 설정의 영향을 받지 않는다.
+	error_page 400 401 402 403 404 405 408 413 414 500 501 502 503 504 /_error.html;
+	location = /_error.html {
+		internal;
+		root /var/www/html;
+	}
+
+	# 백엔드 API 는 전부 /prod 컨텍스트 아래에 있다
+	# (application-prod.yml 의 server.servlet.context-path: /prod).
+	# WebSocket 도 /prod/ws-stomp 라 이 블록에 포함된다.
+	# 정규식으로 묶어 /prodXXX 같은 유사 경로가 새어 들어가지 않게 한다.
+	location ~ ^/prod(/|$) {
+		proxy_pass http://localhost:8080;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection $connection_upgrade;
+		proxy_set_header Host $host;
+		proxy_set_header X-Real-IP $remote_addr;
+		proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+		proxy_set_header X-Forwarded-Proto $scheme;
+	}
+
+	# /prod 밖으로 오는 요청은 전량 스캐너 트래픽이다
+	# (/.git/config, /nacos/..., /vendor/phpunit/..., /admin/login 등).
+	# 예전에는 이걸 그대로 8080 에 프록시해서 Tomcat 기본 404 HTML 이 응답으로 나갔고,
+	# 그 페이지가 WAS 종류를 그대로 노출했다. nginx 선에서 끊는다.
+	location / {
+		return 404;
+	}
+
+
+
+}

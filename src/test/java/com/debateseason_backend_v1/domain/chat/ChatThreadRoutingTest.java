@@ -31,7 +31,7 @@ class ChatThreadRoutingTest {
 	private final ChatRepository chatRepository = mock(ChatRepository.class);
 	private final ChatRoomServiceV1 chatRoomService = mock(ChatRoomServiceV1.class);
 	private final ChatServiceV1 chatService =
-		new ChatServiceV1(chatRepository, chatRoomService, null, null, null, null, null);
+		new ChatServiceV1(chatRepository, chatRoomService, null, null, null, null, null, null);
 
 	private ChatEntity captureSaved() {
 		ArgumentCaptor<ChatEntity> captor = ArgumentCaptor.forClass(ChatEntity.class);

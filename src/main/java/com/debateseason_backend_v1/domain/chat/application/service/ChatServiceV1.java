@@ -1,6 +1,7 @@
 package com.debateseason_backend_v1.domain.chat.application.service;
 
 import com.debateseason_backend_v1.common.enums.MessageType;
+import com.debateseason_backend_v1.common.enums.OpinionType;
 import com.debateseason_backend_v1.common.exception.CustomException;
 import com.debateseason_backend_v1.common.exception.ErrorCode;
 import com.debateseason_backend_v1.common.response.ApiResult;
@@ -17,7 +18,9 @@ import com.debateseason_backend_v1.domain.chat.validation.ChatValidate;
 import com.debateseason_backend_v1.domain.chatroom.domain.ChatRoomType;
 import com.debateseason_backend_v1.domain.chatroom.service.ChatRoomServiceV1;
 import com.debateseason_backend_v1.domain.notification.application.service.NotificationServiceV1;
+import com.debateseason_backend_v1.domain.repository.UserChatRoomRepository;
 import com.debateseason_backend_v1.domain.repository.entity.ChatRoom;
+import com.debateseason_backend_v1.domain.repository.entity.UserChatRoom;
 import com.debateseason_backend_v1.domain.chat.application.repository.ReportRepository;
 import com.debateseason_backend_v1.domain.chat.domain.model.report.Report;
 import com.debateseason_backend_v1.domain.chat.domain.model.report.ReportStatus;
@@ -53,6 +56,7 @@ public class ChatServiceV1 {
 	private final ReportRepository reportRepository;
     private final NotificationServiceV1 notificationService;
 	private final ProfileJpaRepository profileJpaRepository;
+	private final UserChatRoomRepository userChatRoomRepository;
 
 	// ---------- WebSocket 실시간 메시지 처리 ----------
 	
@@ -73,6 +77,9 @@ public class ChatServiceV1 {
 		ProfileEntity profile = profileJpaRepository.findByUserId(userId)
 			.orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_PROFILE));
 		message.setSender(profile.getNickname());
+
+		// 찬반도 서버가 투표 기록에서 채운다. 클라이언트가 보낸 opinionType 은 신뢰하지 않는다.
+		message.setOpinionType(resolveOpinionType(userId, resolveVoteRoomId(routed)));
 
 		// 메시지 저장 (chat_room_id = 컨테이너, thread_id = 스레드)
 		ChatEntity chat = ChatEntity.from(message, routed.container(), userId);
@@ -98,6 +105,60 @@ public class ChatServiceV1 {
 	}
 
 	private record RoutedTarget(ChatRoom container, Long threadId) {
+	}
+
+	/**
+	 * 찬반 투표는 주제(스레드 = 옛 채팅방) 단위로 user_chat_room 에 기록된다.
+	 * 저장은 컨테이너로 모이지만 투표는 컨테이너에 달리지 않으므로, 어느 방의 투표를 볼지 따로 정한다.
+	 *
+	 * - 스레드로 보냈거나 스레드를 지정한 발언 → 그 스레드의 투표
+	 * - 컨테이너에 스레드 지정 없이 보낸 '전체' 발언 → 속한 주제가 없다(투표 대상 없음)
+	 * - 레거시 방(room_type 미설정, 이관 전) → 그 방 자체가 투표 단위다
+	 */
+	private Long resolveVoteRoomId(RoutedTarget routed) {
+		if (routed.threadId() != null) {
+			return routed.threadId();
+		}
+		if (routed.container().getRoomType() == ChatRoomType.CONTAINER) {
+			return null;
+		}
+		return routed.container().getId();
+	}
+
+	/**
+	 * 채팅의 찬반은 클라이언트가 보낸 값이 아니라 서버가 보관한 투표 기록에서 결정한다.
+	 * 클라이언트 값을 그대로 저장하면 (1) 입장을 정하지 않고도 발언할 수 있고
+	 * (2) 실제 투표와 다른 입장으로 위장할 수 있다. sender 를 프로필에서 채우는 것과 같은 이유다.
+	 *
+	 * 미투표는 user_chat_room 에 행 자체가 없다. 투표 단위 방은 resolveVoteRoomId 가 정한다.
+	 * 고를 입장이 없는 '전체' 발언(voteRoomId == null)은 NEUTRAL 이다.
+	 */
+	private OpinionType resolveOpinionType(Long userId, Long voteRoomId) {
+		if (voteRoomId == null) {
+			return OpinionType.NEUTRAL;
+		}
+
+		UserChatRoom vote = userChatRoomRepository.findByUserIdAndChatRoomId(userId, voteRoomId);
+		OpinionType opinion = vote == null ? null : parseOpinion(vote.getOpinion());
+
+		// 미투표(행 없음)와 중립 투표는 모두 발언 자격이 없다.
+		if (opinion == null || opinion == OpinionType.NEUTRAL) {
+			throw new CustomException(ErrorCode.OPINION_REQUIRED_TO_CHAT);
+		}
+		return opinion;
+	}
+
+	// user_chat_room.opinion 은 varchar 라 enum 밖의 값이 들어 있을 수 있다. 그 경우 미투표로 본다.
+	private OpinionType parseOpinion(String opinion) {
+		if (opinion == null) {
+			return null;
+		}
+		try {
+			return OpinionType.valueOf(opinion);
+		} catch (IllegalArgumentException e) {
+			log.warn("알 수 없는 투표 값이라 미투표로 처리한다: {}", opinion);
+			return null;
+		}
 	}
 
 	private Long resolveUserId(SimpMessageHeaderAccessor headerAccessor) {

@@ -46,7 +46,9 @@ public class ChatMessageResponse {
     private String content;
     @Schema(description = "발신자", example = "홍길동")
     private String sender;
-    @Schema(description = "토론찬반", example = "AGREE")
+    @Schema(description = "토론찬반. 서버가 작성 시점의 투표 기록으로 채운다(클라이언트 값 아님). "
+        + "주제(스레드)에 속하지 않는 '전체' 발언과 인증 게이트 이전 레거시 메시지만 NEUTRAL 이다.",
+        example = "AGREE")
     private OpinionType opinionType;
     @Schema(description = "사용자 소속 커뮤니티", example = "에펨코리아")
     private String userCommunity;

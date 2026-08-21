@@ -68,11 +68,14 @@ public class WebSocketControllerV1 {
     @MessageExceptionHandler(CustomException.class)
     @SendToUser("/queue/errors")
     public ChatMessageErrorResponse handleCustomException(CustomException ex) {
-        log.error("메시지 처리 중 오류 발생: {}", ex.getMessage());
-        
+        // CustomException(ErrorCode) 단일 인자 생성자는 super(message) 를 부르지 않아 getMessage() 가 null 이다.
+        // 그대로 내보내면 클라이언트 에러 큐에 사유 없는 빈 메시지가 도착한다.
+        String message = ex.getMessage() != null ? ex.getMessage() : ex.getCodeInterface().getMessage();
+        log.error("메시지 처리 중 오류 발생: {}", message);
+
         return ChatMessageErrorResponse.builder()
                 .messageType(MessageType.ERROR)
-                .message(ex.getMessage())
+                .message(message)
                 .build();
     }
 

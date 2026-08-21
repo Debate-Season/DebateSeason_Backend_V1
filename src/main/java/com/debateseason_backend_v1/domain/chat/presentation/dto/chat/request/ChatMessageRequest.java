@@ -32,9 +32,10 @@ public class ChatMessageRequest {
     private MessageType messageType;
     @Schema(description = "메시지 내용 (메시지는 1자 이상 500자 이하여야 합니다.)" , example = "안녕하세요.")
     private String content;
-    @Schema(description = "발신자", example = "홍길동")
+    @Schema(description = "발신자. 서버가 프로필 닉네임으로 덮어쓰므로 보내도 무시된다.", example = "홍길동")
     private String sender;
-    @Schema(description = "토론찬반", example = "AGREE")
+    @Schema(description = "토론찬반. 서버가 해당 스레드의 실제 투표 기록으로 덮어쓰므로 보내도 무시된다. "
+        + "투표하지 않았으면 발행이 거절된다(/user/queue/errors).", example = "AGREE")
     private OpinionType opinionType;
     @Schema(description = "사용자 소속 커뮤니티", example = "에펨코리아")
     private String userCommunity;

@@ -98,6 +98,7 @@ public enum ErrorCode implements CodeInterface {
 	// 400번대
 	NOT_FOUND_ISSUE(404, HttpStatus.NOT_FOUND, "주어진 id값에 해당하는 이슈방을 찾을 수 없습니다."),
 	NOT_FOUND_CHATROOM(404, HttpStatus.NOT_FOUND, "주어진 chatroomId로 해당하는 채팅방을 찾을 수 없습니다."),
+	OPINION_REQUIRED_TO_CHAT(403, HttpStatus.FORBIDDEN, "채팅하려면 먼저 찬성 또는 반대를 선택해야 합니다."),
 	NOT_FOUND_ISSUE_WITH_CATEGORY(400, HttpStatus.NOT_FOUND, "해당 category의 이슈방을 찾을 수 없습니다."),
 
 	// 페이지네이션 오류

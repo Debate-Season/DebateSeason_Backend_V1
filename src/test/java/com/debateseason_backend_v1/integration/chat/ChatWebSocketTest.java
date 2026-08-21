@@ -9,8 +9,14 @@ import com.debateseason_backend_v1.domain.issue.infrastructure.repository.IssueJ
 import com.debateseason_backend_v1.domain.profile.infrastructure.ProfileEntity;
 import com.debateseason_backend_v1.domain.profile.infrastructure.ProfileJpaRepository;
 import com.debateseason_backend_v1.domain.repository.ChatRoomRepository;
+import com.debateseason_backend_v1.domain.repository.UserChatRoomRepository;
 import com.debateseason_backend_v1.domain.repository.entity.ChatRoom;
+import com.debateseason_backend_v1.domain.repository.entity.UserChatRoom;
+import com.debateseason_backend_v1.domain.user.domain.SocialType;
 import com.debateseason_backend_v1.domain.user.domain.UserRole;
+import com.debateseason_backend_v1.domain.user.domain.UserStatus;
+import com.debateseason_backend_v1.domain.user.infrastructure.UserEntity;
+import com.debateseason_backend_v1.domain.user.infrastructure.UserJpaRepository;
 import com.debateseason_backend_v1.security.jwt.JwtUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
@@ -55,6 +61,12 @@ public class ChatWebSocketTest {
     private ProfileJpaRepository profileJpaRepository;
 
     @Autowired
+    private UserJpaRepository userJpaRepository;
+
+    @Autowired
+    private UserChatRoomRepository userChatRoomRepository;
+
+    @Autowired
     private JwtUtil jwtUtil;
 
     private static final Long TEST_USER_ID = 1L;
@@ -62,6 +74,7 @@ public class ChatWebSocketTest {
 
     private ChatRoom savedChatRoom;
     private String accessToken;
+    private UserEntity testUser;
 
     @BeforeEach
     void setup(){
@@ -95,6 +108,19 @@ public class ChatWebSocketTest {
                                 .nickname(TEST_NICKNAME)
                                 .build()
                 ));
+
+        // 찬반도 서버가 투표 기록에서 채우므로 투표한 사용자가 필요하다(user_chat_room 은 users FK).
+        testUser = userJpaRepository.findById(TEST_USER_ID)
+                .orElseGet(() -> userJpaRepository.save(
+                        UserEntity.builder()
+                                .id(TEST_USER_ID)
+                                .identifier("test-identifier")
+                                .socialType(SocialType.KAKAO)
+                                .status(UserStatus.ACTIVE)
+                                .role(UserRole.USER)
+                                .build()
+                ));
+
         accessToken = jwtUtil.createAccessToken(TEST_USER_ID, UserRole.USER);
     }
 
@@ -107,6 +133,14 @@ public class ChatWebSocketTest {
                 .connectAsync(WS_URL, new WebSocketHttpHeaders(), connectHeaders,
                         new StompSessionHandlerAdapter() {})
                 .get(3, TimeUnit.SECONDS);
+    }
+
+    private void vote(OpinionType opinion) {
+        userChatRoomRepository.save(UserChatRoom.builder()
+                .user(testUser)
+                .chatRoom(savedChatRoom)
+                .opinion(opinion.name())
+                .build());
     }
 
     private void subscribe(StompSession session, String subTopic) {
@@ -135,7 +169,10 @@ public class ChatWebSocketTest {
         String sendDestination = "/stomp/chat.room."+roomId;
         String subTopic = "/topic/room"+roomId;
 
-        // payload의 sender는 서버가 무시하고 프로필 닉네임으로 덮어쓴다
+        // 이 사용자의 실제 투표는 반대다. payload 가 주장하는 찬성은 무시돼야 한다.
+        vote(OpinionType.DISAGREE);
+
+        // payload의 sender/opinionType은 서버가 무시하고 프로필·투표 기록으로 덮어쓴다
         ChatMessageRequest sendMessage = ChatMessageRequest.builder()
                 .roomId(roomId)
                 .sender("spoofedSender")
@@ -159,7 +196,7 @@ public class ChatWebSocketTest {
         assertEquals(TEST_NICKNAME, receivedMessage.getSender());
         assertEquals(receivedMessage.getContent(), message);
         assertEquals(receivedMessage.getMessageType(), MessageType.CHAT);
-        assertEquals(receivedMessage.getOpinionType(), OpinionType.AGREE);
+        assertEquals(OpinionType.DISAGREE, receivedMessage.getOpinionType());
         assertEquals(receivedMessage.getUserCommunity(), userCommunity);
     }
 

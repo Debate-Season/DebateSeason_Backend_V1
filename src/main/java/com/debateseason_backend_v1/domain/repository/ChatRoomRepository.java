@@ -1,5 +1,6 @@
 package com.debateseason_backend_v1.domain.repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -56,30 +57,63 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
 
 
 
-	// 2. Legacy 인기 토론방 5개
+	// 2. 실시간 핫한 토론 5개 — 시간창 캐스케이드
+	//
+	// 30분 → 8시간 → 24시간 → 72시간 순으로 칸을 채우고, 그래도 남으면 최근 생성순이다.
+	// 단계 우선이 절대적이다: 30분 창에 1건인 방이 8시간 창에 50건인 방보다 위다.
+	// 창 경계는 RankingWindow 가 계산해서 넘긴다 (모두 같은 :bucketEnd 에 앵커된 누적 구간).
+	//
+	// 창이 중첩이라 4번 조인할 필요 없이 조건부 집계 한 번이면 된다.
+	// 서브쿼리 WHERE 가 이미 72시간으로 잘라두므로 c72h 는 COUNT(*) 와 같다.
+	//
+	// 첫 CASE 가 단계, 둘째 CASE 가 그 단계에서의 카운트다.
+	// 5단계(최근 생성순)는 tier=4 / count=0 이라 꼬리의 created_at 정렬이 그대로 처리한다.
+	//
+	// 정렬·LIMIT 은 반드시 최외곽에 있어야 한다. 파생 테이블 안에서 자르면
+	// (1) MySQL 이 파생 테이블의 정렬을 바깥까지 보장하지 않아 응답 순서가 흐트러지고
+	// (2) 바깥 필터·조인에 걸러져 5개 미만으로 떨어진다.
+	//
+	// created_at 까지 같은 방들이 실제로 있다(시드로 한 번에 만든 87~90, 84~86, 79~83).
+	// 그래서 chat_room_id 를 마지막 키로 둬야 순서가 확정된다. 없으면 새로고침마다 섞인다.
 	@Query(value = """
-    SELECT iss.issue_id, iss.title,  
-           chatroom.chat_room_id, chatroom.title
-    FROM issue iss
-    INNER JOIN (
-        SELECT cr.chat_room_id, cr.title, cr.issue_id
-        FROM chat_room cr
-        INNER JOIN (
-            SELECT chat_room_id
-            FROM (
-                -- v1.3.5: 이관 전/후 모두 주제 단위 랭킹 (post: thread_id / pre: chat_room_id)
-                SELECT COALESCE(thread_id, chat_room_id) AS chat_room_id, COUNT(*) AS chats
-                FROM chat
-                WHERE time_stamp <= NOW()
-                GROUP BY COALESCE(thread_id, chat_room_id)
-            ) tmp
-            ORDER BY tmp.chats DESC
-            LIMIT 5
-        ) tmp2 ON cr.chat_room_id = tmp2.chat_room_id
-        WHERE cr.room_type IS NULL OR cr.room_type <> 'CONTAINER'
-    ) chatroom ON iss.issue_id = chatroom.issue_id
+    SELECT iss.issue_id, iss.title,
+           cr.chat_room_id, cr.title
+    FROM chat_room cr
+    INNER JOIN issue iss ON iss.issue_id = cr.issue_id
+    LEFT JOIN (
+        -- v1.3.5: 이관 전/후 모두 주제 단위 랭킹 (post: thread_id / pre: chat_room_id)
+        SELECT COALESCE(thread_id, chat_room_id) AS rid,
+               SUM(CASE WHEN time_stamp >= :window30m THEN 1 ELSE 0 END) AS c30m,
+               SUM(CASE WHEN time_stamp >= :window8h  THEN 1 ELSE 0 END) AS c8h,
+               SUM(CASE WHEN time_stamp >= :window24h THEN 1 ELSE 0 END) AS c24h,
+               COUNT(*)                                                  AS c72h
+        FROM chat
+        WHERE time_stamp >= :window72h AND time_stamp < :bucketEnd
+        GROUP BY COALESCE(thread_id, chat_room_id)
+    ) tmp ON tmp.rid = cr.chat_room_id
+    WHERE cr.room_type IS NULL OR cr.room_type <> 'CONTAINER'
+    ORDER BY
+        CASE WHEN COALESCE(tmp.c30m, 0) > 0 THEN 0
+             WHEN COALESCE(tmp.c8h,  0) > 0 THEN 1
+             WHEN COALESCE(tmp.c24h, 0) > 0 THEN 2
+             WHEN COALESCE(tmp.c72h, 0) > 0 THEN 3
+             ELSE 4 END ASC,
+        CASE WHEN COALESCE(tmp.c30m, 0) > 0 THEN tmp.c30m
+             WHEN COALESCE(tmp.c8h,  0) > 0 THEN tmp.c8h
+             WHEN COALESCE(tmp.c24h, 0) > 0 THEN tmp.c24h
+             WHEN COALESCE(tmp.c72h, 0) > 0 THEN tmp.c72h
+             ELSE 0 END DESC,
+        cr.created_at DESC,
+        cr.chat_room_id DESC
+    LIMIT 5
 """, nativeQuery = true)
-	List<Object[]> findTop5ActiveChatRooms();
+	List<Object[]> findTop5ActiveChatRooms(
+		@Param("window30m") LocalDateTime window30m,
+		@Param("window8h") LocalDateTime window8h,
+		@Param("window24h") LocalDateTime window24h,
+		@Param("window72h") LocalDateTime window72h,
+		@Param("bucketEnd") LocalDateTime bucketEnd
+	);
 
 
 	// 2. fix : 인기 토론방 5개

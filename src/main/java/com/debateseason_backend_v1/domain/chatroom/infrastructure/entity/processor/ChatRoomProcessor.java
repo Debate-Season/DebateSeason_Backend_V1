@@ -2,12 +2,12 @@ package com.debateseason_backend_v1.domain.chatroom.infrastructure.entity.proces
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
 
+import com.debateseason_backend_v1.domain.chatroom.domain.RankingWindow;
 import com.debateseason_backend_v1.domain.chatroom.domain.TimeProcessor;
 import com.debateseason_backend_v1.domain.chatroom.model.response.chatroom.messages.Top5BestChatRoom;
 import com.debateseason_backend_v1.domain.chatroom.model.response.chatroom.type.ResponseWithTimeAndOpinion;
@@ -71,43 +71,45 @@ public class ChatRoomProcessor {
 	}
 
 	// issue_id, issue.title, chatroom.chat_room_id, chatroom.title
-	// 2. 활성화된 최상위 5개 토론방을 보여준다.
-	// 값만 가져오면 되는 것을 굳이 DB를 왜 조회할까?
+	// 2. "실시간 핫한 토론" — 30분 → 8시간 → 24시간 → 72시간 순으로 칸을 채우고,
+	//    그래도 남는 자리는 최근 생성 토론방으로 채운다 (RankingWindow 참고).
+	//
+	// 결과 개수를 5로 가정하면 안 된다. 예전에는 for(i=0;i<5;i++) 로 List.get(i) 를 돌아서
+	// 자격 있는 방이 5개 미만이면 IndexOutOfBoundsException → 500 이었다.
+	// 지금은 쿼리가 창이 비어도 최신 방으로 5칸을 채우지만, 방 자체가 5개 미만인 환경
+	// (신규 배포·테스트 DB)에서는 여전히 짧게 나온다. 크기 기반으로 돈다.
 	public List<Top5BestChatRoom> getTop5ActiveRooms(){
 
-		List<Object[]> top5BestChatRooms = chatRoomRepository.findTop5ActiveChatRooms();
+		// now 를 한 번만 읽는다. 두 번 읽으면 경계 시각을 사이에 두고 창이 어긋날 수 있다.
+		LocalDateTime now = LocalDateTime.now();
+		List<Object[]> top5BestChatRooms = chatRoomRepository.findTop5ActiveChatRooms(
+			RankingWindow.windowStart(now, RankingWindow.TIER_30M),
+			RankingWindow.windowStart(now, RankingWindow.TIER_8H),
+			RankingWindow.windowStart(now, RankingWindow.TIER_24H),
+			RankingWindow.windowStart(now, RankingWindow.TIER_72H),
+			RankingWindow.bucketEnd(now)
+		);
 
-		// 정적 배열로 수정을 함으로써, 성능 효율을 향상.
-		Top5BestChatRoom [] chatRooms = new Top5BestChatRoom[5];
+		return top5BestChatRooms.stream()
+			.map(raw -> {
+				Long issueId = (Long)raw[0];
+				String issueTitle = (String)raw[1];
 
-		// size = 5
-		for(int i=0; i<5; i++){
-			//
-			Object[] rawChatRooms = top5BestChatRooms.get(i);
+				Long chatRoomId = (Long)raw[2];
+				String chatRoomTitle = (String)raw[3];
 
-			//
-			Long issueId = (Long)rawChatRooms[0];
-			String issueTitle = (String)rawChatRooms[1];
+				// 창 밖(폴백)으로 올라온 방은 대화가 없을 수 있고, 그 경우 빈 문자열이다.
+				String time = timeProcessor.findLastestChatTime(chatRoomId);
 
-			Long chatRoomId = (Long)rawChatRooms[2];
-			String chatRoomTitle = (String)rawChatRooms[3];
-			String time = timeProcessor.findLastestChatTime(chatRoomId);
-
-			Top5BestChatRoom top5BestChatRoom = Top5BestChatRoom.builder()
-				.issueId(issueId)
-				.issueTitle(issueTitle)
-				.debateId(chatRoomId)
-				.debateTitle(chatRoomTitle)
-				.time(time)
-				.build()
-				;
-
-			chatRooms[i]=top5BestChatRoom;
-
-		}
-
-		// Mapper 클래스가 List이므로, 구체적인 클래스가 아니라 인터페이스로 바꿈.
-		return Arrays.stream(chatRooms).toList();
+				return Top5BestChatRoom.builder()
+					.issueId(issueId)
+					.issueTitle(issueTitle)
+					.debateId(chatRoomId)
+					.debateTitle(chatRoomTitle)
+					.time(time)
+					.build();
+			})
+			.collect(Collectors.toList());
 
 	}
 

@@ -281,7 +281,9 @@ public class IssueServiceV1 {
 
 	// 구버전
 	public ApiResult<List<IssueBriefResponse>> fetchV1() {
-		List<IssueEntity> issueEntityList = issueJpaRepository.findAll();
+		// 이슈맵은 최신 이슈가 먼저다. findAll() 은 정렬이 없어 PK 순(= 가장 오래된 이슈 먼저)
+		// 으로 돌아왔다. 웹·앱 모두 클라이언트 정렬을 하지 않고 이 순서를 그대로 렌더링한다.
+		List<IssueEntity> issueEntityList = issueJpaRepository.findAllByOrderByCreatedAtDescIdDesc();
 
 		// Gson,JSONArray이 없어서 Map으로 반환을 한다.
 		List<IssueBriefResponse> responseList = new ArrayList<>();

@@ -12,10 +12,15 @@ import com.debateseason_backend_v1.domain.issue.infrastructure.entity.IssueEntit
 
 @Repository
 public interface IssueJpaRepository extends JpaRepository<IssueEntity,Long> {
-	
 
+	// 이슈맵 전체 목록 — 최신 이슈 먼저.
+	//
+	// created_at 만으로는 순서가 확정되지 않는다. 시드로 한 번에 만든 이슈들이
+	// created_at 이 초 단위까지 완전히 같다 (23~26 이 2026-06-10T15:01:48,
+	// 21~22 가 2026-06-03T06:50:36). 하필 최신 이슈 4건이 여기 몰려 있어서
+	// 2차 키가 없으면 이슈맵 첫 화면이 매 요청 섞인다. id 로 확정한다.
+	List<IssueEntity> findAllByOrderByCreatedAtDescIdDesc();
 
-	
 	// issue방 페이지네이션
 	@Query(value = "SELECT issue_id FROM issue " +
 		"WHERE issue_id <= (SELECT COUNT(issue_id) - :page FROM issueEntity) " +

@@ -71,7 +71,7 @@ class ChatRoomProcessorTop5Test {
 			row(4L, "i4", 40L, "r4"),
 			row(5L, "i5", 50L, "r5")
 		));
-		given(timeProcessor.findLastestChatTime(anyLong())).willReturn("");
+		given(timeProcessor.findLastestChatTime(anyLong())).willReturn("3분 전 대화");
 
 		assertThat(processor.getTop5ActiveRooms())
 			.extracting(Top5BestChatRoom::getDebateId)
@@ -79,15 +79,15 @@ class ChatRoomProcessorTop5Test {
 	}
 
 	@Test
-	@DisplayName("대화가 없는 폴백 방의 time 은 빈 문자열로 나간다")
-	void fallbackRoomWithoutChatsHasEmptyTime() {
+	@DisplayName("대화 없는 폴백 방은 빈 문자열이 아니라 안내 문구를 받는다")
+	void fallbackRoomWithoutChatsGetsPlaceholder() {
 		givenRows(List.<Object[]>of(row(23L, "제9회 지방선거", 87L, "투표용지 부족")));
-		given(timeProcessor.findLastestChatTime(87L)).willReturn("");
+		given(timeProcessor.findLastestChatTime(87L)).willReturn(TimeProcessor.NO_CHAT_YET);
 
 		assertThat(processor.getTop5ActiveRooms())
 			.singleElement()
 			.extracting(Top5BestChatRoom::getTime)
-			.isEqualTo("");
+			.isEqualTo(TimeProcessor.NO_CHAT_YET);
 	}
 
 	@Test

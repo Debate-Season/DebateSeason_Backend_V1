@@ -98,7 +98,7 @@ public class ChatRoomProcessor {
 				Long chatRoomId = (Long)raw[2];
 				String chatRoomTitle = (String)raw[3];
 
-				// 창 밖(폴백)으로 올라온 방은 대화가 없을 수 있고, 그 경우 빈 문자열이다.
+				// 창 밖(폴백)으로 올라온 방은 대화가 없다. 그 경우 TimeProcessor 가 안내 문구를 준다.
 				String time = timeProcessor.findLastestChatTime(chatRoomId);
 
 				return Top5BestChatRoom.builder()

@@ -51,6 +51,37 @@ sudo apt-get install -y libnginx-mod-http-headers-more-filter
 CI 동기화 스텝은 이 패키지가 없으면 **자동으로 설치하고 reload 대신 restart** 한다.
 서버를 재생성한 직후 첫 배포가 그 경우다.
 
+## 액세스 로그 포맷 (`timed`)
+
+기본 `combined` 은 **nginx 가 응답을 만들어 냈다**까지만 기록한다. 클라이언트가 실제로
+받았는지는 남지 않는다. 2026-09-03 모바일 스플래시 무한 로딩 조사에서 이게 막혔다 —
+앱이 멈춘 요청과 정상 요청의 로그가 `200 137` 로 **완전히 동일**해서, 전송 실패인지
+앱 버그인지 로그만으로 가릴 수 없었다.
+
+`combined` 뒤에 4개 필드를 덧붙인다:
+
+| 필드 | 변수 | 읽는 법 |
+|---|---|---|
+| `rt=` | `$request_time` | 수신~응답 전송 완료 전체. 클라이언트가 못 받고 늘어지면 커진다 |
+| `urt=` | `$upstream_response_time` | 백엔드가 쓴 시간. `rt` 와 벌어지면 원인이 백엔드가 아니다 |
+| `bs=` | `$bytes_sent` | 헤더 포함 실제 전송 바이트 (`$body_bytes_sent` 와 대비) |
+| `us=` | `$upstream_status` | 백엔드 상태코드. `$status` 와 다르면 nginx 가 개입한 것 |
+
+```
+121.130.91.226 - - [03/Sep/2026:04:26:55 +0000] "GET /prod/api/v1/... HTTP/1.1" 200 137
+  "-" "Dart/3.6 (dart:io)" rt=0.052 urt=0.049 bs=396 us=200
+```
+
+**앞부분은 `combined` 과 바이트 단위로 동일하게 유지할 것.** 위치로 파싱하는 기존
+명령(`$1`=IP, `$4`=시각, `$7`=경로, `$9`=상태)이 그대로 돌아가야 한다. 새 필드는
+반드시 **뒤에** 붙이고, `key=value` 형태를 지켜 `grep -o 'rt=[0-9.]*'` 로 뽑을 수 있게 한다.
+
+느린 요청만 보기:
+
+```bash
+ssh debateseason-prod "sudo awk '\$(NF-3) !~ /rt=0\.[0-2]/' /var/log/nginx/access.log | tail -20"
+```
+
 ## 수동 적용 (CI 우회 · 서버 재생성 직후 · sshd)
 
 ```bash
@@ -120,6 +151,13 @@ API 는 전부 `/prod` 컨텍스트(`application-prod.yml` 의 `server.servlet.c
 
 **인증서 라인은 Certbot 이 관리한다.** `ssl_certificate*` 줄은 갱신 시 Certbot 이
 건드릴 수 있으므로, 서버 쪽이 바뀌었으면 이 파일로 덮어쓰기 전에 diff 를 먼저 볼 것.
+
+> 2026-09-03: 인증서를 `api.toronchul.app` **한 도메인으로 줄였다.** 원래 한 장에
+> apex·www 까지 3개가 묶여 있었는데 그 둘이 Vercel 로 옮겨간 뒤로 http-01 챌린지가
+> 404 를 받아 **인증서 전체 갱신이 매일 실패**하고 있었다(만료 5일 전에 발견).
+> `--cert-name toronchul.app` 을 유지했으므로 `/etc/letsencrypt/live/toronchul.app/`
+> 경로는 그대로다 — 위 `ssl_certificate*` 줄은 바뀌지 않았다.
+> 이 서버로 실제 오는 건 `api` 뿐이므로 나머지 둘은 인증서에 있을 이유가 없다.
 
 **`toronchul.app` / `www.toronchul.app` 은 Vercel 을 가리킨다.** `server_name` 에
 남아 있지만 이 서버로 실제 오는 건 `api.toronchul.app` 뿐이다.

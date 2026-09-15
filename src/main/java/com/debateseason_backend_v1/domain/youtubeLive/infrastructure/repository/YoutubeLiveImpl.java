@@ -57,6 +57,13 @@ public class YoutubeLiveImpl implements YoutubeLiveRepository {
 		return youtubeLiveEntity;
 	}
 
+	// 진행 중인 라이브가 없을 때 호출된다.
+	// 행이 없으면 아무 일도 일어나지 않는다(이미 지워진 상태이므로 그게 맞다).
+	@Override
+	public void deleteByCategory(String category) {
+		youtubeLiveJpaRepository.deleteByCategory(category);
+	}
+
 	public void save(YoutubeLiveDto youtubeLiveDto) {
 		YoutubeLiveEntity youtubeLiveJpaEntity = YoutubeLiveEntity.builder()
 			.title(youtubeLiveDto.getTitle())// .id는 채번하는데 왜햠?

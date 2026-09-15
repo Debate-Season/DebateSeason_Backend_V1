@@ -150,7 +150,10 @@ public class YonhapNews extends NewsTemplate {
 			throw new RuntimeException(e);
 		}
 		catch (IndexOutOfBoundsException e){
-			log.warn("YonhapNews Live 진행 안함.");
+			log.warn("YonhapNews Live 진행 안함. 기존 데이터를 지운다.");
+			// 지우지 않으면 이미 끝난 방송이 계속 "실시간 Live" 로 나간다.
+			// 다시 켜지면 위 save() 분기가 새로 넣어주므로 되살아난다.
+			youtubeLiveRepository.deleteByCategory(category);
 		}
 	}
 

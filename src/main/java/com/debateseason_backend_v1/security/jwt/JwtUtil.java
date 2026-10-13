@@ -18,6 +18,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
 
 @Component
@@ -26,6 +27,10 @@ public class JwtUtil {
 	private static final String ROLE_CLAIM = "role";
 
 	private SecretKey secretKey;
+	// JwtParser 는 불변이라 스레드 간 공유해도 안전하다 -> 한 번만 만든다.
+	// 요청마다 build() 하면 jjwt 내부 ServiceLoader 조회를 매번 거치는데, 0.12.3 은 그 캐시가
+	// 스레드 안전하지 않아 동시 요청에서 NoSuchElementException(500)이 났다 (2026-10-13).
+	private final JwtParser jwtParser;
 	private final long accessTokenExpireTime;
 	private final long refreshTokenExpireTime;
 
@@ -39,6 +44,9 @@ public class JwtUtil {
 			secret.getBytes(StandardCharsets.UTF_8),
 			Jwts.SIG.HS256.key().build().getAlgorithm()
 		);
+		this.jwtParser = Jwts.parser()
+			.verifyWith(secretKey)
+			.build();
 		this.accessTokenExpireTime = accessTokenExpireTime;
 		this.refreshTokenExpireTime = refreshTokenExpireTime;
 	}
@@ -143,9 +151,7 @@ public class JwtUtil {
 
 	private Claims extractAllClaims(String token) {
 
-		return Jwts.parser()
-			.verifyWith(secretKey)
-			.build()
+		return jwtParser
 			.parseSignedClaims(token)
 			.getPayload();
 	}

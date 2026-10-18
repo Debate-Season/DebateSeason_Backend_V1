@@ -131,6 +131,18 @@ class IssueStatusAuthorizationTest {
 	}
 
 	@Test
+	@DisplayName("웹 SSR 키는 관리 API 를 열지 못한다 — X-Service-Key 로 보내도, 자기 헤더로 보내도 401")
+	void webSsrKeyIsNotAServiceKey() throws Exception {
+		String webKey = "test-web-ssr-key-0123456789abcdef012345";
+
+		assertThat(perform(patch(issueId).header(ServiceApiKeyFilter.HEADER, webKey)).getResponse().getStatus())
+			.isEqualTo(401);
+		assertThat(perform(patch(issueId).header("X-Toronchul-Web-Key", webKey)).getResponse().getStatus())
+			.isEqualTo(401);
+		assertThat(issueJpaRepository.findById(issueId).orElseThrow().getStatus()).isEqualTo(IssueStatus.PUBLISHED);
+	}
+
+	@Test
 	@DisplayName("서비스 키 경로라도 GET 은 받지 않는다")
 	void serviceKeyOnlyForPatch() throws Exception {
 		MvcResult result = perform(MockMvcRequestBuilders.get("/api/v1/admin/issue/{id}/status", issueId)

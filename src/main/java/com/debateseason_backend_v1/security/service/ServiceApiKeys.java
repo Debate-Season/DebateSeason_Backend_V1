@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -54,9 +55,15 @@ public class ServiceApiKeys {
 
 	private final List<Entry> entries;
 
+	@Autowired
 	public ServiceApiKeys(@Value("${service-api.keys:}") String raw) {
+		this(raw, "서비스 API 키");
+	}
+
+	/** 같은 형식의 다른 키 묶음(예: 웹 SSR 키)을 만들 때 쓴다. label 은 기동 로그용. */
+	public ServiceApiKeys(String raw, String label) {
 		this.entries = parse(raw);
-		log.info("서비스 API 키 {}개 로드 (이름: {})", entries.size(), entries.stream().map(Entry::name).distinct().toList());
+		log.info("{} {}개 로드 (이름: {})", label, entries.size(), entries.stream().map(Entry::name).distinct().toList());
 	}
 
 	/** 키가 맞으면 서비스 이름을 돌려준다. */

@@ -3,6 +3,7 @@ package com.debateseason_backend_v1.security.filter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -18,6 +19,7 @@ import com.debateseason_backend_v1.common.exception.ErrorCode;
 import com.debateseason_backend_v1.common.response.ErrorResponse;
 import com.debateseason_backend_v1.security.CustomUserDetails;
 import com.debateseason_backend_v1.security.component.SecurityPathMatcher;
+import com.debateseason_backend_v1.security.service.WebServerKeys;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.github.bucket4j.Bucket;
@@ -44,6 +46,8 @@ public class RateLimitFilter extends OncePerRequestFilter {
 	private final ObjectMapper objectMapper;
 	private final long anonymousRateLimit;
 	private final long authenticatedRateLimit;
+	private final WebServerKeys webServerKeys;
+	private final long webServerRateLimit;
 
 	private final ConcurrentHashMap<String, BucketEntry> buckets = new ConcurrentHashMap<>();
 	private final ScheduledExecutorService cleanupExecutor;
@@ -52,12 +56,16 @@ public class RateLimitFilter extends OncePerRequestFilter {
 		SecurityPathMatcher securityPathMatcher,
 		ObjectMapper objectMapper,
 		long anonymousRateLimit,
-		long authenticatedRateLimit
+		long authenticatedRateLimit,
+		WebServerKeys webServerKeys,
+		long webServerRateLimit
 	) {
 		this.securityPathMatcher = securityPathMatcher;
 		this.objectMapper = objectMapper;
 		this.anonymousRateLimit = anonymousRateLimit;
 		this.authenticatedRateLimit = authenticatedRateLimit;
+		this.webServerKeys = webServerKeys;
+		this.webServerRateLimit = webServerRateLimit;
 
 		this.cleanupExecutor = Executors.newSingleThreadScheduledExecutor(r -> {
 			Thread thread = new Thread(r, "rate-limit-cleanup");
@@ -94,8 +102,18 @@ public class RateLimitFilter extends OncePerRequestFilter {
 			bucketKey = "user:" + userDetails.getUserId();
 			rateLimit = authenticatedRateLimit;
 		} else {
-			bucketKey = "ip:" + resolveClientIp(request);
-			rateLimit = anonymousRateLimit;
+			// 웹 SSR 은 토큰 없이 Vercel 서버 IP 몇 개에서 온다. IP 버킷을 쓰면 모든 방문자가 하나를 나눠 쓴다.
+			// 조회(GET)만 별도 버킷을 준다. 키가 없거나 틀리면 평소처럼 IP 버킷이다.
+			Optional<String> webServer = "GET".equalsIgnoreCase(request.getMethod())
+				? webServerKeys.resolve(request.getHeader(WebServerKeys.HEADER))
+				: Optional.empty();
+			if (webServer.isPresent()) {
+				bucketKey = "web:" + webServer.get();
+				rateLimit = webServerRateLimit;
+			} else {
+				bucketKey = "ip:" + resolveClientIp(request);
+				rateLimit = anonymousRateLimit;
+			}
 		}
 
 		BucketEntry entry = buckets.computeIfAbsent(bucketKey, k -> new BucketEntry(createBucket(rateLimit)));

@@ -33,7 +33,7 @@ import io.swagger.v3.oas.models.security.SecurityScheme;
  * <ul>
  *   <li>토론철 서비스 — 앱·웹이 쓰는 API</li>
  *   <li>토론철 관리 — /api/v1/admin (ADMIN·서비스 키: 데이터 파이프라인·운영)</li>
- *   <li>고객사 — /api/partner (B2B, 고객사 API 키)</li>
+ *   <li>티머니모빌리티 — /api/partner (B2B, 고객사 API 키)</li>
  * </ul>
  */
 @Configuration
@@ -42,7 +42,8 @@ public class SwaggerConfig {
 	public static final String GROUP_SERVICE = "toronchul";
 	public static final String GROUP_ADMIN = "admin";
 	public static final String GROUP_PARTNER = "partner";
-	public static final String PARTNER_DISPLAY_NAME = "고객사";
+	// 지금 고객사는 티머니모빌리티(티머니GO) 하나다. 고객사가 늘면 그룹을 고객사별로 나눈다.
+	public static final String PARTNER_DISPLAY_NAME = "티머니모빌리티";
 	// 고객사에게 주는 문서 주소. 고객사 그룹으로 바로 연다.
 	public static final String PARTNER_DOCS_PATH = "/partner/docs";
 
@@ -85,7 +86,7 @@ public class SwaggerConfig {
 			.displayName(PARTNER_DISPLAY_NAME)
 			.pathsToMatch(PARTNER_PATHS)
 			.addOpenApiCustomizer(api -> {
-				api.info(new Info().title("토론철 뉴스 API (고객사)").version("v1")
+				api.info(new Info().title("토론철 뉴스 API (티머니모빌리티)").version("v1")
 					.description("고객사 전용 API. 발급받은 API 키(X-Partner-Key)로 호출합니다."));
 				api.getComponents().addSecuritySchemes(PARTNER_KEY, new SecurityScheme()
 					.type(SecurityScheme.Type.APIKEY).in(SecurityScheme.In.HEADER).name("X-Partner-Key"));

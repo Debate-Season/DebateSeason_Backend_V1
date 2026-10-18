@@ -27,17 +27,17 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
 
 	// v1.3.5 (Phase 3b-endpoint): 이슈의 스레드(=옛 방) id 목록.
 	// 컨테이너 제외·레거시(NULL)는 스레드로 취급 — findTop3ChatRoomIdsByIssueId 와 동일 규칙(단 LIMIT 없음).
-	// HIDDEN·DELETED 는 뺀다. HIDDEN 은 온톨로지 "토론 주제" 롤백의 결과다.
-	@Query(value = "SELECT chat_room_id FROM chat_room WHERE issue_id = :issueId AND (room_type IS NULL OR room_type <> 'CONTAINER') AND status NOT IN ('HIDDEN','DELETED') ORDER BY chat_room_id DESC", nativeQuery = true)
+	// PREPARING·HIDDEN·DELETED 는 뺀다. PREPARING 은 진행 전 토론 주제, HIDDEN 은 온톨로지 "토론 주제" 롤백의 결과다.
+	@Query(value = "SELECT chat_room_id FROM chat_room WHERE issue_id = :issueId AND (room_type IS NULL OR room_type <> 'CONTAINER') AND status NOT IN ('PREPARING','HIDDEN','DELETED') ORDER BY chat_room_id DESC", nativeQuery = true)
 	List<Long> findThreadRoomIdsByIssueId(@Param("issueId") Long issueId);
 
 
 	// 2-1 이슈방 issue-id와 관련된 채팅방ID 가져오기
 	// v1.3.5: 컨테이너는 목록에서 제외(스레드=옛 방만 노출). 레거시(NULL)도 스레드로 취급.
-	@Query(value = "SELECT chat_room_id FROM chat_room WHERE issue_id = :issueId AND (room_type IS NULL OR room_type <> 'CONTAINER') AND status NOT IN ('HIDDEN','DELETED') ORDER BY chat_room_id DESC LIMIT 3", nativeQuery = true)
+	@Query(value = "SELECT chat_room_id FROM chat_room WHERE issue_id = :issueId AND (room_type IS NULL OR room_type <> 'CONTAINER') AND status NOT IN ('PREPARING','HIDDEN','DELETED') ORDER BY chat_room_id DESC LIMIT 3", nativeQuery = true)
 	List<Long> findTop3ChatRoomIdsByIssueId(@Param("issueId") Long issueId);
 	// 2-2 이슈방 issue-id와 관련된 채팅방ID + 커서기반
-	@Query(value = "SELECT chat_room_id FROM chat_room WHERE issue_id = :issueId AND chat_room_id < :ChatRoomId AND (room_type IS NULL OR room_type <> 'CONTAINER') AND status NOT IN ('HIDDEN','DELETED') ORDER BY chat_room_id DESC LIMIT 3", nativeQuery = true)
+	@Query(value = "SELECT chat_room_id FROM chat_room WHERE issue_id = :issueId AND chat_room_id < :ChatRoomId AND (room_type IS NULL OR room_type <> 'CONTAINER') AND status NOT IN ('PREPARING','HIDDEN','DELETED') ORDER BY chat_room_id DESC LIMIT 3", nativeQuery = true)
 	List<Long> findTop3ChatRoomIdsByIssueIdAndChatRoomId(
 		@Param("issueId") Long issueId,
 		@Param("ChatRoomId") Long ChatRoomId
@@ -93,7 +93,7 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
         GROUP BY COALESCE(thread_id, chat_room_id)
     ) tmp ON tmp.rid = cr.chat_room_id
     WHERE (cr.room_type IS NULL OR cr.room_type <> 'CONTAINER')
-      AND cr.status NOT IN ('HIDDEN','DELETED')
+      AND cr.status NOT IN ('PREPARING','HIDDEN','DELETED')
       AND iss.status <> 'ARCHIVED'
     ORDER BY
         CASE WHEN COALESCE(tmp.c30m, 0) > 0 THEN 0
@@ -151,7 +151,7 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
         ) tmp2
         ON cr.chat_room_id = tmp2.chat_room_id
         -- 숨긴 방은 상위 5개를 뽑은 뒤에 걸러지므로 5개보다 적게 나올 수 있다. 숨김은 드물어 감수한다.
-        WHERE cr.status NOT IN ('HIDDEN','DELETED')
+        WHERE cr.status NOT IN ('PREPARING','HIDDEN','DELETED')
     ) tmp3
     ON ucr.chat_room_id = tmp3.chat_room_id
     GROUP BY ucr.chat_room_id, tmp3.title, tmp3.created_at, tmp3.chats

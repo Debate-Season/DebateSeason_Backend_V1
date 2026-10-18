@@ -6,7 +6,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
-@Schema(description = "토론 주제(스레드) 상태 변경 — OPEN ↔ HIDDEN. 신설 롤백은 HIDDEN")
+@Schema(description = "토론 주제(스레드) 상태 변경 — PREPARING(준비)·OPEN(진행 중)·CLOSED(완료)·HIDDEN(롤백) 사이")
 public record TopicStatusChangeRequest(
 
 	@Schema(description = "바꿀 상태", example = "HIDDEN")

@@ -23,7 +23,7 @@ import lombok.RequiredArgsConstructor;
 /**
  * {@code X-Service-Key} 헤더로 서비스 호출자를 인증한다. JwtAuthenticationFilter 보다 먼저 돈다.
  *
- * <p>키는 {@link #ROUTES} 에서만 받는다 (메서드까지 맞아야 한다). 다른 경로·GET 에 실린 헤더는 무시하고
+ * <p>키는 {@link #ROUTES} 에서만 받는다 (메서드까지 맞아야 한다). 다른 경로에 실린 헤더는 무시하고
  * 평소 JWT 규칙을 따른다. 키 하나가 새도 피해가 온톨로지 반영 API 로 묶이게 하려는 것이다.
  *
  * <p>헤더가 있는데 키가 틀리면 JWT 로 넘기지 않고 바로 401 이다. 넘기면 "토큰이 없다" 는 엉뚱한 오류가 나서
@@ -46,7 +46,12 @@ public class ServiceApiKeyFilter extends OncePerRequestFilter {
 		new Route(HttpMethod.POST, "/api/v1/admin/issue/*/debate-topic"),
 		new Route(HttpMethod.POST, "/api/v1/admin/issue/*/events"),
 		new Route(HttpMethod.DELETE, "/api/v1/admin/issue/*/events"),
-		new Route(HttpMethod.PATCH, "/api/v1/admin/room/*/status")
+		new Route(HttpMethod.PATCH, "/api/v1/admin/room/*/status"),
+		new Route(HttpMethod.PATCH, "/api/v1/admin/event/*"),
+		new Route(HttpMethod.POST, "/api/v1/admin/issue/*/events/merge"),
+		new Route(HttpMethod.POST, "/api/v1/admin/change-log/*/revert"),
+		// 읽기 전용 단건 조회. 파이프라인이 자기 기록과 운영 타임라인을 맞춰 보는 데 쓴다.
+		new Route(HttpMethod.GET, "/api/v1/admin/issue/*/timeline/versions")
 	);
 
 	private static final AntPathMatcher PATH_MATCHER = new AntPathMatcher();

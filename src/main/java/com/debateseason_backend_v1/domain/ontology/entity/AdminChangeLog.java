@@ -36,7 +36,11 @@ public class AdminChangeLog {
 		TOPIC_CREATE,
 		TOPIC_STATUS,
 		EVENT_LINK,
-		EVENT_UNLINK
+		EVENT_UNLINK,
+		EVENT_UPDATE,
+		EVENT_MERGE,
+		// 다른 이력 1건을 되돌린 기록. proposal_id = "revert:{원본 id}" 라 같은 되돌리기는 한 번만 일어난다.
+		REVERT
 	}
 
 	@Id
@@ -48,7 +52,7 @@ public class AdminChangeLog {
 	@Column(name = "action", nullable = false, length = 32)
 	private Action action;
 
-	// ISSUE / CHAT_ROOM
+	// ISSUE / CHAT_ROOM / NEWS_EVENT / CHANGE_LOG
 	@Column(name = "entity_type", nullable = false, length = 32)
 	private String entityType;
 

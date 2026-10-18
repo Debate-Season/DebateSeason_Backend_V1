@@ -1,7 +1,10 @@
 package com.debateseason_backend_v1.domain.ontology.controller;
 
 import org.springframework.security.core.Authentication;
+import java.util.List;
+
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -11,16 +14,23 @@ import org.springframework.web.bind.annotation.RestController;
 import com.debateseason_backend_v1.common.response.ApiResult;
 import com.debateseason_backend_v1.domain.ontology.model.request.DebateTopicCreateRequest;
 import com.debateseason_backend_v1.domain.ontology.model.request.EventLinkRequest;
+import com.debateseason_backend_v1.domain.ontology.model.request.EventMergeRequest;
 import com.debateseason_backend_v1.domain.ontology.model.request.EventUnlinkRequest;
+import com.debateseason_backend_v1.domain.ontology.model.request.EventUpdateRequest;
 import com.debateseason_backend_v1.domain.ontology.model.request.IssueCreateRequest;
 import com.debateseason_backend_v1.domain.ontology.model.request.IssueRenameRequest;
+import com.debateseason_backend_v1.domain.ontology.model.request.RevertRequest;
 import com.debateseason_backend_v1.domain.ontology.model.request.TopicStatusChangeRequest;
+import com.debateseason_backend_v1.domain.ontology.model.response.ChangeLogResponse;
 import com.debateseason_backend_v1.domain.ontology.model.response.DebateTopicCreateResponse;
 import com.debateseason_backend_v1.domain.ontology.model.response.EventLinkResponse;
 import com.debateseason_backend_v1.domain.ontology.model.response.EventUnlinkResponse;
 import com.debateseason_backend_v1.domain.ontology.model.response.IssueCreateResponse;
 import com.debateseason_backend_v1.domain.ontology.model.response.IssueRenameResponse;
+import com.debateseason_backend_v1.domain.ontology.model.response.RevertResponse;
+import com.debateseason_backend_v1.domain.ontology.model.response.TimelineVersionResponse;
 import com.debateseason_backend_v1.domain.ontology.model.response.TopicStatusChangeResponse;
+import com.debateseason_backend_v1.domain.ontology.service.EventTimelineService;
 import com.debateseason_backend_v1.domain.ontology.service.OntologyAdminService;
 import com.debateseason_backend_v1.security.service.Actor;
 
@@ -39,7 +49,10 @@ import lombok.RequiredArgsConstructor;
  * 잠재우기       PATCH /admin/issue/{id}/status DORMANT      PATCH /admin/issue/{id}/status PUBLISHED
  * 토론 주제      POST  /admin/issue/{id}/debate-topic        PATCH /admin/room/{id}/status HIDDEN
  * 사건 추가      POST  /admin/issue/{id}/events              DELETE /admin/issue/{id}/events
+ * 사건 수정      PATCH /admin/event/{id}                     POST /admin/change-log/{id}/revert
+ * 사건 병합      POST  /admin/issue/{id}/events/merge        POST /admin/change-log/{id}/revert
  * </pre>
+ * 타임라인 버전은 GET /admin/issue/{id}/timeline/versions.
  */
 @Tag(name = "Ontology Admin API", description = "온톨로지 승인 반영·롤백 — ADMIN 또는 서비스 키")
 @RequiredArgsConstructor
@@ -47,6 +60,7 @@ import lombok.RequiredArgsConstructor;
 public class OntologyAdminController {
 
 	private final OntologyAdminService ontologyAdminService;
+	private final EventTimelineService eventTimelineService;
 
 	@Operation(summary = "이슈 신설", description = "PUBLISHED 이슈와 컨테이너 방을 함께 만듭니다. 같은 proposalId 재호출은 처음 결과(created=false).")
 	@PostMapping("/api/v1/admin/issue")
@@ -65,7 +79,8 @@ public class OntologyAdminController {
 			ontologyAdminService.renameIssue(issueId, request, Actor.of(authentication)));
 	}
 
-	@Operation(summary = "토론 주제 신설", description = "이슈 컨테이너 아래 OPEN 스레드로 만듭니다. 컨테이너가 없으면 함께 만듭니다.")
+	@Operation(summary = "토론 주제 신설", description = "이슈 컨테이너 아래 스레드로 만듭니다. status 는 PREPARING(미노출) 또는 OPEN, 비우면 OPEN. "
+		+ "컨테이너가 없으면 함께 만듭니다.")
 	@PostMapping("/api/v1/admin/issue/{issueId}/debate-topic")
 	public ApiResult<DebateTopicCreateResponse> createDebateTopic(
 		@PathVariable Long issueId, @Valid @RequestBody DebateTopicCreateRequest request, Authentication authentication) {
@@ -74,7 +89,8 @@ public class OntologyAdminController {
 			ontologyAdminService.createDebateTopic(issueId, request, Actor.of(authentication)));
 	}
 
-	@Operation(summary = "토론 주제 상태 변경", description = "스레드의 OPEN ↔ HIDDEN 만 허용합니다. HIDDEN 은 목록·랭킹에서 빠집니다. 컨테이너는 409.")
+	@Operation(summary = "토론 주제 상태 변경", description = "스레드의 PREPARING(준비)·OPEN(진행 중)·CLOSED(완료)·HIDDEN(롤백) 사이. "
+		+ "PREPARING·HIDDEN 은 목록·랭킹에서 빠집니다. 컨테이너·DELETED 는 409.")
 	@PatchMapping("/api/v1/admin/room/{chatRoomId}/status")
 	public ApiResult<TopicStatusChangeResponse> changeTopicStatus(
 		@PathVariable Long chatRoomId, @Valid @RequestBody TopicStatusChangeRequest request, Authentication authentication) {
@@ -99,5 +115,39 @@ public class OntologyAdminController {
 
 		return ApiResult.success("사건 연결을 해제했습니다.",
 			ontologyAdminService.unlinkEvents(issueId, request, Actor.of(authentication)));
+	}
+
+	@Operation(summary = "사건 수정", description = "보낸 필드만 바꾸고 addMediaIds 는 근거 기사로 덧붙입니다(중복 무시). "
+		+ "바뀐 게 없으면 changeLogId=null. 같은 proposalId 재호출은 처음 changeLogId.")
+	@PatchMapping("/api/v1/admin/event/{eventId}")
+	public ApiResult<ChangeLogResponse> updateEvent(
+		@PathVariable Long eventId, @Valid @RequestBody EventUpdateRequest request, Authentication authentication) {
+
+		return ApiResult.success("사건을 수정했습니다.", eventTimelineService.updateEvent(eventId, request, Actor.of(authentication)));
+	}
+
+	@Operation(summary = "사건 병합 (타임라인 개정)", description = "drop 의 근거 기사를 keep 에 복사하고, drop 에 merged_into 를 남기고, "
+		+ "이 이슈와 drop 의 연결을 끊습니다. 행은 지우지 않습니다.")
+	@PostMapping("/api/v1/admin/issue/{issueId}/events/merge")
+	public ApiResult<ChangeLogResponse> mergeEvents(
+		@PathVariable Long issueId, @Valid @RequestBody EventMergeRequest request, Authentication authentication) {
+
+		return ApiResult.success("사건을 병합했습니다.", eventTimelineService.mergeEvents(issueId, request, Actor.of(authentication)));
+	}
+
+	@Operation(summary = "변경 되돌리기", description = "사건 수정·병합만 되돌립니다. 그 뒤 같은 대상이 또 바뀌었으면 409. "
+		+ "같은 이력을 두 번 되돌리면 changed=false.")
+	@PostMapping("/api/v1/admin/change-log/{changeLogId}/revert")
+	public ApiResult<RevertResponse> revert(
+		@PathVariable Long changeLogId, @Valid @RequestBody RevertRequest request, Authentication authentication) {
+
+		return ApiResult.success("변경을 되돌렸습니다.", eventTimelineService.revert(changeLogId, request, Actor.of(authentication)));
+	}
+
+	@Operation(summary = "이슈 타임라인 버전 목록", description = "최신 버전부터. snapshot 은 그 시점의 연결 사건 [{id, name, date}].")
+	@GetMapping("/api/v1/admin/issue/{issueId}/timeline/versions")
+	public ApiResult<List<TimelineVersionResponse>> timelineVersions(@PathVariable Long issueId) {
+
+		return ApiResult.success("타임라인 버전을 불러왔습니다.", eventTimelineService.versions(issueId));
 	}
 }

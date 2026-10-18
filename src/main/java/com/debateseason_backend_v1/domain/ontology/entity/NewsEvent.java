@@ -13,6 +13,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 /**
  * 온톨로지의 사건. 이슈 ⊃ 사건 은 M:N 이라 연결은 {@link IssueNewsEvent} 가 맡는다.
@@ -23,6 +24,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
+@Setter
 @Builder
 @Entity
 @Table(name = "news_event")
@@ -44,6 +46,10 @@ public class NewsEvent {
 
 	@Column(name = "middle_category", length = 64)
 	private String middleCategory;
+
+	// 병합(타임라인 개정)으로 흡수된 사건이면 흡수한 사건 id. 행은 지우지 않는다.
+	@Column(name = "merged_into")
+	private Long mergedInto;
 
 	@Column(name = "created_at", nullable = false)
 	private LocalDateTime createdAt;

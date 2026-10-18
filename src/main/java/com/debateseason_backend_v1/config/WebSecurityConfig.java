@@ -82,15 +82,17 @@ public class WebSecurityConfig {
 			// 인증(로그인 했는가)은 JwtAuthenticationFilter 가, 인가(권한이 있는가)는 여기가 담당한다.
 			// anyRequest() 를 한 번에 authenticated() 로 바꾸면 회귀 범위가 너무 넓어지므로
 			// ADMIN 전용 경로만 먼저 잠그고 나머지는 기존대로 둔다. (PRD v1.3.4 §4.3)
-			.authorizeHttpRequests(auth -> auth
+			.authorizeHttpRequests(auth -> {
 				// 서비스 키 경로는 /api/v1/admin/** 보다 먼저 와야 한다. 먼저 맞은 규칙이 이긴다.
-				.requestMatchers(HttpMethod.PATCH, ServiceApiKeyFilter.SERVICE_KEY_PATCH_URLS)
-				.hasAnyRole("ADMIN", ServicePrincipal.ROLE)
-				.requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
-				.requestMatchers(HttpMethod.POST, "/api/v1/issue").hasRole("ADMIN")
-				.requestMatchers(HttpMethod.POST, "/api/v1/room").hasRole("ADMIN")
-				.anyRequest().permitAll()
-			)
+				for (ServiceApiKeyFilter.Route route : ServiceApiKeyFilter.ROUTES) {
+					auth.requestMatchers(route.method(), route.pattern()).hasAnyRole("ADMIN", ServicePrincipal.ROLE);
+				}
+				auth
+					.requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
+					.requestMatchers(HttpMethod.POST, "/api/v1/issue").hasRole("ADMIN")
+					.requestMatchers(HttpMethod.POST, "/api/v1/room").hasRole("ADMIN")
+					.anyRequest().permitAll();
+			})
 			.exceptionHandling(handler -> handler.accessDeniedHandler(accessDeniedHandler))
 			// addFilterBefore 의 앵커는 Spring Security 가 아는 필터여야 하므로
 			// 커스텀 필터(JwtAuthenticationFilter)를 앵커로 쓸 수 없다.

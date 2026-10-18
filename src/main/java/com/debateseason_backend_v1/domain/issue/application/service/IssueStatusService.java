@@ -20,17 +20,22 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * 이슈 잠재우기·깨우기.
+ * 이슈 잠재우기·깨우기, 신설 롤백.
  *
- * 허용 전이는 PUBLISHED ↔ DORMANT 뿐이다. DRAFT·ARCHIVED 는 노출 여부가 걸린 상태라
- * 파이프라인 자동 경로로 드나들면 안 된다.
+ * PUBLISHED·DORMANT·ARCHIVED 사이를 오간다.
+ * <ul>
+ *   <li>PUBLISHED ↔ DORMANT — 잠재우기·깨우기 (노출 동일, 분류만 다름)</li>
+ *   <li>→ ARCHIVED — 온톨로지가 신설한 이슈의 롤백 (미노출, 데이터 보존)</li>
+ *   <li>ARCHIVED → — 롤백을 다시 되돌릴 때</li>
+ * </ul>
+ * DRAFT 는 쓰는 경로가 없어 막아 둔다.
  */
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class IssueStatusService {
 
-	private static final Set<IssueStatus> SWITCHABLE = EnumSet.of(IssueStatus.PUBLISHED, IssueStatus.DORMANT);
+	private static final Set<IssueStatus> SWITCHABLE = EnumSet.of(IssueStatus.PUBLISHED, IssueStatus.DORMANT, IssueStatus.ARCHIVED);
 
 	private final IssueJpaRepository issueJpaRepository;
 	private final IssueStatusHistoryRepository issueStatusHistoryRepository;

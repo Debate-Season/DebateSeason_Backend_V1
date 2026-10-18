@@ -6,7 +6,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
-@Schema(description = "이슈 상태 변경 요청 (PUBLISHED ↔ DORMANT)")
+@Schema(description = "이슈 상태 변경 요청 (PUBLISHED·DORMANT·ARCHIVED)")
 public record IssueStatusChangeRequest(
 
 	@Schema(description = "바꿀 상태", example = "DORMANT")

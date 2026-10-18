@@ -112,6 +112,19 @@ class DocsSecurityTest {
 	}
 
 	@Test
+	@DisplayName("같은 이름 record 가 한 스키마로 합쳐지지 않는다 — 공개 아티클의 사건은 eventId·issueIds 를 가진다")
+	void schemaNamesDoNotCollide() throws Exception {
+		JsonNode schemas = objectMapper.readTree(get("/v3/api-docs/toronchul", TEAM).getResponse()
+			.getContentAsString(StandardCharsets.UTF_8)).path("components").path("schemas");
+
+		JsonNode event = schemas.path("ArticleEvent").path("properties");
+		assertThat(event.has("eventId")).isTrue();
+		assertThat(event.has("issueIds")).isTrue();
+		assertThat(event.has("mediaIds")).isFalse();
+		assertThat(schemas.path("IssueTimelineEvent").path("properties").path("date").path("nullable").asBoolean()).isTrue();
+	}
+
+	@Test
 	@DisplayName("문서 로그인은 앱 API 에 영향이 없다 (앱 API 는 Basic 을 보지 않는다)")
 	void appApisUnaffected() throws Exception {
 		assertThat(status("/api/v1/sitemap/issues", null)).isEqualTo(200);

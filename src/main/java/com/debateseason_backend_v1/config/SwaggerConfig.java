@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springdoc.core.customizers.OperationCustomizer;
+import org.springdoc.core.models.GroupedOpenApi;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.method.HandlerMethod;
@@ -27,8 +28,76 @@ import io.swagger.v3.oas.models.responses.ApiResponses;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 
+/**
+ * API 문서. 세 그룹으로 나눈다 — 고객사는 자기 그룹만 볼 수 있다 ({@link DocsSecurityConfig}).
+ * <ul>
+ *   <li>토론철 서비스 — 앱·웹이 쓰는 API</li>
+ *   <li>토론철 관리 — /api/v1/admin (ADMIN·서비스 키: 데이터 파이프라인·운영)</li>
+ *   <li>고객사 — /api/partner (B2B, 고객사 API 키)</li>
+ * </ul>
+ */
 @Configuration
 public class SwaggerConfig {
+
+	public static final String GROUP_SERVICE = "toronchul";
+	public static final String GROUP_ADMIN = "admin";
+	public static final String GROUP_PARTNER = "partner";
+	public static final String PARTNER_DISPLAY_NAME = "고객사";
+	// 고객사에게 주는 문서 주소. 고객사 그룹으로 바로 연다.
+	public static final String PARTNER_DOCS_PATH = "/partner/docs";
+
+	private static final String ADMIN_PATHS = "/api/v1/admin/**";
+	private static final String PARTNER_PATHS = "/api/partner/**";
+
+	@Bean
+	public GroupedOpenApi serviceApi() {
+		return GroupedOpenApi.builder()
+			.group(GROUP_SERVICE)
+			.displayName("토론철 서비스")
+			.pathsToMatch("/api/**")
+			.pathsToExclude(ADMIN_PATHS, PARTNER_PATHS)
+			.addOpenApiCustomizer(api -> api.info(new Info().title("토론철 서비스 API").version("v1")
+				.description("앱·웹이 쓰는 API. 로그인 사용자는 JWT(Authorization: Bearer).")))
+			.build();
+	}
+
+	@Bean
+	public GroupedOpenApi adminApi() {
+		return GroupedOpenApi.builder()
+			.group(GROUP_ADMIN)
+			.displayName("토론철 관리")
+			.pathsToMatch(ADMIN_PATHS)
+			.addOpenApiCustomizer(api -> {
+				api.info(new Info().title("토론철 관리 API").version("v1")
+					.description("ADMIN JWT 또는 서비스 키(X-Service-Key). 데이터 파이프라인·운영용. "
+						+ "서비스 키는 허용된 경로에서만 통하고, 열리지 않은 경로는 403 SERVICE_KEY_ROUTE_NOT_ALLOWED."));
+				api.getComponents().addSecuritySchemes(SERVICE_KEY, new SecurityScheme()
+					.type(SecurityScheme.Type.APIKEY).in(SecurityScheme.In.HEADER).name("X-Service-Key"));
+				api.addSecurityItem(new SecurityRequirement().addList(SERVICE_KEY));
+			})
+			.build();
+	}
+
+	@Bean
+	public GroupedOpenApi partnerApi() {
+		return GroupedOpenApi.builder()
+			.group(GROUP_PARTNER)
+			.displayName(PARTNER_DISPLAY_NAME)
+			.pathsToMatch(PARTNER_PATHS)
+			.addOpenApiCustomizer(api -> {
+				api.info(new Info().title("토론철 뉴스 API (고객사)").version("v1")
+					.description("고객사 전용 API. 발급받은 API 키(X-Partner-Key)로 호출합니다."));
+				api.getComponents().addSecuritySchemes(PARTNER_KEY, new SecurityScheme()
+					.type(SecurityScheme.Type.APIKEY).in(SecurityScheme.In.HEADER).name("X-Partner-Key"));
+				// 고객사 문서에는 내부 인증(JWT)을 보이지 않는다
+				api.setSecurity(new java.util.ArrayList<>(List.of(new SecurityRequirement().addList(PARTNER_KEY))));
+				api.getComponents().getSecuritySchemes().remove("JWT");
+			})
+			.build();
+	}
+
+	private static final String SERVICE_KEY = "ServiceKey";
+	private static final String PARTNER_KEY = "PartnerKey";
 
 	@Bean
 	public OpenAPI openAPI() {
@@ -42,9 +111,9 @@ public class SwaggerConfig {
 		);
 
 		Info customInfo = new Info()
-			.title("토론철 Chat API DOC")
-			.version("V1.0")
-			.description("채팅 API 문서");
+			.title("토론철 API")
+			.version("v1")
+			.description("토론철 API 문서");
 
 		return new OpenAPI()
 			.components(components)

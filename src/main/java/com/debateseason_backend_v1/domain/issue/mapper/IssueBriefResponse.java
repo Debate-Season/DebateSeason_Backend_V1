@@ -2,6 +2,7 @@ package com.debateseason_backend_v1.domain.issue.mapper;
 
 import java.time.LocalDateTime;
 
+import com.debateseason_backend_v1.domain.issue.model.IssueStatus;
 import com.fasterxml.jackson.annotation.JsonFormat;
 
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -31,6 +32,11 @@ public class IssueBriefResponse {
 
 	@Schema(description = "즐겨찾기 수", example = "20")
 	private Long bookMarks;
+
+	// 앱 DTO 는 non-nullable 이다. 빌더 경로가 여럿이라 하나라도 빠뜨리면 null 이 나가므로 기본값을 박아 둔다.
+	@Schema(description = "이슈 상태. DORMANT 는 이슈맵에서 '잠자는 이슈' 로 분류한다 (노출은 동일)", example = "PUBLISHED")
+	@Builder.Default
+	private IssueStatus status = IssueStatus.PUBLISHED;
 
 	@Override
 	public String toString() {

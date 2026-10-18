@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.debateseason_backend_v1.domain.chatroom.model.response.chatroom.type.ResponseWithTimeAndOpinion;
+import com.debateseason_backend_v1.domain.issue.model.IssueStatus;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
@@ -32,5 +33,9 @@ public class IssueDetailResponse { // 일관성, GC 범위 감소
 
 	@Schema(description = "채팅방 목록", example = "")
 	private final List<ResponseWithTimeAndOpinion> chatRoomMap;
+
+	@Schema(description = "이슈 상태. DORMANT 는 '잠자는 이슈' (노출은 동일)", example = "PUBLISHED")
+	@Builder.Default
+	private final IssueStatus status = IssueStatus.PUBLISHED;
 
 }

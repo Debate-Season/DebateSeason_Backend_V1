@@ -63,10 +63,11 @@ public interface IssueJpaRepository extends JpaRepository<IssueEntity,Long> {
 		);
 
 	// 이슈방 불러오기( 채팅방 카운트 + 즐겨찾기 수 카운트)
+	// 열 순서가 곧 계약이다. status 는 기존 인덱스를 밀지 않도록 맨 끝(e[5])에 붙였다.
 	@Query(value = """
-        SELECT ui1.issue_id, ui1.title, ui1.created_at, ui1.chat_room_count, COUNT(ui2.issue_id) AS bookmarks
+        SELECT ui1.issue_id, ui1.title, ui1.created_at, ui1.chat_room_count, COUNT(ui2.issue_id) AS bookmarks, ui1.status
         FROM (
-            SELECT i.issue_id, i.title, i.created_at, COUNT(ch.issue_id) AS chat_room_count
+            SELECT i.issue_id, i.title, i.created_at, COUNT(ch.issue_id) AS chat_room_count, i.status
             FROM issue i
             LEFT JOIN chat_room ch ON i.issue_id = ch.issue_id
             WHERE i.issue_id IN (:issueIds)
@@ -79,9 +80,9 @@ public interface IssueJpaRepository extends JpaRepository<IssueEntity,Long> {
 	List<Object[]> findIssuesWithBookmarks(@Param("issueIds") List<Long> issueIds);
 
 	@Query(value = """
-        SELECT ui1.issue_id, ui1.title, ui1.created_at, ui1.chat_room_count, COUNT(ui2.issue_id) AS bookmarks
+        SELECT ui1.issue_id, ui1.title, ui1.created_at, ui1.chat_room_count, COUNT(ui2.issue_id) AS bookmarks, ui1.status
         FROM (
-            SELECT i.issue_id, i.title, i.created_at, COUNT(ch.issue_id) AS chat_room_count
+            SELECT i.issue_id, i.title, i.created_at, COUNT(ch.issue_id) AS chat_room_count, i.status
             FROM issue i
             LEFT JOIN chat_room ch ON i.issue_id = ch.issue_id
             WHERE i.issue_id IN (:issueIds)
@@ -94,8 +95,8 @@ public interface IssueJpaRepository extends JpaRepository<IssueEntity,Long> {
 	List<Object[]> findIssuesWithBookmarksOrderByCreatedDate(@Param("issueIds") List<Long> issueIds);
 
 	@Query(value = """
-    SELECT i.issue_id, i.title, COUNT(ui.issue_id) AS bookmarks 
-    FROM (SELECT issue_id, title FROM issue WHERE issue_id = :issueId) i
+    SELECT i.issue_id, i.title, COUNT(ui.issue_id) AS bookmarks, i.status
+    FROM (SELECT issue_id, title, status FROM issue WHERE issue_id = :issueId) i
     LEFT JOIN user_issue ui ON i.issue_id = ui.issue_id
     """, nativeQuery = true)
 	List<Object[]> findSingleIssueWithBookmarks(@Param("issueId") Long issueId);

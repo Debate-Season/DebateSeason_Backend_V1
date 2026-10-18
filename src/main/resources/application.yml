@@ -34,6 +34,7 @@ rate-limit:
   anonymous-requests-per-minute: 100
   authenticated-requests-per-minute: 300
   web-server-requests-per-minute: 3000
+  partner-requests-per-minute: 6000
 
 # 사람이 아닌 호출자(데이터 파이프라인)용 API 키. 형식: 이름:키,이름:키 (키 32자 이상)
 # 교체할 때는 같은 이름으로 새 키를 덧붙였다가, 옮겨 간 뒤 옛 키를 뺀다.
@@ -45,6 +46,10 @@ service-api:
 # 형식: web:키 (32자 이상). 비어 있으면 웹 SSR 도 비로그인 IP 버킷을 쓴다.
 web-ssr:
   keys: ${WEB_SSR_KEYS:}
+
+# 고객사 API 키. 형식: 고객사이름:키 (32자 이상). 이름이 조회 수·미터링·레이트 리밋 단위다. 서비스 키와 섞지 않는다.
+partner-api:
+  keys: ${PARTNER_API_KEYS:}
 
 # API 문서(Swagger) 로그인 계정. 형식: 이름:bcrypt해시,... (team = 전체, 그 외 = 고객사 그룹만)
 # 비어 있으면 문서는 아무도 못 연다 (fail closed). 해시에 $ 가 있어 .env 에는 작은따옴표로 감싼다.

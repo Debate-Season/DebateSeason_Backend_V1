@@ -28,6 +28,7 @@ public enum ErrorCode implements CodeInterface {
 	INVALID_REFRESH_TOKEN(1003, HttpStatus.UNAUTHORIZED, "유효하지 않은 Refresh Token입니다."),
 	INVALID_SERVICE_API_KEY(1006, HttpStatus.UNAUTHORIZED, "유효하지 않은 서비스 API 키입니다."),
 	SERVICE_KEY_ROUTE_NOT_ALLOWED(1007, HttpStatus.FORBIDDEN, "이 서비스 키로 부를 수 없는 경로입니다."),
+	INVALID_PARTNER_API_KEY(1008, HttpStatus.UNAUTHORIZED, "유효하지 않은 고객사 API 키입니다. X-Partner-Key 헤더를 확인하세요."),
 	ACCESS_DENIED(1005, HttpStatus.FORBIDDEN, "접근 권한이 없습니다."),
 
 	// 2000번대 프로필 관련 에러
@@ -102,6 +103,7 @@ public enum ErrorCode implements CodeInterface {
 	NOT_FOUND_CHATROOM(404, HttpStatus.NOT_FOUND, "주어진 chatroomId로 해당하는 채팅방을 찾을 수 없습니다."),
 	NOT_FOUND_EVENT(404, HttpStatus.NOT_FOUND, "사건을 찾을 수 없습니다."),
 	NOT_FOUND_ARTICLE(404, HttpStatus.NOT_FOUND, "아티클을 찾을 수 없습니다."),
+	NOT_FOUND_NEWS(404, HttpStatus.NOT_FOUND, "뉴스를 찾을 수 없습니다."),
 	ARTICLE_ALREADY_PUBLISHED(409, HttpStatus.CONFLICT, "이미 게시된 적이 있는 아티클은 다시 적재할 수 없습니다."),
 	INVALID_ARTICLE_STATUS_TRANSITION(409, HttpStatus.CONFLICT, "허용되지 않는 아티클 상태 변경입니다. REVIEW→PUBLISHED·HIDDEN, PUBLISHED↔HIDDEN 만 됩니다."),
 	NOT_FOUND_CHANGE_LOG(404, HttpStatus.NOT_FOUND, "변경 이력을 찾을 수 없습니다."),

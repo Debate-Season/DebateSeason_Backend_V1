@@ -21,6 +21,8 @@ import com.debateseason_backend_v1.security.service.ServiceApiKeyFilter;
 import com.debateseason_backend_v1.security.service.ServiceApiKeys;
 import com.debateseason_backend_v1.security.service.ServicePrincipal;
 import com.debateseason_backend_v1.security.service.WebServerKeys;
+import com.debateseason_backend_v1.security.partner.PartnerApiKeyFilter;
+import com.debateseason_backend_v1.security.partner.PartnerApiKeys;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;
@@ -37,6 +39,7 @@ public class WebSecurityConfig {
 	private final ObjectMapper objectMapper;
 	private final ServiceApiKeys serviceApiKeys;
 	private final WebServerKeys webServerKeys;
+	private final PartnerApiKeys partnerApiKeys;
 
 	@Value("${rate-limit.anonymous-requests-per-minute:100}")
 	private long anonymousRateLimit;
@@ -46,6 +49,9 @@ public class WebSecurityConfig {
 
 	@Value("${rate-limit.web-server-requests-per-minute:3000}")
 	private long webServerRateLimit;
+
+	@Value("${rate-limit.partner-requests-per-minute:6000}")
+	private long partnerRateLimit;
 
 	public static final String[] PUBLIC_URLS = {
 		"/swagger-ui/**",
@@ -60,7 +66,9 @@ public class WebSecurityConfig {
 		"/api/v1/app/**",
 		"/api/v1/sitemap/**",
 		"/api/v1/article",
-		"/api/v1/issue/events"
+		"/api/v1/issue/events",
+		// 고객사 API 는 JWT 를 보지 않는다. 인증은 PartnerApiKeyFilter(X-Partner-Key)가 한다
+		"/api/partner/**"
 	};
 
 	public static final String[] OPTIONAL_AUTH_URLS = {
@@ -81,8 +89,9 @@ public class WebSecurityConfig {
 		ServiceApiKeyFilter serviceKeyFilter = new ServiceApiKeyFilter(serviceApiKeys, securityPathMatcher, errorHandler);
 		RateLimitFilter rateLimitFilter = new RateLimitFilter(
 			securityPathMatcher, objectMapper, anonymousRateLimit, authenticatedRateLimit,
-			webServerKeys, webServerRateLimit
+			webServerKeys, webServerRateLimit, partnerRateLimit
 		);
+		PartnerApiKeyFilter partnerKeyFilter = new PartnerApiKeyFilter(partnerApiKeys, securityPathMatcher, errorHandler);
 
 		return http
 			.csrf(AbstractHttpConfigurer::disable)
@@ -108,6 +117,7 @@ public class WebSecurityConfig {
 			// 같은 앵커에 등록하면 등록 순서가 유지되므로 ClientInfoFilter -> ServiceApiKeyFilter -> JWT 순이다.
 			.addFilterBefore(new ClientInfoFilter(), UsernamePasswordAuthenticationFilter.class)
 			.addFilterBefore(serviceKeyFilter, UsernamePasswordAuthenticationFilter.class)
+			.addFilterBefore(partnerKeyFilter, UsernamePasswordAuthenticationFilter.class)
 			.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
 			.addFilterAfter(rateLimitFilter, JwtAuthenticationFilter.class)
 			.build();

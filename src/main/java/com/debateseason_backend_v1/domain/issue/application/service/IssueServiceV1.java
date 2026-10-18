@@ -140,7 +140,8 @@ public class IssueServiceV1 {
 
 		// 4. 채팅방을 반환 (없으면 없는대로 반환을 한다)
 		long chats = 0L;
-		List<ResponseWithTimeAndOpinion> chatRooms = null;
+		// 토론 주제가 없으면 빈 배열이다. null 로 내보내면 웹 이슈 상세가 500 을 냈다 (앱 DTO 도 non-null 가정).
+		List<ResponseWithTimeAndOpinion> chatRooms = List.of();
 
 		if (!chatRoomIds.isEmpty()) {
 			chatRooms = chatRoomProcessor.getChatRoomWithOpinionCount(chatRoomIds);

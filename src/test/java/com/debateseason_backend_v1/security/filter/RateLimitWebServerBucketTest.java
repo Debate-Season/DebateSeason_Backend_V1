@@ -29,7 +29,7 @@ class RateLimitWebServerBucketTest {
 
 	// 비로그인 2, 로그인 5, 웹 서버 4 — 경계를 짧게 본다
 	private final RateLimitFilter filter = new RateLimitFilter(
-		new SecurityPathMatcher(), new ObjectMapper(), 2, 5, new WebServerKeys("web:" + KEY), 4);
+		new SecurityPathMatcher(), new ObjectMapper(), 2, 5, new WebServerKeys("web:" + KEY), 4, 6000);
 
 	@AfterEach
 	void clear() {

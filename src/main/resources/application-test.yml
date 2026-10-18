@@ -62,3 +62,12 @@ rate-limit:
 docs:
   auth:
     users: "team:$2y$04$2RTNA/WiaAXLDzGFa/tEO.uob.DKJYwKKGTr/KfrGjK5QmWUQNF4C,tmoney:$2y$04$kgraQ2iuXHbFXFbbkztBeeviYCy501qZSA2AuC.Uw2FkJJVM8nbBu"
+
+# 테스트 전용 고객사 키. 캐시는 끄고(테스트끼리 간섭 방지), 카운터 반영은 테스트가 flush() 를 직접 부른다
+partner-api:
+  keys: "tmoney-go:test-partner-key-0123456789abcdef01234"
+partner:
+  cache:
+    ttl-millis: 0
+  counters:
+    flush-millis: 3600000

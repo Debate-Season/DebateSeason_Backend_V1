@@ -77,6 +77,17 @@ public class JwtAuthenticationErrorHandler {
 		writeErrorResponse(response, HttpStatus.UNAUTHORIZED, errorResponse);
 	}
 
+	// 고객사 키가 없거나 틀렸다. 고객사 API 는 JWT 를 쓰지 않는다.
+	public void handleInvalidPartnerKey(HttpServletResponse response, String requestURI) throws IOException {
+
+		log.info("Invalid partner API key. [ API URI: {} ]", requestURI);
+
+		ErrorResponse errorResponse = ErrorResponse.of(
+			ErrorCode.INVALID_PARTNER_API_KEY
+		);
+		writeErrorResponse(response, HttpStatus.UNAUTHORIZED, errorResponse);
+	}
+
 	// 키는 맞지만 그 키에 열리지 않은 경로 (아직 배포 전인 경로 포함).
 	public void handleServiceRouteNotAllowed(HttpServletResponse response, String requestURI) throws IOException {
 

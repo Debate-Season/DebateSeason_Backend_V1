@@ -100,6 +100,9 @@ class WikiDraftUploadApiTest {
 		assertThat(served.path("content").asText()).isEqualTo("## 개요\n본문");
 		assertThat(served.path("summary").asText()).isEqualTo("두 문장 요약이다. 평문이다.");
 		assertThat(served.path("model").asText()).isEqualTo("claude-opus-5-5");
+		// 다른 응답과 같은 문자열 포맷 (배열 [2026,10,19,...] 로 나가 웹이 500 을 낸 적이 있다)
+		assertThat(served.path("updatedAt").isTextual()).isTrue();
+		assertThat(served.path("updatedAt").asText()).matches("\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}");
 	}
 
 	@Test

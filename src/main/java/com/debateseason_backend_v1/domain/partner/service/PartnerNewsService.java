@@ -182,7 +182,7 @@ public class PartnerNewsService {
 
 	private List<PartnerNewsResponse.Item> items(String partner, List<Content> contents) {
 		Map<Long, Long> views = counters.views(partner, contents.stream().map(Content::id).toList());
-		return contents.stream().map(c -> new PartnerNewsResponse.Item(c.id(), c.title(), c.summary(), c.category(),
+		return contents.stream().map(c -> new PartnerNewsResponse.Item(c.id(), c.title(), c.body(), c.summary(), c.category(),
 			c.keywords(), c.publishedAt(), views.getOrDefault(c.id(), 0L), c.imageUrl(), true)).toList();
 	}
 

@@ -13,10 +13,12 @@ public final class PartnerNewsResponse {
 	private PartnerNewsResponse() {
 	}
 
-	@Schema(name = "PartnerNewsItem", description = "뉴스 목록 항목 (본문 제외)")
+	// 티머니 요구사항: 키워드 목록 응답도 공급 항목(제목·본문·요약·작성일시·카테고리·연관 키워드·조회 수)을 모두 담는다.
+	@Schema(name = "PartnerNewsItem", description = "뉴스 목록 항목 (필수 7항목 모두 포함)")
 	public record Item(
 		@Schema(description = "뉴스 ID", example = "15") Long newsId,
 		@Schema(description = "기사 제목", example = "서울 지하철 2호선 강남역 출구 공사, 11월 말까지") String title,
+		@Schema(description = "기사 본문 문단") List<String> body,
 		@Schema(description = "기사 요약문 (1~2문장)") String summary,
 		@Schema(description = "기사 카테고리", example = "사회") String category,
 		@Schema(description = "기사 연관 키워드. 장소 키워드가 앞에 온다") List<String> keywords,

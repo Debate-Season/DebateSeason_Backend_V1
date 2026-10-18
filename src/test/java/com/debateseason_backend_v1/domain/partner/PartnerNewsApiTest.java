@@ -131,7 +131,9 @@ class PartnerNewsApiTest {
 		assertThat(item.path("keywords").get(0).asText()).isEqualTo(place);
 		assertThat(item.path("publishedAt").asText()).matches("\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}");
 		assertThat(item.path("aiGenerated").asBoolean()).isTrue();
-		assertThat(item.has("body")).isFalse();
+		// 목록에도 필수 7항목이 모두 있다 (본문 포함)
+		assertThat(item.path("body")).hasSize(2);
+		assertThat(item.path("viewCount").isNumber()).isTrue();
 
 		// 부분 일치는 하지 않는다 ("강남" 이 "강남구" 를 잡으면 안 된다)
 		JsonNode partial = data(partner(MockMvcRequestBuilders.get("/api/partner/v1/news").param("keyword", place.substring(0, 4))));

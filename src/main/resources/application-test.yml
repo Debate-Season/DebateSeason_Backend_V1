@@ -46,7 +46,7 @@ stomp-connect-url: "/ws-stomp"
 youtube_live-api-key : "dummy"
 # 테스트 전용 서비스 키 (운영 값 아님)
 service-api:
-  keys: "ontology:test-service-key-0123456789abcdef0123456789"
+  keys: "ontology:test-service-key-0123456789abcdef0123456789,wiki-editor:test-wiki-editor-key-0123456789abcdef0123"
 
 # 테스트 전용 웹 SSR 키 (운영 값 아님)
 web-ssr:

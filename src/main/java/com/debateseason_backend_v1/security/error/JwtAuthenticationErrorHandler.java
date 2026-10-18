@@ -77,6 +77,17 @@ public class JwtAuthenticationErrorHandler {
 		writeErrorResponse(response, HttpStatus.UNAUTHORIZED, errorResponse);
 	}
 
+	// 키는 맞지만 그 키에 열리지 않은 경로 (아직 배포 전인 경로 포함).
+	public void handleServiceRouteNotAllowed(HttpServletResponse response, String requestURI) throws IOException {
+
+		log.info("Service key route not allowed. [ API URI: {} ]", requestURI);
+
+		ErrorResponse errorResponse = ErrorResponse.of(
+			ErrorCode.SERVICE_KEY_ROUTE_NOT_ALLOWED
+		);
+		writeErrorResponse(response, HttpStatus.FORBIDDEN, errorResponse);
+	}
+
 	private void writeErrorResponse(
 		HttpServletResponse response,
 		HttpStatus status,

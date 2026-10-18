@@ -126,8 +126,9 @@ class IssueStatusAuthorizationTest {
 			.contentType(MediaType.APPLICATION_JSON)
 			.content("{\"revisionId\":1}"));
 
-		// 헤더를 무시하므로 "토큰 없음" 401 이다. 인가를 통과했다면 404/200 이 났을 것이다.
-		assertThat(result.getResponse().getStatus()).isEqualTo(401);
+		// 키는 맞지만 이 키에 열리지 않은 경로 → 403 SERVICE_KEY_ROUTE_NOT_ALLOWED (401 은 키 문제 전용)
+		assertThat(result.getResponse().getStatus()).isEqualTo(403);
+		assertThat(result.getResponse().getContentAsString()).contains("SERVICE_KEY_ROUTE_NOT_ALLOWED");
 	}
 
 	@Test
@@ -148,7 +149,7 @@ class IssueStatusAuthorizationTest {
 		MvcResult result = perform(MockMvcRequestBuilders.get("/api/v1/admin/issue/{id}/status", issueId)
 			.header(ServiceApiKeyFilter.HEADER, SERVICE_KEY));
 
-		assertThat(result.getResponse().getStatus()).isEqualTo(401);
+		assertThat(result.getResponse().getStatus()).isEqualTo(403);
 	}
 
 	@Test

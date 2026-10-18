@@ -99,10 +99,12 @@ public interface IssueJpaRepository extends JpaRepository<IssueEntity,Long> {
         """, nativeQuery = true)
 	List<Object[]> findIssuesWithBookmarksOrderByCreatedDate(@Param("issueIds") List<Long> issueIds);
 
+	// GROUP BY 가 없으면 COUNT 집계가 이슈가 없어도 NULL 행 하나를 돌려준다 (MariaDB). 없는 이슈는 빈 목록이어야 한다.
 	@Query(value = """
     SELECT i.issue_id, i.title, COUNT(ui.issue_id) AS bookmarks, i.status
     FROM (SELECT issue_id, title, status FROM issue WHERE issue_id = :issueId) i
     LEFT JOIN user_issue ui ON i.issue_id = ui.issue_id
+    GROUP BY i.issue_id, i.title, i.status
     """, nativeQuery = true)
 	List<Object[]> findSingleIssueWithBookmarks(@Param("issueId") Long issueId);
 

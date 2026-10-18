@@ -103,7 +103,8 @@ public class IssueServiceV1 {
 		}
 
 		//  이슈와 북마크 개수 가져오기
-		// 없는 이슈와 ARCHIVED(롤백된 신설 이슈)는 같은 404 다. 예전에는 없는 id 가 get(0) 에서 500 이 났다.
+		// 없는 이슈와 ARCHIVED(롤백된 신설 이슈)는 같은 404 다.
+		// 예전 쿼리는 GROUP BY 가 없어 없는 이슈에도 NULL 행을 돌려줬고, 200 + title null 이 나갔다.
 		List<Object[]> fetchIssue = issueRepository.findSingleIssueWithBookmarks(issueId);
 		if (fetchIssue.isEmpty() || IssueStatus.fromColumn(fetchIssue.get(0)[3]) == IssueStatus.ARCHIVED) {
 			throw new CustomException(ErrorCode.NOT_FOUND_ISSUE);

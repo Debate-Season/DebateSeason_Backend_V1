@@ -19,6 +19,7 @@ import com.debateseason_backend_v1.domain.article.entity.ArticleStatus;
 import com.debateseason_backend_v1.domain.article.entity.ToronchulArticle;
 import com.debateseason_backend_v1.domain.article.entity.ToronchulArticleEvent;
 import com.debateseason_backend_v1.domain.article.entity.ToronchulArticleIssue;
+import com.debateseason_backend_v1.domain.article.entity.ToronchulArticleKeyword;
 import com.debateseason_backend_v1.domain.article.entity.ToronchulArticleSource;
 import com.debateseason_backend_v1.domain.article.model.request.ArticleLinksRequest;
 import com.debateseason_backend_v1.domain.article.model.request.ArticleStatusChangeRequest;
@@ -26,6 +27,7 @@ import com.debateseason_backend_v1.domain.article.model.request.ArticleUpsertReq
 import com.debateseason_backend_v1.domain.article.model.response.ArticleAdminResponse;
 import com.debateseason_backend_v1.domain.article.repository.ToronchulArticleEventRepository;
 import com.debateseason_backend_v1.domain.article.repository.ToronchulArticleIssueRepository;
+import com.debateseason_backend_v1.domain.article.repository.ToronchulArticleKeywordRepository;
 import com.debateseason_backend_v1.domain.article.repository.ToronchulArticleRepository;
 import com.debateseason_backend_v1.domain.article.repository.ToronchulArticleSourceRepository;
 import com.debateseason_backend_v1.domain.issue.infrastructure.repository.IssueJpaRepository;
@@ -64,6 +66,7 @@ public class ArticleAdminService {
 	private final ToronchulArticleSourceRepository sourceRepository;
 	private final ToronchulArticleEventRepository eventLinkRepository;
 	private final ToronchulArticleIssueRepository issueLinkRepository;
+	private final ToronchulArticleKeywordRepository keywordRepository;
 	private final MediaJpaRepository mediaJpaRepository;
 	private final IssueJpaRepository issueJpaRepository;
 	private final NewsEventRepository newsEventRepository;
@@ -114,6 +117,7 @@ public class ArticleAdminService {
 		article = articleRepository.save(article);
 
 		replaceSources(article.getId(), sources);
+		replaceKeywords(article.getId(), request.keywords());
 		replaceIssues(article.getId(), issues);
 		replaceEvents(article.getId(), events);
 
@@ -225,6 +229,23 @@ public class ArticleAdminService {
 	private void replaceSources(Long articleId, List<Long> mediaIds) {
 		sourceRepository.deleteByArticleId(articleId);
 		mediaIds.forEach(id -> sourceRepository.save(ToronchulArticleSource.builder().articleId(articleId).mediaId(id).build()));
+	}
+
+	/**
+	 * 고객사 키워드 조회용 색인. 정확 일치로 찾으므로 앞뒤 공백만 자르고 표기는 그대로 둔다
+	 * (데이터 쪽이 티머니 키워드 목록 표기로 정규화해 보낸다). 부분 일치를 하지 않는 이유: "강남" 이 "강남구" 를 잡으면 안 된다.
+	 */
+	private void replaceKeywords(Long articleId, List<String> keywords) {
+		keywordRepository.deleteByArticleId(articleId);
+		if (keywords == null) {
+			return;
+		}
+		keywords.stream()
+			.filter(Objects::nonNull)
+			.map(String::trim)
+			.filter(k -> !k.isEmpty())
+			.distinct()
+			.forEach(k -> keywordRepository.save(ToronchulArticleKeyword.builder().articleId(articleId).keyword(k).build()));
 	}
 
 	private void replaceIssues(Long articleId, List<Long> issueIds) {

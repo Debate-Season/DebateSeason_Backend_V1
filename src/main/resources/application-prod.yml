@@ -33,6 +33,7 @@ rate-limit:
   anonymous-requests-per-minute: 100
   authenticated-requests-per-minute: 300
   web-server-requests-per-minute: 3000
+  partner-requests-per-minute: 6000
 
 logging:
   level:

@@ -19,6 +19,7 @@ import com.debateseason_backend_v1.common.exception.ErrorCode;
 import com.debateseason_backend_v1.common.response.ErrorResponse;
 import com.debateseason_backend_v1.security.CustomUserDetails;
 import com.debateseason_backend_v1.security.component.SecurityPathMatcher;
+import com.debateseason_backend_v1.security.partner.PartnerApiKeyFilter;
 import com.debateseason_backend_v1.security.service.WebServerKeys;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -48,6 +49,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
 	private final long authenticatedRateLimit;
 	private final WebServerKeys webServerKeys;
 	private final long webServerRateLimit;
+	private final long partnerRateLimit;
 
 	private final ConcurrentHashMap<String, BucketEntry> buckets = new ConcurrentHashMap<>();
 	private final ScheduledExecutorService cleanupExecutor;
@@ -58,7 +60,8 @@ public class RateLimitFilter extends OncePerRequestFilter {
 		long anonymousRateLimit,
 		long authenticatedRateLimit,
 		WebServerKeys webServerKeys,
-		long webServerRateLimit
+		long webServerRateLimit,
+		long partnerRateLimit
 	) {
 		this.securityPathMatcher = securityPathMatcher;
 		this.objectMapper = objectMapper;
@@ -66,6 +69,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
 		this.authenticatedRateLimit = authenticatedRateLimit;
 		this.webServerKeys = webServerKeys;
 		this.webServerRateLimit = webServerRateLimit;
+		this.partnerRateLimit = partnerRateLimit;
 
 		this.cleanupExecutor = Executors.newSingleThreadScheduledExecutor(r -> {
 			Thread thread = new Thread(r, "rate-limit-cleanup");
@@ -97,7 +101,12 @@ public class RateLimitFilter extends OncePerRequestFilter {
 		long rateLimit;
 
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-		if (isAuthenticated(authentication)) {
+		Object partner = request.getAttribute(PartnerApiKeyFilter.PARTNER_ATTRIBUTE);
+		if (partner != null) {
+			// 고객사는 서버에서 부르므로 IP 가 몇 개뿐이다. 고객사 이름 단위 버킷 (계약 트래픽: 피크 ~50 rps).
+			bucketKey = "partner:" + partner;
+			rateLimit = partnerRateLimit;
+		} else if (isAuthenticated(authentication)) {
 			CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
 			bucketKey = "user:" + userDetails.getUserId();
 			rateLimit = authenticatedRateLimit;

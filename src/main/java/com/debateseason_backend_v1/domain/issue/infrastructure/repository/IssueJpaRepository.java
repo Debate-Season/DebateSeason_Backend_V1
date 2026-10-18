@@ -9,7 +9,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.debateseason_backend_v1.domain.issue.infrastructure.entity.IssueEntity;
-import com.debateseason_backend_v1.domain.issue.model.IssueStatus;
+import com.debateseason_backend_v1.domain.issue.model.IssueVisibility;
 
 @Repository
 public interface IssueJpaRepository extends JpaRepository<IssueEntity,Long> {
@@ -21,9 +21,10 @@ public interface IssueJpaRepository extends JpaRepository<IssueEntity,Long> {
 	// 21~22 가 2026-06-03T06:50:36). 하필 최신 이슈 4건이 여기 몰려 있어서
 	// 2차 키가 없으면 이슈맵 첫 화면이 매 요청 섞인다. id 로 확정한다.
 	//
-	// 노출 규칙: ARCHIVED 만 뺀다. ARCHIVED 는 온톨로지 "이슈 신설" 롤백의 결과다.
-	// DORMANT 는 분류일 뿐이라 그대로 나가고, DRAFT 는 쓰는 경로가 없어 건드리지 않는다.
-	List<IssueEntity> findAllByStatusNotOrderByCreatedAtDescIdDesc(IssueStatus excluded);
+	// 노출 규칙: IssueVisibility — PUBLISHED·DORMANT 이고 위키 게시본이 있는 이슈만.
+	@Query(value = "SELECT * FROM issue WHERE" + IssueVisibility.LISTED + "ORDER BY created_at DESC, issue_id DESC",
+		nativeQuery = true)
+	List<IssueEntity> findListedOrderByCreatedAtDescIdDesc();
 
 	// issue방 페이지네이션
 	@Query(value = "SELECT issue_id FROM issue " +
@@ -39,27 +40,27 @@ public interface IssueJpaRepository extends JpaRepository<IssueEntity,Long> {
 	// issueEntity-map에서 이슈 id 가져오기
 	// "전체 선택"을 한 경우 또는 또는 "최초요청"
 	@Query(value = "SELECT issue_id FROM issue  "
-		+ " WHERE issue_id < :page AND status <> 'ARCHIVED' "
+		+ " WHERE issue_id < :page AND" + IssueVisibility.LISTED
 		+ " ORDER BY issue_id DESC "
 		+ " LIMIT 6", nativeQuery = true)
 	List<Long> findTop6IssuesByPage(@Param("page") Long page);
 
 	@Query(value = "SELECT issue_id FROM issue "
-		+ " WHERE status <> 'ARCHIVED' "
+		+ " WHERE" + IssueVisibility.LISTED
 		+ "ORDER BY issue_id DESC "
 		+ "LIMIT 6", nativeQuery = true)
 	List<Long> findTop6Issues();
 
 	// majorCategory만 설정을 한 경우
 	@Query(value = "SELECT issue_id FROM issue "
-		+ " WHERE major_category = :majorCategory AND status <> 'ARCHIVED' "
+		+ " WHERE major_category = :majorCategory AND" + IssueVisibility.LISTED
 		+ "ORDER BY issue_id DESC "
 		+ "LIMIT 6", nativeQuery = true)
 	List<Long> findTop6IssuesByCategory(@Param("majorCategory")String majorCategory);
 
 	// majorCategory + page 설정을 한 경우
 	@Query(value = "SELECT issue_id FROM issue"
-		+ " WHERE major_category = :majorCategory AND issue_id < :page AND status <> 'ARCHIVED' "
+		+ " WHERE major_category = :majorCategory AND issue_id < :page AND" + IssueVisibility.LISTED
 		+ "ORDER BY issue_id DESC "
 		+ "LIMIT 6", nativeQuery = true)
 	List<Long> findTop6IssuesByPageAndCategory(
@@ -111,7 +112,7 @@ public interface IssueJpaRepository extends JpaRepository<IssueEntity,Long> {
 	@Query(value = """
     SELECT chroom.issue_id, COUNT(ch.chat_room_id) AS chats
     FROM chat_room chroom
-    INNER JOIN issue iss ON iss.issue_id = chroom.issue_id AND iss.status <> 'ARCHIVED'
+    INNER JOIN issue iss ON iss.issue_id = chroom.issue_id AND""" + IssueVisibility.LISTED_ISS + """
     LEFT JOIN (
         SELECT chat_room_id, time_stamp 
         FROM chat 

@@ -18,6 +18,8 @@ import com.debateseason_backend_v1.domain.issue.infrastructure.repository.IssueJ
 import com.debateseason_backend_v1.domain.issue.model.IssueStatus;
 import com.debateseason_backend_v1.domain.repository.entity.ChatRoom;
 
+import com.debateseason_backend_v1.fixtures.wiki.WikiFixture;
+
 import jakarta.persistence.EntityManager;
 
 /**
@@ -39,6 +41,8 @@ class HiddenContentRankingTest {
 	private IssueEntity issue(IssueStatus status) {
 		IssueEntity issue = IssueEntity.builder().title("이슈 " + status).majorCategory("정치").status(status).build();
 		em.persist(issue);
+		em.flush();
+		WikiFixture.publish(em, issue.getId()); // 상태만 비교하려고 모두 위키 게시본을 붙인다
 		return issue;
 	}
 
@@ -80,5 +84,24 @@ class HiddenContentRankingTest {
 		assertThat(issueJpaRepository.findTop6Issues()).contains(published, dormant).doesNotContain(archived);
 		assertThat(issueJpaRepository.findTop6IssuesByCategory("정치")).doesNotContain(archived);
 		assertThat(issueJpaRepository.findTop6IssuesByPage(Long.MAX_VALUE)).doesNotContain(archived);
+	}
+
+	@Test
+	@DisplayName("위키 게시본이 없는 이슈는 이슈맵·핫한 토론에서 빠진다 (사용자 결정 2026-10-19)")
+	void issueWithoutWikiIsNotListed() {
+		IssueEntity bare = IssueEntity.builder().title("위키 없음").majorCategory("정치").status(IssueStatus.PUBLISHED).build();
+		em.persist(bare);
+		em.flush();
+		Long room = thread(bare, ChatRoomStatus.OPEN);
+
+		assertThat(issueJpaRepository.findTop6Issues()).doesNotContain(bare.getId());
+		assertThat(issueJpaRepository.findListedOrderByCreatedAtDescIdDesc()).extracting(IssueEntity::getId).doesNotContain(bare.getId());
+		LocalDateTime now = LocalDateTime.now();
+		assertThat(chatRoomRepository.findTop5ActiveChatRooms(
+				now.minusMinutes(30), now.minusHours(8), now.minusHours(24), now.minusHours(72), now.plusMinutes(1))
+			.stream().map(row -> ((Number)row[2]).longValue()).toList()).doesNotContain(room);
+
+		WikiFixture.publish(em, bare.getId());
+		assertThat(issueJpaRepository.findTop6Issues()).contains(bare.getId());
 	}
 }

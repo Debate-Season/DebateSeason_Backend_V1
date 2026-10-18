@@ -25,6 +25,7 @@ import com.debateseason_backend_v1.domain.issue.infrastructure.repository.IssueJ
 import com.debateseason_backend_v1.domain.issue.model.IssueStatus;
 import com.debateseason_backend_v1.domain.repository.ChatRoomRepository;
 import com.debateseason_backend_v1.domain.repository.entity.ChatRoom;
+import com.debateseason_backend_v1.fixtures.wiki.WikiFixture;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -50,7 +51,9 @@ class SitemapApiTest {
 	private JdbcTemplate jdbc;
 
 	private IssueEntity issue(IssueStatus status) {
-		return issueJpaRepository.save(IssueEntity.builder().title("사이트맵 " + status).status(status).build());
+		IssueEntity issue = issueJpaRepository.save(IssueEntity.builder().title("사이트맵 " + status).status(status).build());
+		WikiFixture.publish(jdbc, issue.getId()); // 상태 규칙만 보려고 모두 위키 게시본을 붙인다
+		return issue;
 	}
 
 	private ChatRoom room(IssueEntity issue, ChatRoomType type, ChatRoomStatus status) {
@@ -176,6 +179,16 @@ class SitemapApiTest {
 
 		assertThat(seen).containsSubsequence(created).doesNotHaveDuplicates();
 		assertThat(page.path("nextCursor").isNull()).isTrue();
+	}
+
+	@Test
+	@DisplayName("위키 게시본이 없는 이슈와 그 토론 주제는 피드에 없다")
+	void withoutWiki() throws Exception {
+		IssueEntity bare = issueJpaRepository.save(IssueEntity.builder().title("위키 없음").status(IssueStatus.PUBLISHED).build());
+		ChatRoom thread = room(bare, ChatRoomType.THREAD, ChatRoomStatus.OPEN);
+
+		assertThat(ids(get("/api/v1/sitemap/issues", bare.getId() - 1, 5000), "issueId")).doesNotContain(bare.getId());
+		assertThat(ids(get("/api/v1/sitemap/threads", thread.getId() - 1, 5000), "threadId")).doesNotContain(thread.getId());
 	}
 
 	@Test

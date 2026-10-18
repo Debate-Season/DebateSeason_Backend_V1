@@ -33,7 +33,23 @@ public class ServiceApiKeys {
 	private static final Pattern NAME = Pattern.compile("[a-z0-9-]{1,32}");
 	private static final int MIN_SECRET_LENGTH = 32;
 
-	private record Entry(String name, byte[] digest) {
+	// record 로 두면 equals/hashCode 가 배열을 참조로 비교한다. 비교하지 않는 값 객체라 클래스로 둔다.
+	private static final class Entry {
+		private final String name;
+		private final byte[] digest;
+
+		private Entry(String name, byte[] digest) {
+			this.name = name;
+			this.digest = digest;
+		}
+
+		String name() {
+			return name;
+		}
+
+		byte[] digest() {
+			return digest;
+		}
 	}
 
 	private final List<Entry> entries;

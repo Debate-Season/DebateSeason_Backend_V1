@@ -1,6 +1,7 @@
 package com.debateseason_backend_v1.domain.article.service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -79,7 +80,7 @@ public class ArticlePublicService {
 			article.getId(), article.getHeadline(), article.getSummary(), paragraphs(article.getBody()),
 			article.getByline(), article.isAiGenerated(), article.getArticleSection(), strings(article.getKeywords()),
 			article.getDatePublished(), article.getUpdatedAt(),
-			events.stream().map(e -> new ArticlePublicResponse.Event(e.getId(), e.getName(), e.getOccurredOn(),
+			events.stream().map(e -> new ArticlePublicResponse.Event(e.getId(), e.getName(), e.getOccurredOn(), e.getOccurredAt(),
 				issuesByEvent.getOrDefault(e.getId(), List.of()))).toList(),
 			issueIds.stream().sorted().toList());
 	}
@@ -98,7 +99,7 @@ public class ArticlePublicService {
 		List<NewsEvent> events = new ArrayList<>(newsEventRepository.findAllById(eventIds).stream()
 			.filter(e -> e.getMergedInto() == null).toList());
 		Comparator<NewsEvent> order = Comparator
-			.comparing(NewsEvent::getOccurredOn, Comparator.nullsFirst(Comparator.<LocalDate>naturalOrder())).reversed()
+			.comparing(NewsEvent::when, Comparator.nullsFirst(Comparator.<LocalDateTime>naturalOrder())).reversed()
 			.thenComparing(NewsEvent::getId, Comparator.reverseOrder());
 		events.sort(order);
 
@@ -115,7 +116,7 @@ public class ArticlePublicService {
 
 		Map<Long, List<ArticlePublicResponse.ArticleCard>> cards = articlesByEvent(page.stream().map(NewsEvent::getId).toList());
 		return new ArticlePublicResponse.Timeline(
-			page.stream().map(e -> new ArticlePublicResponse.TimelineEvent(e.getId(), e.getName(), e.getOccurredOn(),
+			page.stream().map(e -> new ArticlePublicResponse.TimelineEvent(e.getId(), e.getName(), e.getOccurredOn(), e.getOccurredAt(),
 				cards.getOrDefault(e.getId(), List.of()))).toList(),
 			next);
 	}
@@ -210,15 +211,24 @@ public class ArticlePublicService {
 		return values;
 	}
 
+	// "{정렬 시각 또는 -}|{사건 id}". 옛 형식 "{날짜 또는 -}:{id}" 도 읽는다 (이미 나간 커서).
 	private static String cursorOf(NewsEvent e) {
-		return (e.getOccurredOn() == null ? "-" : e.getOccurredOn().toString()) + ":" + e.getId();
+		return (e.when() == null ? "-" : e.when().toString()) + "|" + e.getId();
 	}
 
 	private static NewsEvent parseCursor(String cursor) {
 		try {
-			String[] parts = cursor.split(":", 2);
-			LocalDate date = "-".equals(parts[0]) ? null : LocalDate.parse(parts[0]);
-			return NewsEvent.builder().id(Long.parseLong(parts[1])).occurredOn(date).build();
+			boolean current = cursor.contains("|");
+			String[] parts = cursor.split(current ? "\\|" : ":", 2);
+			NewsEvent marker = NewsEvent.builder().id(Long.parseLong(parts[1])).build();
+			if (!"-".equals(parts[0])) {
+				if (current) {
+					marker.setOccurredAt(LocalDateTime.parse(parts[0]));
+				} else {
+					marker.setOccurredOn(LocalDate.parse(parts[0]));
+				}
+			}
+			return marker;
 		} catch (RuntimeException e) {
 			throw new CustomException(ErrorCode.BAD_REQUEST, "cursor 형식이 잘못됐습니다.");
 		}

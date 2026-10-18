@@ -67,6 +67,8 @@ public class ServiceApiKeyFilter extends OncePerRequestFilter {
 		new Route(HttpMethod.PATCH, "/api/v1/admin/room/*/status"),
 		new Route(HttpMethod.PATCH, "/api/v1/admin/event/*"),
 		new Route(HttpMethod.POST, "/api/v1/admin/issue/*/events/merge"),
+		// 공개 전(DRAFT) 이슈만 공개할 수 있다 — Discord ✅ 를 사람 승인으로 본다 (사용자 결정 2026-10-19)
+		new Route(HttpMethod.POST, "/api/v1/admin/issue/*/launch"),
 		new Route(HttpMethod.POST, "/api/v1/admin/change-log/*/revert"),
 		// 읽기 전용 단건 조회. 파이프라인이 자기 기록과 운영 타임라인을 맞춰 보는 데 쓴다.
 		new Route(HttpMethod.GET, "/api/v1/admin/issue/*/timeline/versions"),

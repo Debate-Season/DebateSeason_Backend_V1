@@ -113,7 +113,9 @@ public enum ErrorCode implements CodeInterface {
 	INVALID_CHATROOM_STATUS_TRANSITION(409, HttpStatus.CONFLICT, "허용되지 않는 토론 주제 상태 변경입니다. 스레드의 PREPARING·OPEN·CLOSED·HIDDEN 사이만 바꿀 수 있습니다."),
 	OPINION_REQUIRED_TO_CHAT(403, HttpStatus.FORBIDDEN, "채팅하려면 먼저 찬성 또는 반대를 선택해야 합니다."),
 	NOT_FOUND_ISSUE_WITH_CATEGORY(400, HttpStatus.NOT_FOUND, "해당 category의 이슈방을 찾을 수 없습니다."),
-	INVALID_ISSUE_STATUS_TRANSITION(409, HttpStatus.CONFLICT, "허용되지 않는 이슈 상태 변경입니다. PUBLISHED·DORMANT·ARCHIVED 사이만 바꿀 수 있습니다."),
+	INVALID_ISSUE_STATUS_TRANSITION(409, HttpStatus.CONFLICT, "허용되지 않는 이슈 상태 변경입니다."),
+	ISSUE_LAUNCH_REQUIRED(409, HttpStatus.CONFLICT, "공개 전(DRAFT) 이슈는 상태 변경이 아니라 POST /api/v1/admin/issue/{id}/launch 로 공개합니다. 버리려면 ARCHIVED."),
+	ISSUE_NOT_LAUNCHABLE(409, HttpStatus.CONFLICT, "공개할 수 없는 이슈입니다. 이슈가 DRAFT 이고, 사건이 1건 이상 연결돼 있고, 위키 리비전이 이 이슈의 것이어야 합니다."),
 
 	// 페이지네이션 오류
 	PAGE_OUT_OF_RANGE(404, HttpStatus.NOT_FOUND, "검색범위를 넘어섰습니다. 내용을 불러올 수 없습니다."),

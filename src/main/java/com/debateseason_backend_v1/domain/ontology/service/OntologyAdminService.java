@@ -93,11 +93,15 @@ public class OntologyAdminService {
 			return new IssueCreateResponse(after.path("issueId").asLong(), after.path("containerRoomId").asLong(), false);
 		}
 
+		IssueStatus initial = request.status() == null ? IssueStatus.PUBLISHED : request.status();
+		if (initial != IssueStatus.PUBLISHED && initial != IssueStatus.DRAFT) {
+			throw new CustomException(ErrorCode.BAD_REQUEST, "이슈의 처음 상태는 DRAFT 또는 PUBLISHED 입니다.");
+		}
 		IssueEntity issue = issueJpaRepository.save(IssueEntity.builder()
 			.title(request.title())
 			.majorCategory(request.majorCategory())
 			.middleCategory(request.middleCategory())
-			.status(IssueStatus.PUBLISHED)
+			.status(initial)
 			.build());
 
 		// 모바일은 컨테이너 방으로 입장한다. 기존 POST /api/v1/issue 는 컨테이너를 만들지 않아
@@ -105,7 +109,8 @@ public class OntologyAdminService {
 		ChatRoom container = createContainer(issue);
 
 		changeLog.record(Action.ISSUE_CREATE, ISSUE, issue.getId(), null,
-			Map.of("issueId", issue.getId(), "containerRoomId", container.getId(), "title", issue.getTitle()),
+			Map.of("issueId", issue.getId(), "containerRoomId", container.getId(), "title", issue.getTitle(),
+				"status", initial.name()),
 			request.reason(), request.proposalId(), decidedBy, request.approver());
 
 		log.info("온톨로지 이슈 신설 issueId={} proposalId={}", issue.getId(), request.proposalId());
@@ -213,13 +218,14 @@ public class OntologyAdminService {
 		LocalDateTime now = LocalDateTime.now();
 		List<Long> eventIds = new ArrayList<>();
 		for (EventLinkRequest.Event item : request.events()) {
-			NewsEvent event = newsEventRepository.save(NewsEvent.builder()
+			NewsEvent event = NewsEvent.builder()
 				.name(item.name())
-				.occurredOn(item.date())
 				.majorCategory(item.major())
 				.middleCategory(item.middle())
 				.createdAt(now)
-				.build());
+				.build();
+			event.setWhen(item.date(), item.occurredAt());
+			event = newsEventRepository.save(event);
 			eventIds.add(event.getId());
 
 			issueNewsEventRepository.save(IssueNewsEvent.builder()

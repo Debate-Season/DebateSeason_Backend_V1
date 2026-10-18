@@ -1,5 +1,6 @@
 package com.debateseason_backend_v1.domain.ontology.service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -91,6 +92,7 @@ public class EventTimelineService {
 		if (request.middle() != null) {
 			event.setMiddleCategory(request.middle());
 		}
+		event.setWhen(request.date(), request.occurredAt());
 		Map<String, Object> after = fields(event);
 
 		List<Long> addedMediaIds = addMedia(eventId, request.addMediaIds());
@@ -191,6 +193,10 @@ public class EventTimelineService {
 		event.setName(text(before, "name"));
 		event.setMajorCategory(text(before, "major"));
 		event.setMiddleCategory(text(before, "middle"));
+		String date = text(before, "date");
+		String at = text(before, "occurredAt");
+		event.setOccurredOn(date == null ? null : LocalDate.parse(date));
+		event.setOccurredAt(at == null ? null : LocalDateTime.parse(at));
 		removeMedia(eventId, longs(after.path("addedMediaIds")));
 
 		return issueNewsEventRepository.findByEventId(eventId).stream().map(IssueNewsEvent::getIssueId).toList();
@@ -250,7 +256,7 @@ public class EventTimelineService {
 	private List<Map<String, Object>> snapshot(Long issueId) {
 		List<Long> eventIds = issueNewsEventRepository.findByIssueId(issueId).stream().map(IssueNewsEvent::getEventId).toList();
 		List<NewsEvent> events = new ArrayList<>(newsEventRepository.findAllById(eventIds));
-		events.sort(Comparator.comparing(NewsEvent::getOccurredOn, Comparator.nullsLast(Comparator.naturalOrder()))
+		events.sort(Comparator.comparing(NewsEvent::when, Comparator.nullsLast(Comparator.<LocalDateTime>naturalOrder()))
 			.thenComparing(NewsEvent::getId));
 
 		List<Map<String, Object>> rows = new ArrayList<>();
@@ -259,6 +265,7 @@ public class EventTimelineService {
 			row.put("id", event.getId());
 			row.put("name", event.getName());
 			row.put("date", event.getOccurredOn() == null ? null : event.getOccurredOn().toString());
+			row.put("occurredAt", event.getOccurredAt() == null ? null : event.getOccurredAt().toString());
 			rows.add(row);
 		}
 		return rows;
@@ -321,6 +328,8 @@ public class EventTimelineService {
 		map.put("name", event.getName());
 		map.put("major", event.getMajorCategory());
 		map.put("middle", event.getMiddleCategory());
+		map.put("date", event.getOccurredOn() == null ? null : event.getOccurredOn().toString());
+		map.put("occurredAt", event.getOccurredAt() == null ? null : event.getOccurredAt().toString());
 		return map;
 	}
 
@@ -329,6 +338,8 @@ public class EventTimelineService {
 		map.put("name", text(node, "name"));
 		map.put("major", text(node, "major"));
 		map.put("middle", text(node, "middle"));
+		map.put("date", text(node, "date"));
+		map.put("occurredAt", text(node, "occurredAt"));
 		return map;
 	}
 

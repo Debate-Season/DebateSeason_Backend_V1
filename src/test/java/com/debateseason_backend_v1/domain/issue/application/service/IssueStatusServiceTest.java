@@ -96,20 +96,19 @@ class IssueStatusServiceTest {
 
 	@ParameterizedTest(name = "{0} -> {1} 는 409")
 	@CsvSource({
-		"PUBLISHED, DRAFT",
 		"DORMANT, DRAFT",
 		"ARCHIVED, DRAFT",
 		"DRAFT, PUBLISHED",
-		"DRAFT, ARCHIVED"
+		"DRAFT, DORMANT"
 	})
-	@DisplayName("쓰는 경로가 없는 DRAFT 로는 드나들 수 없다")
+	@DisplayName("DRAFT 로는 공개 롤백(PUBLISHED→DRAFT)만, DRAFT 에서는 ARCHIVED 로만 — 공개는 launch 로만")
 	void rejectsOtherTransitions(IssueStatus from, IssueStatus to) {
 		IssueEntity issue = issueWith(from);
 
 		assertThatThrownBy(() -> issueStatusService.changeStatus(6L, to, null, null, "service:ontology"))
 			.isInstanceOf(CustomException.class)
 			.extracting("codeInterface")
-			.isEqualTo(ErrorCode.INVALID_ISSUE_STATUS_TRANSITION);
+			.isEqualTo(from == IssueStatus.DRAFT ? ErrorCode.ISSUE_LAUNCH_REQUIRED : ErrorCode.INVALID_ISSUE_STATUS_TRANSITION);
 
 		assertThat(issue.getStatus()).isEqualTo(from);
 		verify(issueStatusHistoryRepository, never()).save(any());
@@ -120,7 +119,9 @@ class IssueStatusServiceTest {
 		"PUBLISHED, ARCHIVED",
 		"DORMANT, ARCHIVED",
 		"ARCHIVED, PUBLISHED",
-		"ARCHIVED, DORMANT"
+		"ARCHIVED, DORMANT",
+		"PUBLISHED, DRAFT",
+		"DRAFT, ARCHIVED"
 	})
 	@DisplayName("신설 롤백(→ ARCHIVED)과 그 되돌리기는 허용된다")
 	void archiveRoundTrip(IssueStatus from, IssueStatus to) {

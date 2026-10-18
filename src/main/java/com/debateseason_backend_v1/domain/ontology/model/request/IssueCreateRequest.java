@@ -1,5 +1,7 @@
 package com.debateseason_backend_v1.domain.ontology.model.request;
 
+import com.debateseason_backend_v1.domain.issue.model.IssueStatus;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -25,6 +27,10 @@ public record IssueCreateRequest(
 	@Schema(description = "중분류", example = "의료")
 	@Size(max = 255)
 	String middleCategory,
+
+	@Schema(description = "처음 상태. DRAFT(공개 전, 위키·타임라인을 붙인 뒤 launch 로 공개) 또는 PUBLISHED. 비우면 PUBLISHED",
+		example = "DRAFT", allowableValues = {"DRAFT", "PUBLISHED"})
+	IssueStatus status,
 
 	@Schema(description = "사유", example = "신규 사건 5건이 기존 이슈와 연결되지 않음")
 	@Size(max = 255)

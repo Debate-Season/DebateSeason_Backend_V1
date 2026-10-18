@@ -19,7 +19,6 @@ import com.debateseason_backend_v1.domain.chatroom.domain.ChatRoomType;
 import com.debateseason_backend_v1.domain.issue.infrastructure.entity.IssueEntity;
 import com.debateseason_backend_v1.domain.issue.infrastructure.repository.IssueJpaRepository;
 import com.debateseason_backend_v1.domain.issue.model.IssueStatus;
-import com.debateseason_backend_v1.domain.media.infrastructure.repository.MediaJpaRepository;
 import com.debateseason_backend_v1.domain.ontology.entity.AdminChangeLog;
 import com.debateseason_backend_v1.domain.ontology.entity.AdminChangeLog.Action;
 import com.debateseason_backend_v1.domain.ontology.entity.IssueNewsEvent;
@@ -43,9 +42,7 @@ import com.debateseason_backend_v1.domain.ontology.repository.NewsEventMediaRepo
 import com.debateseason_backend_v1.domain.ontology.repository.NewsEventRepository;
 import com.debateseason_backend_v1.domain.repository.ChatRoomRepository;
 import com.debateseason_backend_v1.domain.repository.entity.ChatRoom;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -59,6 +56,8 @@ import lombok.extern.slf4j.Slf4j;
  *   <li>변경 계열(이름·상태)은 이미 그 값이면 아무것도 하지 않는다.</li>
  * </ul>
  *
+ * <p>사건 수정·병합·되돌리기와 타임라인 버전은 {@link EventTimelineService}.
+ *
  * <p>롤백은 지우지 않고 숨긴다 — 신설 이슈는 ARCHIVED, 신설 토론 주제는 HIDDEN.
  * 그 사이 사용자가 남긴 채팅·투표가 있을 수 있어서다. 사건 연결 해제만 연결 행을 지운다(사건 행은 남김).
  */
@@ -69,16 +68,19 @@ public class OntologyAdminService {
 
 	private static final String ISSUE = "ISSUE";
 	private static final String CHAT_ROOM = "CHAT_ROOM";
-	private static final Set<ChatRoomStatus> TOPIC_SWITCHABLE = EnumSet.of(ChatRoomStatus.OPEN, ChatRoomStatus.HIDDEN);
+	// 토론 주제: 준비(PREPARING) → 진행 중(OPEN) → 완료(CLOSED), 롤백은 HIDDEN. DELETED 는 이 경로로 다루지 않는다.
+	private static final Set<ChatRoomStatus> TOPIC_SWITCHABLE =
+		EnumSet.of(ChatRoomStatus.PREPARING, ChatRoomStatus.OPEN, ChatRoomStatus.CLOSED, ChatRoomStatus.HIDDEN);
+	private static final Set<ChatRoomStatus> TOPIC_INITIAL = EnumSet.of(ChatRoomStatus.PREPARING, ChatRoomStatus.OPEN);
 
 	private final IssueJpaRepository issueJpaRepository;
 	private final ChatRoomRepository chatRoomRepository;
-	private final MediaJpaRepository mediaJpaRepository;
 	private final AdminChangeLogRepository changeLogRepository;
 	private final NewsEventRepository newsEventRepository;
 	private final IssueNewsEventRepository issueNewsEventRepository;
 	private final NewsEventMediaRepository newsEventMediaRepository;
-	private final ObjectMapper objectMapper;
+	private final ChangeLogWriter changeLog;
+	private final EventTimelineService timeline;
 
 	// ── 이슈 신설 ────────────────────────────────────────────────
 
@@ -87,7 +89,7 @@ public class OntologyAdminService {
 
 		Optional<AdminChangeLog> done = changeLogRepository.findByProposalIdAndAction(request.proposalId(), Action.ISSUE_CREATE);
 		if (done.isPresent()) {
-			JsonNode after = readJson(done.get().getAfterValue());
+			JsonNode after = changeLog.read(done.get().getAfterValue());
 			return new IssueCreateResponse(after.path("issueId").asLong(), after.path("containerRoomId").asLong(), false);
 		}
 
@@ -102,7 +104,7 @@ public class OntologyAdminService {
 		// 새 이슈의 containerRoomId 가 null 이 된다. 여기서는 처음부터 같이 만든다.
 		ChatRoom container = createContainer(issue);
 
-		record(Action.ISSUE_CREATE, ISSUE, issue.getId(), null,
+		changeLog.record(Action.ISSUE_CREATE, ISSUE, issue.getId(), null,
 			Map.of("issueId", issue.getId(), "containerRoomId", container.getId(), "title", issue.getTitle()),
 			request.reason(), request.proposalId(), decidedBy, request.approver());
 
@@ -126,7 +128,7 @@ public class OntologyAdminService {
 		chatRoomRepository.findFirstByIssueEntity_IdAndRoomType(issueId, ChatRoomType.CONTAINER)
 			.ifPresent(container -> container.setTitle(request.title()));
 
-		record(Action.ISSUE_RENAME, ISSUE, issueId, Map.of("title", previous), Map.of("title", request.title()),
+		changeLog.record(Action.ISSUE_RENAME, ISSUE, issueId, Map.of("title", previous), Map.of("title", request.title()),
 			request.reason(), null, decidedBy, request.approver());
 		return new IssueRenameResponse(issueId, previous, request.title(), true);
 	}
@@ -138,8 +140,13 @@ public class OntologyAdminService {
 
 		Optional<AdminChangeLog> done = changeLogRepository.findByProposalIdAndAction(request.proposalId(), Action.TOPIC_CREATE);
 		if (done.isPresent()) {
-			JsonNode after = readJson(done.get().getAfterValue());
+			JsonNode after = changeLog.read(done.get().getAfterValue());
 			return new DebateTopicCreateResponse(after.path("chatRoomId").asLong(), after.path("containerRoomId").asLong(), false);
+		}
+
+		ChatRoomStatus initial = request.status() == null ? ChatRoomStatus.OPEN : request.status();
+		if (!TOPIC_INITIAL.contains(initial)) {
+			throw new CustomException(ErrorCode.BAD_REQUEST, "토론 주제의 처음 상태는 PREPARING 또는 OPEN 입니다.");
 		}
 
 		IssueEntity issue = findIssue(issueId);
@@ -152,11 +159,12 @@ public class OntologyAdminService {
 			.content(request.content())
 			.roomType(ChatRoomType.THREAD)
 			.containerRoomId(container.getId())
-			.status(ChatRoomStatus.OPEN)
+			.status(initial)
 			.build());
 
-		record(Action.TOPIC_CREATE, CHAT_ROOM, thread.getId(), null,
-			Map.of("chatRoomId", thread.getId(), "containerRoomId", container.getId(), "issueId", issueId, "title", request.title()),
+		changeLog.record(Action.TOPIC_CREATE, CHAT_ROOM, thread.getId(), null,
+			Map.of("chatRoomId", thread.getId(), "containerRoomId", container.getId(), "issueId", issueId,
+				"title", request.title(), "status", initial.name()),
 			request.reason(), request.proposalId(), decidedBy, request.approver());
 
 		log.info("온톨로지 토론 주제 신설 issueId={} chatRoomId={} proposalId={}", issueId, thread.getId(), request.proposalId());
@@ -180,7 +188,7 @@ public class OntologyAdminService {
 		}
 
 		room.setStatus(request.status());
-		record(Action.TOPIC_STATUS, CHAT_ROOM, chatRoomId, Map.of("status", current.name()),
+		changeLog.record(Action.TOPIC_STATUS, CHAT_ROOM, chatRoomId, Map.of("status", current.name()),
 			Map.of("status", request.status().name()), request.reason(), null, decidedBy, request.approver());
 		return new TopicStatusChangeResponse(chatRoomId, current, request.status(), true);
 	}
@@ -193,12 +201,14 @@ public class OntologyAdminService {
 		Optional<AdminChangeLog> done = changeLogRepository.findByProposalIdAndAction(request.proposalId(), Action.EVENT_LINK);
 		if (done.isPresent()) {
 			List<Long> eventIds = new ArrayList<>();
-			readJson(done.get().getAfterValue()).path("eventIds").forEach(id -> eventIds.add(id.asLong()));
+			changeLog.read(done.get().getAfterValue()).path("eventIds").forEach(id -> eventIds.add(id.asLong()));
 			return new EventLinkResponse(eventIds, false);
 		}
 
 		findIssue(issueId);
-		verifyMediaExists(request.events());
+		Set<Long> mediaIds = new LinkedHashSet<>();
+		request.events().stream().filter(e -> e.mediaIds() != null).forEach(e -> mediaIds.addAll(e.mediaIds()));
+		timeline.requireMedia(mediaIds);
 
 		LocalDateTime now = LocalDateTime.now();
 		List<Long> eventIds = new ArrayList<>();
@@ -226,8 +236,9 @@ public class OntologyAdminService {
 			}
 		}
 
-		record(Action.EVENT_LINK, ISSUE, issueId, null, Map.of("eventIds", eventIds),
+		AdminChangeLog log = changeLog.record(Action.EVENT_LINK, ISSUE, issueId, null, Map.of("eventIds", eventIds),
 			request.reason(), request.proposalId(), decidedBy, request.approver());
+		timeline.recordVersion(issueId, log.getId());
 		return new EventLinkResponse(eventIds, true);
 	}
 
@@ -243,8 +254,9 @@ public class OntologyAdminService {
 		List<Long> unlinked = links.stream().map(IssueNewsEvent::getEventId).toList();
 		issueNewsEventRepository.deleteAll(links);
 
-		record(Action.EVENT_UNLINK, ISSUE, issueId, Map.of("eventIds", unlinked), null,
+		AdminChangeLog log = changeLog.record(Action.EVENT_UNLINK, ISSUE, issueId, Map.of("eventIds", unlinked), null,
 			request.reason(), null, decidedBy, request.approver());
+		timeline.recordVersion(issueId, log.getId());
 		return new EventUnlinkResponse(unlinked);
 	}
 
@@ -264,53 +276,4 @@ public class OntologyAdminService {
 			.build());
 	}
 
-	private void verifyMediaExists(List<EventLinkRequest.Event> events) {
-		Set<Long> requested = new LinkedHashSet<>();
-		events.stream().filter(e -> e.mediaIds() != null).forEach(e -> requested.addAll(e.mediaIds()));
-		if (requested.isEmpty()) {
-			return;
-		}
-		Set<Long> found = new LinkedHashSet<>();
-		mediaJpaRepository.findAllById(requested).forEach(media -> found.add(media.getId()));
-		if (found.size() != requested.size()) {
-			requested.removeAll(found);
-			throw new CustomException(ErrorCode.MEDIA_NOT_FOUND, "존재하지 않는 media id: " + requested);
-		}
-	}
-
-	private void record(Action action, String entityType, Long entityId, Object before, Object after,
-		String reason, String proposalId, String decidedBy, String approver) {
-
-		changeLogRepository.save(AdminChangeLog.builder()
-			.action(action)
-			.entityType(entityType)
-			.entityId(entityId)
-			.beforeValue(writeJson(before))
-			.afterValue(writeJson(after))
-			.reason(reason)
-			.proposalId(proposalId)
-			.decidedBy(decidedBy)
-			.approver(approver)
-			.decidedAt(LocalDateTime.now())
-			.build());
-	}
-
-	private String writeJson(Object value) {
-		if (value == null) {
-			return null;
-		}
-		try {
-			return objectMapper.writeValueAsString(value);
-		} catch (JsonProcessingException e) {
-			throw new IllegalStateException("변경 이력 직렬화 실패", e);
-		}
-	}
-
-	private JsonNode readJson(String value) {
-		try {
-			return objectMapper.readTree(value == null ? "{}" : value);
-		} catch (JsonProcessingException e) {
-			throw new IllegalStateException("변경 이력 역직렬화 실패", e);
-		}
-	}
 }

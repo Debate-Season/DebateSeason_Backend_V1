@@ -1,5 +1,7 @@
 package com.debateseason_backend_v1.domain.ontology.model.request;
 
+import com.debateseason_backend_v1.domain.chatroom.domain.ChatRoomStatus;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -20,6 +22,10 @@ public record DebateTopicCreateRequest(
 	@Schema(description = "해시태그", example = "#의대증원 #전공의")
 	@Size(max = 255, message = "content 는 255자 이하입니다.")
 	String content,
+
+	@Schema(description = "처음 상태. PREPARING(준비 중, 미노출) 또는 OPEN(진행 중). 비우면 OPEN", example = "PREPARING",
+		allowableValues = {"PREPARING", "OPEN"})
+	ChatRoomStatus status,
 
 	@Size(max = 255)
 	String reason,

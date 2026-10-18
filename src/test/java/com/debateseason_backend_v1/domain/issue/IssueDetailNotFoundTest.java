@@ -61,7 +61,10 @@ class IssueDetailNotFoundTest {
 		Long published = issueJpaRepository.save(IssueEntity.builder().title("있는 이슈").build()).getId();
 		Long dormant = issueJpaRepository.save(IssueEntity.builder().title("잠자는 이슈").status(IssueStatus.DORMANT).build()).getId();
 
-		assertThat(fetch(published).getResponse().getStatus()).isEqualTo(200);
+		MvcResult ok = fetch(published);
+		assertThat(ok.getResponse().getStatus()).isEqualTo(200);
+		// 토론 주제가 없는 이슈: chatRoomMap 은 null 이 아니라 빈 배열 (null 이면 웹 상세가 500 이었다)
+		assertThat(ok.getResponse().getContentAsString()).contains("\"chatRoomMap\":[]");
 		assertThat(fetch(dormant).getResponse().getStatus()).isEqualTo(200);
 	}
 }

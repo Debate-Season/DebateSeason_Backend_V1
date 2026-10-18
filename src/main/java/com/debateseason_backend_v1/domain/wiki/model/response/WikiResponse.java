@@ -2,6 +2,8 @@ package com.debateseason_backend_v1.domain.wiki.model.response;
 
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Getter;
@@ -39,6 +41,8 @@ public class WikiResponse {
 	@Schema(description = "게시 중인 리비전 id. 미게시면 null.", example = "12")
 	private Long revisionId;
 
-	@Schema(description = "위키 갱신 시각. 미게시면 null.")
+	// 다른 응답과 같은 문자열 포맷. 빠지면 Jackson 기본값이라 [2026,10,19,3,48,27,937427000] 배열로 나가 웹이 500 을 냈다.
+	@Schema(description = "위키 갱신 시각 (Asia/Seoul). 미게시면 null.", example = "2026-10-19T03:48:27")
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "Asia/Seoul")
 	private LocalDateTime updatedAt;
 }

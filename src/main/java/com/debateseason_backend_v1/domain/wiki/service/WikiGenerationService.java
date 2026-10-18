@@ -1,6 +1,8 @@
 package com.debateseason_backend_v1.domain.wiki.service;
 
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -118,7 +120,8 @@ public class WikiGenerationService {
 	 * ADMIN 수동 편집 리비전을 추가한다({@code source=ADMIN}). 게시 상태는 바꾸지 않는다.
 	 */
 	@Transactional
-	public WikiRevisionResponse addManualRevision(Long issueId, String content, String editSummary, Long adminUserId) {
+	public WikiRevisionResponse addManualRevision(Long issueId, String content, String editSummary, String summary,
+		Long adminUserId) {
 
 		IssueEntity issue = issueJpaRepository.findById(issueId)
 			.orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_ISSUE));
@@ -133,12 +136,48 @@ public class WikiGenerationService {
 				.model(null)
 				.createdBy(adminUserId)
 				.editSummary(editSummary)
+				.summary(summary)
 				.build()
 		);
 
 		log.info("위키 ADMIN 수동 리비전 추가: issueId={}, wikiId={}, revisionId={}, adminUserId={}",
 			issueId, wiki.getId(), revision.getId(), adminUserId);
 
+		return toRevisionResponse(wiki, issue.getId(), revision);
+	}
+
+	/**
+	 * 서버 밖(로컬 claude -p 등)에서 생성한 AI 초안을 DRAFT 리비전으로 저장한다. 게시 상태는 바꾸지 않는다.
+	 *
+	 * <p>최신 리비전과 본문·요약이 같으면 새로 쌓지 않고 그 리비전을 돌려준다 — 업로드 스크립트 재실행에 안전.
+	 */
+	@Transactional
+	public WikiRevisionResponse uploadDraft(Long issueId, String content, String summary, String model, String editSummary) {
+
+		IssueEntity issue = issueJpaRepository.findById(issueId)
+			.orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_ISSUE));
+
+		DebateWiki wiki = upsertWiki(issueId);
+
+		Optional<DebateWikiRevision> latest = debateWikiRevisionRepository.findFirstByWikiIdOrderByIdDesc(wiki.getId());
+		if (latest.isPresent() && content.equals(latest.get().getContent())
+			&& Objects.equals(summary, latest.get().getSummary())) {
+			return toRevisionResponse(wiki, issue.getId(), latest.get());
+		}
+
+		DebateWikiRevision revision = debateWikiRevisionRepository.save(
+			DebateWikiRevision.builder()
+				.wikiId(wiki.getId())
+				.content(content)
+				.summary(summary)
+				.source(WikiSource.AI)
+				.model(model)
+				.editSummary(editSummary)
+				.build()
+		);
+
+		log.info("위키 AI 초안 업로드: issueId={}, wikiId={}, revisionId={}, model={}",
+			issueId, wiki.getId(), revision.getId(), model);
 		return toRevisionResponse(wiki, issue.getId(), revision);
 	}
 

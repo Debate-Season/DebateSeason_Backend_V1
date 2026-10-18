@@ -60,8 +60,13 @@ public class DebateWikiRevision {
 	@Column(name = "model")
 	private String model;
 
+	// 변경 사유 (리비전 메모). 본문 요약은 summary.
 	@Column(name = "edit_summary")
 	private String editSummary;
+
+	// 본문 요약 — 2~3문장 평문(Markdown 없음). 웹 사이드바 요약 카드·meta description 용. 없으면 NULL.
+	@Column(name = "summary", length = 500)
+	private String summary;
 
 	// ADMIN 편집 시 user_id. AI 생성은 NULL.
 	@Column(name = "created_by")

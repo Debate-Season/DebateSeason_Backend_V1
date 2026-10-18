@@ -49,6 +49,17 @@ public class SitemapService {
 		return new SitemapEntry.Page<>(items, rows.size() > limit ? items.get(items.size() - 1).threadId() : null);
 	}
 
+	@Transactional(readOnly = true)
+	public SitemapEntry.Page<SitemapEntry.Article> articles(Long cursor, Integer size) {
+		int limit = clamp(size);
+		List<Object[]> rows = sitemapRepository.articles(cursor == null ? 0 : cursor, limit + 1);
+
+		List<SitemapEntry.Article> items = rows.stream().limit(limit)
+			.map(row -> new SitemapEntry.Article(((Number)row[0]).longValue(), SitemapRepository.toLocalDateTime(row[1])))
+			.toList();
+		return new SitemapEntry.Page<>(items, rows.size() > limit ? items.get(items.size() - 1).articleId() : null);
+	}
+
 	private static int clamp(Integer size) {
 		if (size == null || size <= 0) {
 			return DEFAULT_SIZE;

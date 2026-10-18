@@ -72,6 +72,22 @@ class SitemapRepository {
 			.getResultList();
 	}
 
+	/** 게시된 토론철판 아티클. 수정 시각 = max(updated_at, date_published). */
+	@SuppressWarnings("unchecked")
+	List<Object[]> articles(long afterId, int limit) {
+		return em.createNativeQuery("""
+				SELECT a.id, GREATEST(COALESCE(a.updated_at, a.date_published), a.date_published)
+				FROM toronchul_article a
+				WHERE a.status = 'PUBLISHED' AND a.edition = 'toronchul'
+				  AND a.id > :afterId
+				ORDER BY a.id
+				LIMIT :limit
+				""")
+			.setParameter("afterId", afterId)
+			.setParameter("limit", limit)
+			.getResultList();
+	}
+
 	/**
 	 * 스레드별 마지막 채팅 시각. 이관 후 메시지는 thread_id 로, 이관 전 레거시 메시지는 chat_room_id 로 방을 가리킨다
 	 * (랭킹 쿼리와 같은 COALESCE 규칙). JOIN/LEAVE 는 활동으로 치지 않는다.

@@ -51,3 +51,9 @@ service-api:
 # 테스트 전용 웹 SSR 키 (운영 값 아님)
 web-ssr:
   keys: "web:test-web-ssr-key-0123456789abcdef012345"
+
+# 테스트는 모두 127.0.0.1 하나에서 호출한다. 비로그인 버킷(분당 100)을 스위트 전체가 나눠 쓰면 429 가 난다.
+# 레이트 리밋 자체는 RateLimitWebServerBucketTest 가 필터를 직접 만들어 검증한다.
+rate-limit:
+  anonymous-requests-per-minute: 100000
+  authenticated-requests-per-minute: 100000

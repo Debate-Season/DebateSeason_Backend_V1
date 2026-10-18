@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 
 import com.debateseason_backend_v1.domain.issue.application.repository.IssueRepository;
 import com.debateseason_backend_v1.domain.issue.mapper.IssueBriefResponse;
+import com.debateseason_backend_v1.domain.issue.model.IssueStatus;
 
 import lombok.RequiredArgsConstructor;
 
@@ -51,6 +52,7 @@ public class IssueManager {
 					//.createdAt(createdAt)
 					.countChatRoom(chatRoomCount)
 					.bookMarks(bookMarksCount)
+					.status(IssueStatus.fromColumn(e[5]))
 					.build()
 					;
 

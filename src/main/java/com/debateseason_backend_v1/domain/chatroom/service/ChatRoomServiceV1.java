@@ -30,6 +30,7 @@ import com.debateseason_backend_v1.domain.chatroom.model.response.etc.Opinion;
 import com.debateseason_backend_v1.domain.issue.infrastructure.entity.IssueEntity;
 import com.debateseason_backend_v1.domain.issue.infrastructure.manager.IssueManager;
 import com.debateseason_backend_v1.domain.issue.mapper.IssueBriefResponse;
+import com.debateseason_backend_v1.domain.issue.model.IssueStatus;
 import com.debateseason_backend_v1.domain.media.application.repository.MediaRepository;
 import com.debateseason_backend_v1.domain.media.infrastructure.entity.manager.MediaManager;
 import com.debateseason_backend_v1.domain.media.model.response.BreakingNewsResponse;
@@ -435,6 +436,7 @@ public class ChatRoomServiceV1 {
 					//.createdAt(createdAt)
 					.countChatRoom(chatRoomCount)
 					.bookMarks(bookMarksCount)
+					.status(IssueStatus.fromColumn(e[5]))
 					.build()
 					;
 

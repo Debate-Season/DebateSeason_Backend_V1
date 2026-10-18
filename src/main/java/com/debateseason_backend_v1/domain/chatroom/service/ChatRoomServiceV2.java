@@ -14,6 +14,7 @@ import com.debateseason_backend_v1.domain.chatroom.model.response.chatroom.RoomC
 import com.debateseason_backend_v1.domain.chatroom.model.response.etc.Opinion;
 import com.debateseason_backend_v1.domain.issue.infrastructure.entity.IssueEntity;
 import com.debateseason_backend_v1.domain.issue.infrastructure.repository.IssueJpaRepository;
+import com.debateseason_backend_v1.domain.issue.model.IssueStatus;
 import com.debateseason_backend_v1.domain.repository.ChatRoomRepository;
 import com.debateseason_backend_v1.domain.repository.UserChatRoomRepository;
 import com.debateseason_backend_v1.domain.repository.entity.ChatRoom;
@@ -43,6 +44,7 @@ public class ChatRoomServiceV2 {
 
 		// 1. 이슈 확인
 		IssueEntity issue = issueJpaRepository.findById(issueId)
+			.filter(found -> found.getStatus() != IssueStatus.ARCHIVED)
 			.orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_ISSUE));
 
 		// 2. 컨테이너 방 (없을 수 있음 — 방이 없던 이슈 등)

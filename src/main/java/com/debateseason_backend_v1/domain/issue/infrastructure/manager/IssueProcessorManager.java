@@ -7,6 +7,7 @@ import java.util.List;
 import org.springframework.stereotype.Component;
 
 import com.debateseason_backend_v1.domain.issue.mapper.IssueBriefResponse;
+import com.debateseason_backend_v1.domain.issue.model.IssueStatus;
 
 // DB -> DTO로 처리
 @Component
@@ -41,6 +42,7 @@ public class IssueProcessorManager {
 					.createdAt(createdAt)
 					.countChatRoom(chatRoomCount)
 					.bookMarks(bookMarkCount)
+					.status(IssueStatus.fromColumn(e[5]))
 					.build()
 					;
 			}

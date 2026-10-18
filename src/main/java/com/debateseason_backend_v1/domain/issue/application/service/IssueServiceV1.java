@@ -103,7 +103,11 @@ public class IssueServiceV1 {
 		}
 
 		//  이슈와 북마크 개수 가져오기
+		// 없는 이슈와 ARCHIVED(롤백된 신설 이슈)는 같은 404 다. 예전에는 없는 id 가 get(0) 에서 500 이 났다.
 		List<Object[]> fetchIssue = issueRepository.findSingleIssueWithBookmarks(issueId);
+		if (fetchIssue.isEmpty() || IssueStatus.fromColumn(fetchIssue.get(0)[3]) == IssueStatus.ARCHIVED) {
+			throw new CustomException(ErrorCode.NOT_FOUND_ISSUE);
+		}
 		Object[] tmp = fetchIssue.get(0);
 		IssueMapper issueMapper = IssueMapper.builder()
 			.title((String)tmp[1])
@@ -156,6 +160,7 @@ public class IssueServiceV1 {
 			.chats(chats)
 			.map(sortedMap)
 			.chatRoomMap(chatRooms)
+			.status(IssueStatus.fromColumn(tmp[3]))
 			.build();
 
 
@@ -283,7 +288,7 @@ public class IssueServiceV1 {
 	public ApiResult<List<IssueBriefResponse>> fetchV1() {
 		// 이슈맵은 최신 이슈가 먼저다. findAll() 은 정렬이 없어 PK 순(= 가장 오래된 이슈 먼저)
 		// 으로 돌아왔다. 웹·앱 모두 클라이언트 정렬을 하지 않고 이 순서를 그대로 렌더링한다.
-		List<IssueEntity> issueEntityList = issueJpaRepository.findAllByOrderByCreatedAtDescIdDesc();
+		List<IssueEntity> issueEntityList = issueJpaRepository.findAllByStatusNotOrderByCreatedAtDescIdDesc(IssueStatus.ARCHIVED);
 
 		// Gson,JSONArray이 없어서 Map으로 반환을 한다.
 		List<IssueBriefResponse> responseList = new ArrayList<>();
@@ -297,6 +302,7 @@ public class IssueServiceV1 {
 				.title(issueEntityList.get(i).getTitle())
 				.createdAt(issueEntityList.get(i).getCreatedAt())
 				.countChatRoom(chatRoomRepository.countByIssueEntity(issueEntityList.get(i)))
+				.status(IssueStatus.fromColumn(issueEntityList.get(i).getStatus()))
 				.build();
 			responseList.add(response);
 		}

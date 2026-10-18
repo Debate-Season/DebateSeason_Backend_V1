@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.debateseason_backend_v1.domain.issue.infrastructure.entity.IssueEntity;
+import com.debateseason_backend_v1.domain.issue.model.IssueStatus;
 
 @Repository
 public interface IssueJpaRepository extends JpaRepository<IssueEntity,Long> {
@@ -19,7 +20,10 @@ public interface IssueJpaRepository extends JpaRepository<IssueEntity,Long> {
 	// created_at 이 초 단위까지 완전히 같다 (23~26 이 2026-06-10T15:01:48,
 	// 21~22 가 2026-06-03T06:50:36). 하필 최신 이슈 4건이 여기 몰려 있어서
 	// 2차 키가 없으면 이슈맵 첫 화면이 매 요청 섞인다. id 로 확정한다.
-	List<IssueEntity> findAllByOrderByCreatedAtDescIdDesc();
+	//
+	// 노출 규칙: ARCHIVED 만 뺀다. ARCHIVED 는 온톨로지 "이슈 신설" 롤백의 결과다.
+	// DORMANT 는 분류일 뿐이라 그대로 나가고, DRAFT 는 쓰는 경로가 없어 건드리지 않는다.
+	List<IssueEntity> findAllByStatusNotOrderByCreatedAtDescIdDesc(IssueStatus excluded);
 
 	// issue방 페이지네이션
 	@Query(value = "SELECT issue_id FROM issue " +
@@ -35,26 +39,27 @@ public interface IssueJpaRepository extends JpaRepository<IssueEntity,Long> {
 	// issueEntity-map에서 이슈 id 가져오기
 	// "전체 선택"을 한 경우 또는 또는 "최초요청"
 	@Query(value = "SELECT issue_id FROM issue  "
-		+ " WHERE issue_id < :page "
+		+ " WHERE issue_id < :page AND status <> 'ARCHIVED' "
 		+ " ORDER BY issue_id DESC "
 		+ " LIMIT 6", nativeQuery = true)
 	List<Long> findTop6IssuesByPage(@Param("page") Long page);
 
 	@Query(value = "SELECT issue_id FROM issue "
+		+ " WHERE status <> 'ARCHIVED' "
 		+ "ORDER BY issue_id DESC "
 		+ "LIMIT 6", nativeQuery = true)
 	List<Long> findTop6Issues();
 
 	// majorCategory만 설정을 한 경우
 	@Query(value = "SELECT issue_id FROM issue "
-		+ " WHERE major_category = :majorCategory "
+		+ " WHERE major_category = :majorCategory AND status <> 'ARCHIVED' "
 		+ "ORDER BY issue_id DESC "
 		+ "LIMIT 6", nativeQuery = true)
 	List<Long> findTop6IssuesByCategory(@Param("majorCategory")String majorCategory);
 
 	// majorCategory + page 설정을 한 경우
 	@Query(value = "SELECT issue_id FROM issue"
-		+ " WHERE major_category = :majorCategory AND issue_id < :page "
+		+ " WHERE major_category = :majorCategory AND issue_id < :page AND status <> 'ARCHIVED' "
 		+ "ORDER BY issue_id DESC "
 		+ "LIMIT 6", nativeQuery = true)
 	List<Long> findTop6IssuesByPageAndCategory(
@@ -63,10 +68,11 @@ public interface IssueJpaRepository extends JpaRepository<IssueEntity,Long> {
 		);
 
 	// 이슈방 불러오기( 채팅방 카운트 + 즐겨찾기 수 카운트)
+	// 열 순서가 곧 계약이다. status 는 기존 인덱스를 밀지 않도록 맨 끝(e[5])에 붙였다.
 	@Query(value = """
-        SELECT ui1.issue_id, ui1.title, ui1.created_at, ui1.chat_room_count, COUNT(ui2.issue_id) AS bookmarks
+        SELECT ui1.issue_id, ui1.title, ui1.created_at, ui1.chat_room_count, COUNT(ui2.issue_id) AS bookmarks, ui1.status
         FROM (
-            SELECT i.issue_id, i.title, i.created_at, COUNT(ch.issue_id) AS chat_room_count
+            SELECT i.issue_id, i.title, i.created_at, COUNT(ch.issue_id) AS chat_room_count, i.status
             FROM issue i
             LEFT JOIN chat_room ch ON i.issue_id = ch.issue_id
             WHERE i.issue_id IN (:issueIds)
@@ -79,9 +85,9 @@ public interface IssueJpaRepository extends JpaRepository<IssueEntity,Long> {
 	List<Object[]> findIssuesWithBookmarks(@Param("issueIds") List<Long> issueIds);
 
 	@Query(value = """
-        SELECT ui1.issue_id, ui1.title, ui1.created_at, ui1.chat_room_count, COUNT(ui2.issue_id) AS bookmarks
+        SELECT ui1.issue_id, ui1.title, ui1.created_at, ui1.chat_room_count, COUNT(ui2.issue_id) AS bookmarks, ui1.status
         FROM (
-            SELECT i.issue_id, i.title, i.created_at, COUNT(ch.issue_id) AS chat_room_count
+            SELECT i.issue_id, i.title, i.created_at, COUNT(ch.issue_id) AS chat_room_count, i.status
             FROM issue i
             LEFT JOIN chat_room ch ON i.issue_id = ch.issue_id
             WHERE i.issue_id IN (:issueIds)
@@ -94,8 +100,8 @@ public interface IssueJpaRepository extends JpaRepository<IssueEntity,Long> {
 	List<Object[]> findIssuesWithBookmarksOrderByCreatedDate(@Param("issueIds") List<Long> issueIds);
 
 	@Query(value = """
-    SELECT i.issue_id, i.title, COUNT(ui.issue_id) AS bookmarks 
-    FROM (SELECT issue_id, title FROM issue WHERE issue_id = :issueId) i
+    SELECT i.issue_id, i.title, COUNT(ui.issue_id) AS bookmarks, i.status
+    FROM (SELECT issue_id, title, status FROM issue WHERE issue_id = :issueId) i
     LEFT JOIN user_issue ui ON i.issue_id = ui.issue_id
     """, nativeQuery = true)
 	List<Object[]> findSingleIssueWithBookmarks(@Param("issueId") Long issueId);
@@ -103,6 +109,7 @@ public interface IssueJpaRepository extends JpaRepository<IssueEntity,Long> {
 	@Query(value = """
     SELECT chroom.issue_id, COUNT(ch.chat_room_id) AS chats
     FROM chat_room chroom
+    INNER JOIN issue iss ON iss.issue_id = chroom.issue_id AND iss.status <> 'ARCHIVED'
     LEFT JOIN (
         SELECT chat_room_id, time_stamp 
         FROM chat 

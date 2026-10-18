@@ -66,6 +66,17 @@ public class JwtAuthenticationErrorHandler {
 		writeErrorResponse(response, HttpStatus.UNAUTHORIZED, errorResponse);
 	}
 
+	// 서비스 API 키가 틀렸거나 폐기됐다. 키 교체 직후 옛 키를 쓰는 파이프라인이 흔한 원인이다.
+	public void handleInvalidServiceKey(HttpServletResponse response, String requestURI) throws IOException {
+
+		log.warn("Invalid service API key. [ API URI: {} ]", requestURI);
+
+		ErrorResponse errorResponse = ErrorResponse.of(
+			ErrorCode.INVALID_SERVICE_API_KEY
+		);
+		writeErrorResponse(response, HttpStatus.UNAUTHORIZED, errorResponse);
+	}
+
 	private void writeErrorResponse(
 		HttpServletResponse response,
 		HttpStatus status,

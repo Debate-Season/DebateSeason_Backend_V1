@@ -26,6 +26,7 @@ public enum ErrorCode implements CodeInterface {
 	EXPIRED_REFRESH_TOKEN(1004, HttpStatus.UNAUTHORIZED, "Refresh Token이 만료되었습니다."),
 	INVALID_ACCESS_TOKEN(1001, HttpStatus.UNAUTHORIZED, "유효하지 않은 Access Token입니다."),
 	INVALID_REFRESH_TOKEN(1003, HttpStatus.UNAUTHORIZED, "유효하지 않은 Refresh Token입니다."),
+	INVALID_SERVICE_API_KEY(1006, HttpStatus.UNAUTHORIZED, "유효하지 않은 서비스 API 키입니다."),
 	ACCESS_DENIED(1005, HttpStatus.FORBIDDEN, "접근 권한이 없습니다."),
 
 	// 2000번대 프로필 관련 에러
@@ -98,8 +99,10 @@ public enum ErrorCode implements CodeInterface {
 	// 400번대
 	NOT_FOUND_ISSUE(404, HttpStatus.NOT_FOUND, "주어진 id값에 해당하는 이슈방을 찾을 수 없습니다."),
 	NOT_FOUND_CHATROOM(404, HttpStatus.NOT_FOUND, "주어진 chatroomId로 해당하는 채팅방을 찾을 수 없습니다."),
+	INVALID_CHATROOM_STATUS_TRANSITION(409, HttpStatus.CONFLICT, "허용되지 않는 토론 주제 상태 변경입니다. 스레드의 OPEN 과 HIDDEN 사이만 바꿀 수 있습니다."),
 	OPINION_REQUIRED_TO_CHAT(403, HttpStatus.FORBIDDEN, "채팅하려면 먼저 찬성 또는 반대를 선택해야 합니다."),
 	NOT_FOUND_ISSUE_WITH_CATEGORY(400, HttpStatus.NOT_FOUND, "해당 category의 이슈방을 찾을 수 없습니다."),
+	INVALID_ISSUE_STATUS_TRANSITION(409, HttpStatus.CONFLICT, "허용되지 않는 이슈 상태 변경입니다. PUBLISHED·DORMANT·ARCHIVED 사이만 바꿀 수 있습니다."),
 
 	// 페이지네이션 오류
 	PAGE_OUT_OF_RANGE(404, HttpStatus.NOT_FOUND, "검색범위를 넘어섰습니다. 내용을 불러올 수 없습니다."),

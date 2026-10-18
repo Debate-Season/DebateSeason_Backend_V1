@@ -46,6 +46,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 			return;
 		}
 
+		// 앞선 ServiceApiKeyFilter 가 이미 인증했다. 서비스 호출자에게는 JWT 가 없다.
+		if (SecurityContextHolder.getContext().getAuthentication() != null) {
+			filterChain.doFilter(request, response);
+			return;
+		}
+
 		// Optional Auth: 헤더가 없으면 익명으로 통과, 헤더가 있으면 토큰 유효성을 강제한다.
 		// "헤더 없음(진짜 비로그인)" 과 "토큰은 있으나 만료/무효" 를 구분해, 후자는 익명으로
 		// 조용히 강등하지 않고 401 을 돌려준다. 그래야 클라이언트의 401 기반 리프레시가 동작한다.

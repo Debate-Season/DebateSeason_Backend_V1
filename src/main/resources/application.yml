@@ -34,6 +34,12 @@ rate-limit:
   anonymous-requests-per-minute: 100
   authenticated-requests-per-minute: 300
 
+# 사람이 아닌 호출자(데이터 파이프라인)용 API 키. 형식: 이름:키,이름:키 (키 32자 이상)
+# 교체할 때는 같은 이름으로 새 키를 덧붙였다가, 옮겨 간 뒤 옛 키를 뺀다.
+# 비어 있으면 서비스 키 경로가 꺼진다 (모든 서비스 키 요청 401).
+service-api:
+  keys: ${SERVICE_API_KEYS:}
+
 social:
   kakao:
     audience: 18af8def9522316a9c30d75d997df2b1,eb083b8a5c3da84061858b88f8ff22d6

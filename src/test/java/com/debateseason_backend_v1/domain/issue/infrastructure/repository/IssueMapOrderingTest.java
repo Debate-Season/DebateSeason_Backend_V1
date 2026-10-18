@@ -12,6 +12,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.ActiveProfiles;
 
 import com.debateseason_backend_v1.domain.issue.infrastructure.entity.IssueEntity;
+import com.debateseason_backend_v1.domain.issue.model.IssueStatus;
 
 import jakarta.persistence.EntityManager;
 
@@ -67,7 +68,7 @@ class IssueMapOrderingTest {
 		persistIssue("가장 최신", base.plusDays(20));
 		em.clear();
 
-		assertThat(issueJpaRepository.findAllByOrderByCreatedAtDescIdDesc())
+		assertThat(issueJpaRepository.findAllByStatusNotOrderByCreatedAtDescIdDesc(IssueStatus.ARCHIVED))
 			.extracting(IssueEntity::getTitle)
 			.containsExactly("가장 최신", "중간", "가장 오래됨");
 	}
@@ -82,7 +83,7 @@ class IssueMapOrderingTest {
 		IssueEntity third = persistIssue("동시 C", sameInstant);
 		em.clear();
 
-		assertThat(issueJpaRepository.findAllByOrderByCreatedAtDescIdDesc())
+		assertThat(issueJpaRepository.findAllByStatusNotOrderByCreatedAtDescIdDesc(IssueStatus.ARCHIVED))
 			.extracting(IssueEntity::getId)
 			.containsExactly(third.getId(), second.getId(), first.getId());
 	}
@@ -96,7 +97,7 @@ class IssueMapOrderingTest {
 		IssueEntity olderButHigherId = persistIssue("오래됨 (id 큼)", base);
 		em.clear();
 
-		List<IssueEntity> result = issueJpaRepository.findAllByOrderByCreatedAtDescIdDesc();
+		List<IssueEntity> result = issueJpaRepository.findAllByStatusNotOrderByCreatedAtDescIdDesc(IssueStatus.ARCHIVED);
 
 		assertThat(olderButHigherId.getId()).isGreaterThan(newer.getId());
 		assertThat(result).extracting(IssueEntity::getTitle)

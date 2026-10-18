@@ -145,7 +145,7 @@ class IssueStatusAuthorizationTest {
 		MvcResult result = perform(MockMvcRequestBuilders.patch("/api/v1/admin/issue/{id}/status", issueId)
 			.header(ServiceApiKeyFilter.HEADER, SERVICE_KEY)
 			.contentType(MediaType.APPLICATION_JSON)
-			.content("{\"status\":\"ARCHIVED\"}"));
+			.content("{\"status\":\"DRAFT\"}"));
 
 		assertThat(result.getResponse().getStatus()).isEqualTo(409);
 	}

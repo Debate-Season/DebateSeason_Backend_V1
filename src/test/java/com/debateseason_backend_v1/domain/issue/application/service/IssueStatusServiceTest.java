@@ -96,15 +96,13 @@ class IssueStatusServiceTest {
 
 	@ParameterizedTest(name = "{0} -> {1} 는 409")
 	@CsvSource({
-		"PUBLISHED, ARCHIVED",
 		"PUBLISHED, DRAFT",
-		"DORMANT, ARCHIVED",
-		"ARCHIVED, PUBLISHED",
-		"ARCHIVED, DORMANT",
+		"DORMANT, DRAFT",
+		"ARCHIVED, DRAFT",
 		"DRAFT, PUBLISHED",
-		"ARCHIVED, ARCHIVED"
+		"DRAFT, ARCHIVED"
 	})
-	@DisplayName("노출 여부가 걸린 DRAFT·ARCHIVED 로는 드나들 수 없다")
+	@DisplayName("쓰는 경로가 없는 DRAFT 로는 드나들 수 없다")
 	void rejectsOtherTransitions(IssueStatus from, IssueStatus to) {
 		IssueEntity issue = issueWith(from);
 
@@ -115,6 +113,23 @@ class IssueStatusServiceTest {
 
 		assertThat(issue.getStatus()).isEqualTo(from);
 		verify(issueStatusHistoryRepository, never()).save(any());
+	}
+
+	@ParameterizedTest(name = "{0} -> {1}")
+	@CsvSource({
+		"PUBLISHED, ARCHIVED",
+		"DORMANT, ARCHIVED",
+		"ARCHIVED, PUBLISHED",
+		"ARCHIVED, DORMANT"
+	})
+	@DisplayName("신설 롤백(→ ARCHIVED)과 그 되돌리기는 허용된다")
+	void archiveRoundTrip(IssueStatus from, IssueStatus to) {
+		IssueEntity issue = issueWith(from);
+
+		issueStatusService.changeStatus(6L, to, "롤백", "123456789", "service:ontology");
+
+		assertThat(issue.getStatus()).isEqualTo(to);
+		verify(issueStatusHistoryRepository).save(any());
 	}
 
 	@Test

@@ -283,6 +283,6 @@ class EventTimelineApiTest {
 		assertThat(mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/admin/issue/{id}/timeline/versions", issueId))
 			.andReturn().getResponse().getStatus()).isEqualTo(401);
 		assertThat(call(MockMvcRequestBuilders.get("/api/v1/admin/issue/{id}/status", issueId), null)
-			.getResponse().getStatus()).isEqualTo(401);
+			.getResponse().getStatus()).isEqualTo(403);
 	}
 }

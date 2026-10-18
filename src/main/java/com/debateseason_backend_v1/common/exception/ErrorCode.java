@@ -27,6 +27,7 @@ public enum ErrorCode implements CodeInterface {
 	INVALID_ACCESS_TOKEN(1001, HttpStatus.UNAUTHORIZED, "유효하지 않은 Access Token입니다."),
 	INVALID_REFRESH_TOKEN(1003, HttpStatus.UNAUTHORIZED, "유효하지 않은 Refresh Token입니다."),
 	INVALID_SERVICE_API_KEY(1006, HttpStatus.UNAUTHORIZED, "유효하지 않은 서비스 API 키입니다."),
+	SERVICE_KEY_ROUTE_NOT_ALLOWED(1007, HttpStatus.FORBIDDEN, "이 서비스 키로 부를 수 없는 경로입니다."),
 	ACCESS_DENIED(1005, HttpStatus.FORBIDDEN, "접근 권한이 없습니다."),
 
 	// 2000번대 프로필 관련 에러

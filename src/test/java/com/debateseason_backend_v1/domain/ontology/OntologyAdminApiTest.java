@@ -254,7 +254,8 @@ class OntologyAdminApiTest {
 		MvcResult wiki = call(MockMvcRequestBuilders.post("/api/v1/admin/wiki/publish"), java.util.Map.of("revisionId", 1));
 		MvcResult legacyCreate = call(MockMvcRequestBuilders.post("/api/v1/issue"), java.util.Map.of("title", "x"));
 
-		assertThat(wiki.getResponse().getStatus()).isEqualTo(401);
+		// 키는 맞지만 열리지 않은 /admin 경로는 403 (401 은 키 문제 전용). /admin 밖의 옛 경로는 헤더를 무시해 401.
+		assertThat(wiki.getResponse().getStatus()).isEqualTo(403);
 		assertThat(legacyCreate.getResponse().getStatus()).isEqualTo(401);
 	}
 }

@@ -87,10 +87,10 @@ class WikiDraftUploadApiTest {
 		assertThat(before.path("content").isNull()).isTrue();
 		assertThat(before.path("summary").isNull()).isTrue();
 
-		// 서비스 키로는 게시할 수 없다
+		// 파이프라인 키(ontology)로는 게시할 수 없다 — 403
 		MvcResult byService = call(MockMvcRequestBuilders.post("/api/v1/admin/wiki/publish")
 			.header(ServiceApiKeyFilter.HEADER, SERVICE_KEY), Map.of("revisionId", revisionId));
-		assertThat(byService.getResponse().getStatus()).isEqualTo(401);
+		assertThat(byService.getResponse().getStatus()).isEqualTo(403);
 		assertThat(debateWikiRepository.findByIssueId(issueId).orElseThrow().getStatus()).isEqualTo(WikiStatus.DRAFT);
 
 		data(call(MockMvcRequestBuilders.post("/api/v1/admin/wiki/publish")
@@ -111,5 +111,18 @@ class WikiDraftUploadApiTest {
 			Map.of("issueId", issueId, "content", "본문"));
 
 		assertThat(result.getResponse().getStatus()).isEqualTo(400);
+	}
+
+	@Test
+	@DisplayName("게시 전용 키(wiki-editor)로는 게시할 수 있다")
+	void wikiEditorKeyCanPublish() throws Exception {
+		Long issueId = issueJpaRepository.save(IssueEntity.builder().title("위키 이슈 3").build()).getId();
+		long revisionId = data(call(MockMvcRequestBuilders.post("/api/v1/admin/wiki/drafts").header(ServiceApiKeyFilter.HEADER, SERVICE_KEY),
+			Map.of("issueId", issueId, "content", "본문 3", "model", "claude-opus-5-5"))).path("revisionId").asLong();
+
+		data(call(MockMvcRequestBuilders.post("/api/v1/admin/wiki/publish")
+			.header(ServiceApiKeyFilter.HEADER, "test-wiki-editor-key-0123456789abcdef0123"), Map.of("revisionId", revisionId)));
+
+		assertThat(debateWikiRepository.findByIssueId(issueId).orElseThrow().getStatus()).isEqualTo(WikiStatus.PUBLISHED);
 	}
 }

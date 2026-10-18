@@ -214,7 +214,7 @@ class WikiGenerationServiceTest {
 			stubRevisionSaveWithId(20L);
 
 			WikiRevisionResponse res =
-				wikiGenerationService.addManualRevision(6L, "수정된 본문", "오탈자 수정", 7L);
+				wikiGenerationService.addManualRevision(6L, "수정된 본문", "오탈자 수정", null, 7L);
 
 			assertThat(res.getRevisionId()).isEqualTo(20L);
 			assertThat(res.getSource()).isEqualTo("ADMIN");

@@ -51,7 +51,9 @@ public class ServiceApiKeyFilter extends OncePerRequestFilter {
 		new Route(HttpMethod.POST, "/api/v1/admin/issue/*/events/merge"),
 		new Route(HttpMethod.POST, "/api/v1/admin/change-log/*/revert"),
 		// 읽기 전용 단건 조회. 파이프라인이 자기 기록과 운영 타임라인을 맞춰 보는 데 쓴다.
-		new Route(HttpMethod.GET, "/api/v1/admin/issue/*/timeline/versions")
+		new Route(HttpMethod.GET, "/api/v1/admin/issue/*/timeline/versions"),
+		// 위키는 DRAFT 업로드만. 게시(/publish)는 사람(ADMIN)만 한다 — 자동 게시 금지.
+		new Route(HttpMethod.POST, "/api/v1/admin/wiki/drafts")
 	);
 
 	private static final AntPathMatcher PATH_MATCHER = new AntPathMatcher();

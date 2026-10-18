@@ -28,7 +28,12 @@ public class WikiResponse {
 	@Schema(description = "본문 (Markdown). 미게시면 null.")
 	private String content;
 
-	@Schema(description = "생성 모델명. AI 생성본일 때만.", example = "claude-opus-4-8")
+	@Schema(description = "본문 요약. 2~3문장 평문(Markdown 없음), 150자 안팎. 미게시이거나 게시본에 요약이 없으면 null.",
+		example = "2024년 12월 3일 윤석열 대통령이 비상계엄을 선포했다가 국회 의결로 6시간 만에 해제한 사건과 그 뒤의 탄핵 정국을 다룬다.",
+		nullable = true)
+	private String summary;
+
+	@Schema(description = "생성 모델명. AI 생성본일 때만.", example = "claude-opus-5-5")
 	private String model;
 
 	@Schema(description = "게시 중인 리비전 id. 미게시면 null.", example = "12")

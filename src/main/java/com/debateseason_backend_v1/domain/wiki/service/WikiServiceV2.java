@@ -65,6 +65,7 @@ public class WikiServiceV2 {
 			.issueTitle(issue.getTitle())
 			.status(wiki.getStatus().name())
 			.content(revision.getContent())
+			.summary(revision.getSummary())
 			.model(revision.getModel())
 			.revisionId(revision.getId())
 			.updatedAt(wiki.getUpdatedAt())

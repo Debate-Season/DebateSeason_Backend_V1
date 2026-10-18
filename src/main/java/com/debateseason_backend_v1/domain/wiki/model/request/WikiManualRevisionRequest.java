@@ -3,6 +3,7 @@ package com.debateseason_backend_v1.domain.wiki.model.request;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 /**
  * ADMIN 수동 편집 리비전 추가 요청 (v1.4.0 Phase 2).
@@ -20,6 +21,10 @@ public record WikiManualRevisionRequest(
 	String content,
 
 	@Schema(description = "변경 요약", example = "타임라인 날짜 오류 수정")
-	String editSummary
+	String editSummary,
+
+	@Schema(description = "본문 요약 (선택). 2~3문장 평문")
+	@Size(max = 500, message = "summary 는 500자 이하입니다.")
+	String summary
 ) {
 }

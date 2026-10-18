@@ -156,6 +156,7 @@ public class IssueServiceV1 {
 			.chats(chats)
 			.map(sortedMap)
 			.chatRoomMap(chatRooms)
+			.status(IssueStatus.fromColumn(tmp[3]))
 			.build();
 
 
@@ -297,6 +298,7 @@ public class IssueServiceV1 {
 				.title(issueEntityList.get(i).getTitle())
 				.createdAt(issueEntityList.get(i).getCreatedAt())
 				.countChatRoom(chatRoomRepository.countByIssueEntity(issueEntityList.get(i)))
+				.status(IssueStatus.fromColumn(issueEntityList.get(i).getStatus()))
 				.build();
 			responseList.add(response);
 		}

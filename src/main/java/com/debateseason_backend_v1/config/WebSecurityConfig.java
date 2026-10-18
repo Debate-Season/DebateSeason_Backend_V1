@@ -17,6 +17,9 @@ import com.debateseason_backend_v1.security.filter.ClientInfoFilter;
 import com.debateseason_backend_v1.security.filter.RateLimitFilter;
 import com.debateseason_backend_v1.security.jwt.JwtAuthenticationFilter;
 import com.debateseason_backend_v1.security.jwt.JwtUtil;
+import com.debateseason_backend_v1.security.service.ServiceApiKeyFilter;
+import com.debateseason_backend_v1.security.service.ServiceApiKeys;
+import com.debateseason_backend_v1.security.service.ServicePrincipal;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;
@@ -31,6 +34,7 @@ public class WebSecurityConfig {
 	private final JwtAccessDeniedHandler accessDeniedHandler;
 	private final SecurityPathMatcher securityPathMatcher;
 	private final ObjectMapper objectMapper;
+	private final ServiceApiKeys serviceApiKeys;
 
 	@Value("${rate-limit.anonymous-requests-per-minute:100}")
 	private long anonymousRateLimit;
@@ -66,6 +70,7 @@ public class WebSecurityConfig {
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
 		JwtAuthenticationFilter jwtFilter = new JwtAuthenticationFilter(jwtUtil, errorHandler, securityPathMatcher);
+		ServiceApiKeyFilter serviceKeyFilter = new ServiceApiKeyFilter(serviceApiKeys, securityPathMatcher, errorHandler);
 		RateLimitFilter rateLimitFilter = new RateLimitFilter(
 			securityPathMatcher, objectMapper, anonymousRateLimit, authenticatedRateLimit
 		);
@@ -78,6 +83,9 @@ public class WebSecurityConfig {
 			// anyRequest() 를 한 번에 authenticated() 로 바꾸면 회귀 범위가 너무 넓어지므로
 			// ADMIN 전용 경로만 먼저 잠그고 나머지는 기존대로 둔다. (PRD v1.3.4 §4.3)
 			.authorizeHttpRequests(auth -> auth
+				// 서비스 키 경로는 /api/v1/admin/** 보다 먼저 와야 한다. 먼저 맞은 규칙이 이긴다.
+				.requestMatchers(HttpMethod.PATCH, ServiceApiKeyFilter.SERVICE_KEY_PATCH_URLS)
+				.hasAnyRole("ADMIN", ServicePrincipal.ROLE)
 				.requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
 				.requestMatchers(HttpMethod.POST, "/api/v1/issue").hasRole("ADMIN")
 				.requestMatchers(HttpMethod.POST, "/api/v1/room").hasRole("ADMIN")
@@ -86,8 +94,9 @@ public class WebSecurityConfig {
 			.exceptionHandling(handler -> handler.accessDeniedHandler(accessDeniedHandler))
 			// addFilterBefore 의 앵커는 Spring Security 가 아는 필터여야 하므로
 			// 커스텀 필터(JwtAuthenticationFilter)를 앵커로 쓸 수 없다.
-			// 같은 앵커에 등록하면 등록 순서가 유지되므로 ClientInfoFilter 를 먼저 등록한다.
+			// 같은 앵커에 등록하면 등록 순서가 유지되므로 ClientInfoFilter -> ServiceApiKeyFilter -> JWT 순이다.
 			.addFilterBefore(new ClientInfoFilter(), UsernamePasswordAuthenticationFilter.class)
+			.addFilterBefore(serviceKeyFilter, UsernamePasswordAuthenticationFilter.class)
 			.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
 			.addFilterAfter(rateLimitFilter, JwtAuthenticationFilter.class)
 			.build();

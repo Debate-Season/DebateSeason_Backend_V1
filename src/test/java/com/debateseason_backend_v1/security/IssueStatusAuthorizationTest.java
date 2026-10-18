@@ -155,6 +155,10 @@ class IssueStatusAuthorizationTest {
 	@Test
 	@DisplayName("허용되지 않는 전이는 409")
 	void invalidTransition() throws Exception {
+		perform(MockMvcRequestBuilders.patch("/api/v1/admin/issue/{id}/status", issueId)
+			.header(ServiceApiKeyFilter.HEADER, SERVICE_KEY).contentType(MediaType.APPLICATION_JSON)
+			.content("{\"status\":\"ARCHIVED\"}"));
+		// ARCHIVED → DRAFT 는 열려 있지 않다
 		MvcResult result = perform(MockMvcRequestBuilders.patch("/api/v1/admin/issue/{id}/status", issueId)
 			.header(ServiceApiKeyFilter.HEADER, SERVICE_KEY)
 			.contentType(MediaType.APPLICATION_JSON)

@@ -41,6 +41,9 @@ public final class ArticlePublicResponse {
 		String name,
 		@Schema(description = "발생일, 모르면 null", example = "2026-10-16", nullable = true)
 		@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd") LocalDate date,
+		@Schema(description = "최초 발생 시각 (Asia/Seoul), 모르면 null", example = "2026-10-16T21:30:00", nullable = true)
+		@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "Asia/Seoul")
+		LocalDateTime occurredAt,
 		@Schema(description = "이 사건이 붙은 노출 중인 이슈") List<Long> issueIds
 	) {
 	}
@@ -58,6 +61,9 @@ public final class ArticlePublicResponse {
 		String name,
 		@Schema(description = "발생일, 모르면 null (날짜 없는 사건은 목록 뒤)", example = "2026-10-16", nullable = true)
 		@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd") LocalDate date,
+		@Schema(description = "최초 발생 시각 (Asia/Seoul), 모르면 null. 같은 날 사건은 이 시각순", example = "2026-10-16T21:30:00", nullable = true)
+		@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "Asia/Seoul")
+		LocalDateTime occurredAt,
 		@Schema(description = "이 사건의 게시 아티클, 최신 발행순") List<ArticleCard> articles
 	) {
 	}

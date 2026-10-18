@@ -28,7 +28,7 @@ public class PartnerNewsController {
 
 	@Operation(summary = "뉴스 목록 검색", description = "keyword 가 있으면 그 키워드가 연관 키워드에 정확히 일치하는 뉴스를 최신순으로, "
 		+ "없으면 인기 뉴스(최근 7일, 조회 수 × 최신성)를 돌려줍니다. sort=latest 면 키워드 없이 최신순. "
-		+ "키워드에 맞는 뉴스가 없으면 빈 목록입니다. 본문은 상세 조회에서 받습니다.")
+		+ "키워드에 맞는 뉴스가 없으면 빈 목록입니다. 항목마다 본문을 포함한 필수 7항목이 모두 들어 있습니다.")
 	@GetMapping
 	public ApiResult<PartnerNewsResponse.Page> list(
 		@Parameter(hidden = true) @RequestAttribute(PartnerApiKeyFilter.PARTNER_ATTRIBUTE) String partner,

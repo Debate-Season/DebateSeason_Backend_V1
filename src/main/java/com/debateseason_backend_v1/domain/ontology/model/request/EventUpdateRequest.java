@@ -1,5 +1,7 @@
 package com.debateseason_backend_v1.domain.ontology.model.request;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -25,6 +27,12 @@ public record EventUpdateRequest(
 	@Schema(description = "중분류", example = "의료")
 	@Size(max = 64)
 	String middle,
+
+	@Schema(description = "발생일. occurredAt 이 있으면 그 날짜로 맞춘다", example = "2026-10-17")
+	LocalDate date,
+
+	@Schema(description = "최초 발생 시각 (KST, ISO)", example = "2026-10-17T21:30:00")
+	LocalDateTime occurredAt,
 
 	@Schema(description = "추가할 근거 기사 media.id. 이미 붙은 것은 무시한다")
 	@Size(max = 100)

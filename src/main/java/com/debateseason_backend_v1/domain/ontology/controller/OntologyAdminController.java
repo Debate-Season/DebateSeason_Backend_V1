@@ -18,6 +18,7 @@ import com.debateseason_backend_v1.domain.ontology.model.request.EventMergeReque
 import com.debateseason_backend_v1.domain.ontology.model.request.EventUnlinkRequest;
 import com.debateseason_backend_v1.domain.ontology.model.request.EventUpdateRequest;
 import com.debateseason_backend_v1.domain.ontology.model.request.IssueCreateRequest;
+import com.debateseason_backend_v1.domain.ontology.model.request.IssueLaunchRequest;
 import com.debateseason_backend_v1.domain.ontology.model.request.IssueRenameRequest;
 import com.debateseason_backend_v1.domain.ontology.model.request.RevertRequest;
 import com.debateseason_backend_v1.domain.ontology.model.request.TopicStatusChangeRequest;
@@ -26,11 +27,13 @@ import com.debateseason_backend_v1.domain.ontology.model.response.DebateTopicCre
 import com.debateseason_backend_v1.domain.ontology.model.response.EventLinkResponse;
 import com.debateseason_backend_v1.domain.ontology.model.response.EventUnlinkResponse;
 import com.debateseason_backend_v1.domain.ontology.model.response.IssueCreateResponse;
+import com.debateseason_backend_v1.domain.ontology.model.response.IssueLaunchResponse;
 import com.debateseason_backend_v1.domain.ontology.model.response.IssueRenameResponse;
 import com.debateseason_backend_v1.domain.ontology.model.response.RevertResponse;
 import com.debateseason_backend_v1.domain.ontology.model.response.TimelineVersionResponse;
 import com.debateseason_backend_v1.domain.ontology.model.response.TopicStatusChangeResponse;
 import com.debateseason_backend_v1.domain.ontology.service.EventTimelineService;
+import com.debateseason_backend_v1.domain.ontology.service.IssueLaunchService;
 import com.debateseason_backend_v1.domain.ontology.service.OntologyAdminService;
 import com.debateseason_backend_v1.security.service.Actor;
 
@@ -61,6 +64,7 @@ public class OntologyAdminController {
 
 	private final OntologyAdminService ontologyAdminService;
 	private final EventTimelineService eventTimelineService;
+	private final IssueLaunchService issueLaunchService;
 
 	@Operation(summary = "이슈 신설", description = "PUBLISHED 이슈와 컨테이너 방을 함께 만듭니다. 같은 proposalId 재호출은 처음 결과(created=false).")
 	@PostMapping("/api/v1/admin/issue")
@@ -149,5 +153,15 @@ public class OntologyAdminController {
 	public ApiResult<List<TimelineVersionResponse>> timelineVersions(@PathVariable Long issueId) {
 
 		return ApiResult.success("타임라인 버전을 불러왔습니다.", eventTimelineService.versions(issueId));
+	}
+
+	@Operation(summary = "이슈 공개 (launch)", description = "공개 전(DRAFT) 이슈를 위키·사건 타임라인과 함께 공개합니다. "
+		+ "위키 리비전 게시 + 이슈 PUBLISHED 를 한 트랜잭션으로. 조건(이슈 DRAFT·사건 1건 이상·이 이슈의 위키 리비전)이 안 맞으면 "
+		+ "409 ISSUE_NOT_LAUNCHABLE (메시지에 모자란 것). 롤백은 PATCH /admin/issue/{id}/status DRAFT.")
+	@PostMapping("/api/v1/admin/issue/{issueId}/launch")
+	public ApiResult<IssueLaunchResponse> launch(
+		@PathVariable Long issueId, @Valid @RequestBody IssueLaunchRequest request, Authentication authentication) {
+
+		return ApiResult.success("이슈를 공개했습니다.", issueLaunchService.launch(issueId, request, Actor.of(authentication)));
 	}
 }

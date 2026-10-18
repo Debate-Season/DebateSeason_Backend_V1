@@ -3,6 +3,7 @@ package com.debateseason_backend_v1.domain.partner.service;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -119,7 +120,8 @@ public class PartnerNewsService {
 
 	// 조회 수가 같으면 최신이 위. 하루 지나면 점수가 절반쯤 된다 (HN 식 감쇠, 공식은 D8 초안).
 	static double popularity(long views, LocalDateTime publishedAt, LocalDateTime now) {
-		double hours = Math.max(0, Duration.between(publishedAt, now).toMinutes() / 60.0);
+		ZoneId seoul = ZoneId.of("Asia/Seoul");
+		double hours = Math.max(0, Duration.between(publishedAt.atZone(seoul), now.atZone(seoul)).toMinutes() / 60.0);
 		return (views + 1) / Math.pow(hours + 2, 1.2);
 	}
 
@@ -182,7 +184,7 @@ public class PartnerNewsService {
 
 	private List<PartnerNewsResponse.Item> items(String partner, List<Content> contents) {
 		Map<Long, Long> views = counters.views(partner, contents.stream().map(Content::id).toList());
-		return contents.stream().map(c -> new PartnerNewsResponse.Item(c.id(), c.title(), c.summary(), c.category(),
+		return contents.stream().map(c -> new PartnerNewsResponse.Item(c.id(), c.title(), c.body(), c.summary(), c.category(),
 			c.keywords(), c.publishedAt(), views.getOrDefault(c.id(), 0L), c.imageUrl(), true)).toList();
 	}
 

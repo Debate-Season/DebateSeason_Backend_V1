@@ -14,7 +14,7 @@ public final class WikiPrompts {
 	}
 
 	/** 기본 생성 모델. 실 구현체가 다른 모델을 쓰면 {@link GeneratedWiki#model()} 에 실제값을 넣는다. */
-	public static final String DEFAULT_MODEL = "claude-opus-4-8";
+	public static final String DEFAULT_MODEL = "claude-opus-5-5";
 
 	/**
 	 * 중립·균형 가드레일 시스템 프롬프트. 정치·시사 이슈를 한쪽으로 기울지 않게 서술하도록 강제한다.

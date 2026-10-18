@@ -29,7 +29,7 @@ public class WikiRevisionResponse {
 	@Schema(description = "리비전 생성 주체", example = "AI")
 	private String source;
 
-	@Schema(description = "생성 모델명 (AI 리비전만)", example = "claude-opus-4-8")
+	@Schema(description = "생성 모델명 (AI 리비전만)", example = "claude-opus-5-5")
 	private String model;
 
 	@Schema(description = "본문 미리보기 (앞부분)")

@@ -57,3 +57,8 @@ web-ssr:
 rate-limit:
   anonymous-requests-per-minute: 100000
   authenticated-requests-per-minute: 100000
+
+# 테스트 전용 문서 계정 (team / test-team-pw, tmoney / test-partner-pw)
+docs:
+  auth:
+    users: "team:$2y$04$2RTNA/WiaAXLDzGFa/tEO.uob.DKJYwKKGTr/KfrGjK5QmWUQNF4C,tmoney:$2y$04$kgraQ2iuXHbFXFbbkztBeeviYCy501qZSA2AuC.Uw2FkJJVM8nbBu"

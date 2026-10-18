@@ -28,7 +28,7 @@ public record EventLinkRequest(
 	String approver
 ) {
 
-	@Schema(description = "사건 1건")
+	@Schema(name = "EventLinkItem", description = "사건 1건")
 	public record Event(
 
 		@Schema(description = "사건명", example = "복지부, 2027학년도 의대 정원 발표")

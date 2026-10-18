@@ -46,6 +46,12 @@ service-api:
 web-ssr:
   keys: ${WEB_SSR_KEYS:}
 
+# API 문서(Swagger) 로그인 계정. 형식: 이름:bcrypt해시,... (team = 전체, 그 외 = 고객사 그룹만)
+# 비어 있으면 문서는 아무도 못 연다 (fail closed). 해시에 $ 가 있어 .env 에는 작은따옴표로 감싼다.
+docs:
+  auth:
+    users: ${DOCS_USERS:}
+
 social:
   kakao:
     audience: 18af8def9522316a9c30d75d997df2b1,eb083b8a5c3da84061858b88f8ff22d6

@@ -67,3 +67,8 @@ stomp-connect-url: "/ws-stomp"
 # 유튜브 라이브 api key ( dummy ) -> 할당량 아껴야 함.
 youtube_live-api-key : "dummy"
 
+
+# 로컬 개발용 Swagger 로그인: team / local (운영 계정 아님)
+docs:
+  auth:
+    users: "team:$2y$10$C4T/4da0Nj/t.dxLoju1..x7ukFJ9EXWfC700.2BEqXsFKYx9nq6."

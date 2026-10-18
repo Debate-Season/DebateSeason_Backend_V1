@@ -14,7 +14,7 @@ public final class ArticlePublicResponse {
 	private ArticlePublicResponse() {
 	}
 
-	@Schema(description = "토론철 아티클 단건")
+	@Schema(name = "ArticleDetail", description = "토론철 아티클 단건")
 	public record Detail(
 		@Schema(description = "아티클 ID (웹 URL 은 이 값의 소문자 base36)", example = "12") Long articleId,
 		@Schema(example = "코스피, 8,000선 돌파 뒤 하루 만에 4% 급락") String headline,
@@ -35,7 +35,7 @@ public final class ArticlePublicResponse {
 	) {
 	}
 
-	@Schema(description = "아티클의 관련 사건")
+	@Schema(name = "ArticleEvent", description = "아티클의 관련 사건")
 	public record Event(
 		Long eventId,
 		String name,
@@ -45,23 +45,24 @@ public final class ArticlePublicResponse {
 	) {
 	}
 
-	@Schema(description = "이슈 사건 타임라인 페이지")
+	@Schema(name = "IssueEventTimeline", description = "이슈 사건 타임라인 페이지")
 	public record Timeline(
 		@Schema(description = "발생일 내림차순 (날짜 없는 사건은 뒤)") List<TimelineEvent> items,
 		@Schema(description = "다음 페이지 cursor. 마지막이면 null", nullable = true) String nextCursor
 	) {
 	}
 
-	@Schema(description = "타임라인의 사건 1개")
+	@Schema(name = "IssueTimelineEvent", description = "타임라인의 사건 1개")
 	public record TimelineEvent(
 		Long eventId,
 		String name,
+		@Schema(description = "발생일, 모르면 null (날짜 없는 사건은 목록 뒤)", example = "2026-10-16", nullable = true)
 		@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd") LocalDate date,
 		@Schema(description = "이 사건의 게시 아티클, 최신 발행순") List<ArticleCard> articles
 	) {
 	}
 
-	@Schema(description = "아티클 카드")
+	@Schema(name = "ArticleCard", description = "아티클 카드")
 	public record ArticleCard(
 		Long articleId,
 		String headline,

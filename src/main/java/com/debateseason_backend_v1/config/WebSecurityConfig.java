@@ -58,7 +58,9 @@ public class WebSecurityConfig {
 		"/api/v2/users/login",
 		"/api/v1/auth/reissue",
 		"/api/v1/app/**",
-		"/api/v1/sitemap/**"
+		"/api/v1/sitemap/**",
+		"/api/v1/article",
+		"/api/v1/issue/events"
 	};
 
 	public static final String[] OPTIONAL_AUTH_URLS = {

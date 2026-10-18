@@ -44,4 +44,15 @@ public class SitemapController {
 
 		return ApiResult.success("토론 주제 사이트맵 피드", sitemapService.threads(cursor, size));
 	}
+
+	@Operation(summary = "토론철 아티클 사이트맵 피드",
+		description = "게시된 토론철판 아티클만, articleId 오름차순. updatedAt 은 마지막 수정 시각(없으면 게시 시각). "
+			+ "다음 페이지는 nextCursor 로, null 이면 끝.")
+	@GetMapping("/articles")
+	public ApiResult<SitemapEntry.Page<SitemapEntry.Article>> articles(
+		@Parameter(description = "이전 응답의 nextCursor. 첫 페이지는 비움") @RequestParam(required = false) Long cursor,
+		@Parameter(description = "페이지 크기 (기본 1000, 최대 5000)") @RequestParam(required = false) Integer size) {
+
+		return ApiResult.success("아티클 사이트맵 피드", sitemapService.articles(cursor, size));
+	}
 }

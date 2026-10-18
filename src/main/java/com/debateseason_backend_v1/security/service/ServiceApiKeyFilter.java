@@ -72,7 +72,12 @@ public class ServiceApiKeyFilter extends OncePerRequestFilter {
 		new Route(HttpMethod.GET, "/api/v1/admin/issue/*/timeline/versions"),
 		// 위키 DRAFT 업로드는 모든 서비스 키. 게시는 wiki-editor 키(사람 승인 대행)와 ADMIN JWT 만.
 		new Route(HttpMethod.POST, "/api/v1/admin/wiki/drafts"),
-		new Route(HttpMethod.POST, "/api/v1/admin/wiki/publish", Set.of(WIKI_EDITOR))
+		new Route(HttpMethod.POST, "/api/v1/admin/wiki/publish", Set.of(WIKI_EDITOR)),
+		// 토론철 아티클 적재·발행 (데이터 레포가 데스킹을 마친 기사만 보낸다)
+		new Route(HttpMethod.POST, "/api/v1/admin/article"),
+		new Route(HttpMethod.PATCH, "/api/v1/admin/article/*/status"),
+		new Route(HttpMethod.PUT, "/api/v1/admin/article/*/links"),
+		new Route(HttpMethod.GET, "/api/v1/admin/article")
 	);
 
 	private static final String ADMIN_PATHS = "/api/v1/admin/**";

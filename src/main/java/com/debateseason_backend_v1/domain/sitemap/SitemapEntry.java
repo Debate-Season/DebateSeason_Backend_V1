@@ -38,6 +38,18 @@ public final class SitemapEntry {
 	) {
 	}
 
+	@Schema(description = "토론철 아티클 사이트맵 항목")
+	public record Article(
+
+		@Schema(description = "아티클 ID", example = "12")
+		Long articleId,
+
+		@Schema(description = "마지막 수정 시각 (Asia/Seoul). 게시 시각 이후 수정이 없으면 게시 시각", example = "2026-10-19T09:00:00")
+		@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "Asia/Seoul")
+		LocalDateTime updatedAt
+	) {
+	}
+
 	@Schema(description = "커서 페이지")
 	public record Page<T>(
 

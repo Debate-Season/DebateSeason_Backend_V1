@@ -41,12 +41,36 @@ public class ChatRoomResponse{
 	//private HightlightResponse highlight;
 
 	// CreateDate 반환
-	@Schema(description = "반대 수",example = "2024-12-03T08:51:57")
+	@Schema(description = "생성 시각 (Asia/Seoul)",example = "2024-12-03T08:51:57")
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "Asia/Seoul")
 	private LocalDateTime createdAt;
 
 	@Schema(description = "투표", example = "AGREE")
 	private String opinion;
+
+	// ── 상위 관계 (웹 /debate/{id} 가 스레드 id 하나로 이슈·컨테이너를 찾는다) ──
+
+	@Schema(description = "소속 이슈 ID", example = "6")
+	private Long issueId;
+
+	@Schema(description = "소속 이슈명 (브레드크럼용)", example = "의대 정원 확대")
+	private String issueTitle;
+
+	@Schema(description = "방 종류. CONTAINER = 이슈당 1개인 채팅 버킷, THREAD = 토론 주제. 레거시(NULL) 행은 THREAD 로 내려간다",
+		example = "THREAD", allowableValues = {"CONTAINER", "THREAD"})
+	private String roomType;
+
+	@Schema(description = "소속 컨테이너 방 ID. 채팅 조회 GET /api/v1/chat/rooms/{roomId}/messages 의 roomId. "
+		+ "CONTAINER 자신·이관 전 레거시 방은 null", example = "155", nullable = true)
+	private Long containerRoomId;
+
+	@Schema(description = "방 상태. HIDDEN·DELETED 는 노출하지 않는다", example = "OPEN",
+		allowableValues = {"OPEN", "CLOSED", "HIDDEN", "DELETED"})
+	private String status;
+
+	@Schema(description = "마지막 수정 시각 (Asia/Seoul). 수정 기록이 없는 행은 createdAt 과 같다", example = "2024-12-03T08:51:57")
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "Asia/Seoul")
+	private LocalDateTime updatedAt;
 
 	@Override
 	public String toString() {

@@ -14,6 +14,7 @@ import com.debateseason_backend_v1.common.exception.ErrorCode;
 import com.debateseason_backend_v1.common.response.ApiResult;
 
 import com.debateseason_backend_v1.domain.chatroom.domain.ChatRoomStatus;
+import com.debateseason_backend_v1.domain.chatroom.domain.ChatRoomType;
 import com.debateseason_backend_v1.domain.chatroom.domain.TimeProcessor;
 import com.debateseason_backend_v1.domain.chatroom.infrastructure.entity.manager.ChatRoomManager;
 import com.debateseason_backend_v1.domain.chatroom.infrastructure.entity.processor.ChatRoomProcessor;
@@ -316,6 +317,13 @@ public class ChatRoomServiceV1 {
 			.agree(countAgree)
 			.disagree(countDisagree)
 			.opinion(opinion)
+			.issueId(chatRoom.getIssueEntity().getId())
+			.issueTitle(chatRoom.getIssueEntity().getTitle())
+			// 레거시 행은 room_type 이 NULL 이고 THREAD 로 해석한다 (ChatRoomType 주석)
+			.roomType(chatRoom.getRoomType() == null ? ChatRoomType.THREAD.name() : chatRoom.getRoomType().name())
+			.containerRoomId(chatRoom.getContainerRoomId())
+			.status(chatRoom.getStatus().name())
+			.updatedAt(chatRoom.getUpdatedAt() != null ? chatRoom.getUpdatedAt() : chatRoom.getCreatedAt())
 			.build();
 
 		// 3. 관련 채팅들 불러오기가 추가될지도? -> 향후 고려

@@ -8,13 +8,15 @@ import java.util.Map;
 
 import org.springframework.stereotype.Repository;
 
+import com.debateseason_backend_v1.domain.issue.model.IssueVisibility;
+
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 
 /**
  * 사이트맵 피드 쿼리. 노출 규칙은 앱 목록과 같다:
  * <ul>
- *   <li>이슈: PUBLISHED·DORMANT (DRAFT·ARCHIVED 제외)</li>
+ *   <li>이슈: {@link IssueVisibility} — PUBLISHED·DORMANT 이고 위키 게시본이 있는 것</li>
  *   <li>토론 주제: 스레드(레거시 NULL 포함), OPEN·CLOSED, 소속 이슈가 노출 대상</li>
  * </ul>
  * 이 규칙이 목록 쿼리와 어긋나면 사이트맵이 앱에 없는 페이지를 내보내게 된다. 함께 고친다.
@@ -23,7 +25,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 class SitemapRepository {
 
-	private static final String VISIBLE_ISSUE = "i.status IN ('PUBLISHED','DORMANT')";
+	private static final String VISIBLE_ISSUE = IssueVisibility.LISTED_I;
 	private static final String VISIBLE_THREAD =
 		"(r.room_type IS NULL OR r.room_type = 'THREAD') AND r.status IN ('OPEN','CLOSED')";
 

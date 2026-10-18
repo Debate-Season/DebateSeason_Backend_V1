@@ -26,6 +26,7 @@ import com.debateseason_backend_v1.domain.ontology.repository.IssueNewsEventRepo
 import com.debateseason_backend_v1.domain.ontology.repository.NewsEventRepository;
 import com.debateseason_backend_v1.domain.repository.ChatRoomRepository;
 import com.debateseason_backend_v1.domain.repository.entity.ChatRoom;
+import com.debateseason_backend_v1.fixtures.wiki.WikiFixture;
 import com.debateseason_backend_v1.security.service.ServiceApiKeyFilter;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -44,6 +45,8 @@ class OntologyAdminApiTest {
 
 	@Autowired
 	private MockMvc mockMvc;
+	@Autowired
+	private org.springframework.jdbc.core.JdbcTemplate jdbc;
 	@Autowired
 	private ObjectMapper objectMapper;
 	@Autowired
@@ -118,6 +121,7 @@ class OntologyAdminApiTest {
 		@DisplayName("롤백(ARCHIVED)하면 상세는 404, 이슈맵에서도 빠진다. 다시 PUBLISHED 로 되살릴 수 있다")
 		void rollbackHidesIssue() throws Exception {
 			long issueId = createIssue(proposal(), "롤백될 이슈").path("issueId").asLong();
+			WikiFixture.publish(jdbc, issueId); // 목록에 나오려면 위키 게시본이 있어야 한다
 
 			data(call(MockMvcRequestBuilders.patch("/api/v1/admin/issue/{id}/status", issueId),
 				java.util.Map.of("status", "ARCHIVED", "reason", "❌ 롤백", "approver", "123456789")));
@@ -126,7 +130,7 @@ class OntologyAdminApiTest {
 				.andReturn().getResponse().getStatus();
 			assertThat(detail).isEqualTo(404);
 			assertThat(issueJpaRepository.findTop6Issues()).doesNotContain(issueId);
-			assertThat(issueJpaRepository.findAllByStatusNotOrderByCreatedAtDescIdDesc(IssueStatus.ARCHIVED))
+			assertThat(issueJpaRepository.findListedOrderByCreatedAtDescIdDesc())
 				.extracting(issue -> issue.getId()).doesNotContain(issueId);
 
 			data(call(MockMvcRequestBuilders.patch("/api/v1/admin/issue/{id}/status", issueId),

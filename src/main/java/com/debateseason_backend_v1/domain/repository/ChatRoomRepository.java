@@ -12,6 +12,7 @@ import org.springframework.stereotype.Repository;
 import com.debateseason_backend_v1.domain.chatroom.domain.ChatRoomType;
 import com.debateseason_backend_v1.domain.repository.entity.ChatRoom;
 import com.debateseason_backend_v1.domain.issue.infrastructure.entity.IssueEntity;
+import com.debateseason_backend_v1.domain.issue.model.IssueVisibility;
 
 @Repository
 public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
@@ -94,7 +95,7 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
     ) tmp ON tmp.rid = cr.chat_room_id
     WHERE (cr.room_type IS NULL OR cr.room_type <> 'CONTAINER')
       AND cr.status NOT IN ('PREPARING','HIDDEN','DELETED')
-      AND iss.status <> 'ARCHIVED'
+      AND""" + IssueVisibility.LISTED_ISS + """
     ORDER BY
         CASE WHEN COALESCE(tmp.c30m, 0) > 0 THEN 0
              WHEN COALESCE(tmp.c8h,  0) > 0 THEN 1
@@ -136,7 +137,7 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
             tmp2.chats,
             cr.created_at
         FROM chat_room cr
-        INNER JOIN issue iss ON iss.issue_id = cr.issue_id AND iss.status <> 'ARCHIVED'
+        INNER JOIN issue iss ON iss.issue_id = cr.issue_id AND""" + IssueVisibility.LISTED_ISS + """
         INNER JOIN (
             -- v1.3.5: 이관 전/후 모두 주제 단위 랭킹 (post: thread_id / pre: chat_room_id).
             -- 컨테이너는 votes(user_chat_room)가 없어 아래 INNER JOIN 에서 자연 제외된다.

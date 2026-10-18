@@ -32,6 +32,7 @@ jwt:
 rate-limit:
   anonymous-requests-per-minute: 100
   authenticated-requests-per-minute: 300
+  web-server-requests-per-minute: 3000
 
 logging:
   level:

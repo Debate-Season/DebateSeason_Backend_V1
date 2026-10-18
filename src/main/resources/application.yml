@@ -33,12 +33,18 @@ chat:
 rate-limit:
   anonymous-requests-per-minute: 100
   authenticated-requests-per-minute: 300
+  web-server-requests-per-minute: 3000
 
 # 사람이 아닌 호출자(데이터 파이프라인)용 API 키. 형식: 이름:키,이름:키 (키 32자 이상)
 # 교체할 때는 같은 이름으로 새 키를 덧붙였다가, 옮겨 간 뒤 옛 키를 뺀다.
 # 비어 있으면 서비스 키 경로가 꺼진다 (모든 서비스 키 요청 401).
 service-api:
   keys: ${SERVICE_API_KEYS:}
+
+# 웹 서버(Vercel SSR)용 키. 레이트 리밋 버킷만 바꾼다 (인증·인가 무관). SERVICE_API_KEYS 와 절대 섞지 않는다.
+# 형식: web:키 (32자 이상). 비어 있으면 웹 SSR 도 비로그인 IP 버킷을 쓴다.
+web-ssr:
+  keys: ${WEB_SSR_KEYS:}
 
 social:
   kakao:

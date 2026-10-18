@@ -20,6 +20,7 @@ import com.debateseason_backend_v1.security.jwt.JwtUtil;
 import com.debateseason_backend_v1.security.service.ServiceApiKeyFilter;
 import com.debateseason_backend_v1.security.service.ServiceApiKeys;
 import com.debateseason_backend_v1.security.service.ServicePrincipal;
+import com.debateseason_backend_v1.security.service.WebServerKeys;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;
@@ -35,12 +36,16 @@ public class WebSecurityConfig {
 	private final SecurityPathMatcher securityPathMatcher;
 	private final ObjectMapper objectMapper;
 	private final ServiceApiKeys serviceApiKeys;
+	private final WebServerKeys webServerKeys;
 
 	@Value("${rate-limit.anonymous-requests-per-minute:100}")
 	private long anonymousRateLimit;
 
 	@Value("${rate-limit.authenticated-requests-per-minute:300}")
 	private long authenticatedRateLimit;
+
+	@Value("${rate-limit.web-server-requests-per-minute:3000}")
+	private long webServerRateLimit;
 
 	public static final String[] PUBLIC_URLS = {
 		"/swagger-ui/**",
@@ -73,7 +78,8 @@ public class WebSecurityConfig {
 		JwtAuthenticationFilter jwtFilter = new JwtAuthenticationFilter(jwtUtil, errorHandler, securityPathMatcher);
 		ServiceApiKeyFilter serviceKeyFilter = new ServiceApiKeyFilter(serviceApiKeys, securityPathMatcher, errorHandler);
 		RateLimitFilter rateLimitFilter = new RateLimitFilter(
-			securityPathMatcher, objectMapper, anonymousRateLimit, authenticatedRateLimit
+			securityPathMatcher, objectMapper, anonymousRateLimit, authenticatedRateLimit,
+			webServerKeys, webServerRateLimit
 		);
 
 		return http

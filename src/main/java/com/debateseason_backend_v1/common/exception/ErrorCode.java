@@ -108,7 +108,7 @@ public enum ErrorCode implements CodeInterface {
 	INVALID_ARTICLE_STATUS_TRANSITION(409, HttpStatus.CONFLICT, "허용되지 않는 아티클 상태 변경입니다. REVIEW→PUBLISHED·HIDDEN, PUBLISHED↔HIDDEN 만 됩니다."),
 	NOT_FOUND_CHANGE_LOG(404, HttpStatus.NOT_FOUND, "변경 이력을 찾을 수 없습니다."),
 	INVALID_EVENT_MERGE(409, HttpStatus.CONFLICT, "병합할 수 없는 사건입니다. 두 사건이 모두 이 이슈에 연결돼 있고 서로 달라야 하며, 이미 병합된 사건은 안 됩니다."),
-	REVERT_NOT_SUPPORTED(409, HttpStatus.CONFLICT, "되돌릴 수 없는 변경입니다. 사건 수정·병합만 되돌릴 수 있습니다."),
+	REVERT_NOT_SUPPORTED(409, HttpStatus.CONFLICT, "되돌릴 수 없는 변경입니다. 사건 수정·병합, 아티클 수정만 되돌릴 수 있습니다."),
 	REVERT_CONFLICT(409, HttpStatus.CONFLICT, "그 뒤에 같은 대상이 또 바뀌어 되돌릴 수 없습니다. 최근 변경부터 되돌려 주세요."),
 	INVALID_CHATROOM_STATUS_TRANSITION(409, HttpStatus.CONFLICT, "허용되지 않는 토론 주제 상태 변경입니다. 스레드의 PREPARING·OPEN·CLOSED·HIDDEN 사이만 바꿀 수 있습니다."),
 	OPINION_REQUIRED_TO_CHAT(403, HttpStatus.FORBIDDEN, "채팅하려면 먼저 찬성 또는 반대를 선택해야 합니다."),

@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.debateseason_backend_v1.common.response.ApiResult;
+import com.debateseason_backend_v1.domain.article.model.request.ArticleEditRequest;
 import com.debateseason_backend_v1.domain.article.model.request.ArticleLinksRequest;
 import com.debateseason_backend_v1.domain.article.model.request.ArticleStatusChangeRequest;
 import com.debateseason_backend_v1.domain.article.model.request.ArticleUpsertRequest;
@@ -65,5 +66,15 @@ public class ArticleAdminController {
 	@GetMapping
 	public ApiResult<ArticleAdminResponse.Summary> findByKey(@RequestParam String articleKey) {
 		return ApiResult.success("아티클", articleAdminService.findByKey(articleKey));
+	}
+
+	@Operation(summary = "아티클 수정", description = "보낸 필드(headline·summary·body·keywords·articleSection)만 바꿉니다. 게시된 기사도 됩니다. "
+		+ "수정 전 내용은 리비전으로 남고, 응답의 changeLogId 로 POST /admin/change-log/{id}/revert 하면 되돌립니다. "
+		+ "keywords 를 보내면 키워드 색인도 갱신합니다. 고객사 응답 캐시는 바로 비웁니다. proposalId 로 멱등.")
+	@PatchMapping("/{articleId}")
+	public ApiResult<ArticleAdminResponse.Edit> edit(@PathVariable Long articleId,
+		@Valid @RequestBody ArticleEditRequest request, Authentication authentication) {
+
+		return ApiResult.success("아티클을 수정했습니다.", articleAdminService.edit(articleId, request, Actor.of(authentication)));
 	}
 }

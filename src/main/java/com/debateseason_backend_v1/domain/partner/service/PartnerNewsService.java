@@ -11,7 +11,6 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -50,16 +49,16 @@ public class PartnerNewsService {
 	private final ChangeLogWriter json;
 
 	private final TtlCache<String, List<Long>> listCache;
-	private final TtlCache<Long, Content> contentCache;
+	private final TtlCache<Long, Object> contentCache;
 
 	public PartnerNewsService(PartnerNewsQuery query, ToronchulArticleRepository articleRepository, PartnerCounters counters,
-		ChangeLogWriter json, @Value("${partner.cache.ttl-millis:60000}") long cacheMillis) {
+		ChangeLogWriter json, PartnerNewsCache cache) {
 		this.query = query;
 		this.articleRepository = articleRepository;
 		this.counters = counters;
 		this.json = json;
-		this.listCache = new TtlCache<>(cacheMillis, 10_000);
-		this.contentCache = new TtlCache<>(cacheMillis, 10_000);
+		this.listCache = cache.lists;
+		this.contentCache = cache.contents;
 	}
 
 	/** 캐시에 두는 기사 내용 (고객사와 무관한 부분). */
@@ -109,7 +108,7 @@ public class PartnerNewsService {
 	public PartnerNewsResponse.Detail detail(String partner, Long newsId) {
 		String edition = editionOf(partner);
 		counters.recordCall(partner, LocalDate.now(), "news.detail");
-		Content c = contentCache.get(newsId, () -> load(newsId));
+		Content c = (Content)contentCache.get(newsId, () -> load(newsId));
 		if (c == null || !edition.equals(c.edition())) {
 			throw new CustomException(ErrorCode.NOT_FOUND_NEWS);
 		}
@@ -137,7 +136,7 @@ public class PartnerNewsService {
 		List<Long> missing = new ArrayList<>();
 		Map<Long, Content> found = new java.util.HashMap<>();
 		for (Long id : ids) {
-			Content cached = contentCache.peek(id);
+			Content cached = (Content)contentCache.peek(id);
 			if (cached != null) {
 				found.put(id, cached);
 			} else {

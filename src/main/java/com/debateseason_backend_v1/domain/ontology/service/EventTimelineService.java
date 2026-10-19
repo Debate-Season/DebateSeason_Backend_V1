@@ -37,6 +37,7 @@ import com.debateseason_backend_v1.domain.ontology.repository.IssueNewsEventRepo
 import com.debateseason_backend_v1.domain.ontology.repository.IssueTimelineVersionRepository;
 import com.debateseason_backend_v1.domain.ontology.repository.NewsEventMediaRepository;
 import com.debateseason_backend_v1.domain.ontology.repository.NewsEventRepository;
+import com.debateseason_backend_v1.domain.article.service.ArticleAdminService;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import lombok.RequiredArgsConstructor;
@@ -59,7 +60,7 @@ public class EventTimelineService {
 	private static final String ISSUE = "ISSUE";
 	private static final String NEWS_EVENT = "NEWS_EVENT";
 	private static final String CHANGE_LOG = "CHANGE_LOG";
-	private static final Set<Action> REVERTIBLE = Set.of(Action.EVENT_UPDATE, Action.EVENT_MERGE);
+	private static final Set<Action> REVERTIBLE = Set.of(Action.EVENT_UPDATE, Action.EVENT_MERGE, Action.ARTICLE_EDIT);
 
 	private final IssueJpaRepository issueJpaRepository;
 	private final MediaJpaRepository mediaJpaRepository;
@@ -69,6 +70,7 @@ public class EventTimelineService {
 	private final IssueTimelineVersionRepository versionRepository;
 	private final AdminChangeLogRepository changeLogRepository;
 	private final ChangeLogWriter changeLog;
+	private final ArticleAdminService articleAdminService;
 
 	// ── 사건 수정 ────────────────────────────────────────────────
 
@@ -172,9 +174,15 @@ public class EventTimelineService {
 
 		JsonNode before = changeLog.read(target.getBeforeValue());
 		JsonNode after = changeLog.read(target.getAfterValue());
-		List<Long> affectedIssues = target.getAction() == Action.EVENT_UPDATE
-			? revertEventUpdate(target.getEntityId(), before, after)
-			: revertEventMerge(target.getEntityId(), after);
+		List<Long> affectedIssues = switch (target.getAction()) {
+			case EVENT_UPDATE -> revertEventUpdate(target.getEntityId(), before, after);
+			case EVENT_MERGE -> revertEventMerge(target.getEntityId(), after);
+			default -> {
+				// 아티클 수정 되돌리기. 타임라인과 무관하다
+				articleAdminService.revertEdit(target.getEntityId(), before, after);
+				yield List.of();
+			}
+		};
 
 		AdminChangeLog log = changeLog.record(Action.REVERT, CHANGE_LOG, changeLogId,
 			Map.of("action", target.getAction().name()), null,

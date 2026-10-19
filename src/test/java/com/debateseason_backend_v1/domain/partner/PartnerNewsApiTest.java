@@ -221,4 +221,30 @@ class PartnerNewsApiTest {
 		assertThat(partner(MockMvcRequestBuilders.get("/api/partner/v1/news").param("keyword", place).param("cursor", "garbage"))
 			.getResponse().getStatus()).isEqualTo(400);
 	}
+
+	@Test
+	@DisplayName("게시된 기사의 키워드만 교체하면 키워드 검색이 따라온다 (본문은 그대로)")
+	void replaceKeywords() throws Exception {
+		String wrong = "수산" + UUID.randomUUID().toString().substring(0, 4);
+		String right = "부산" + UUID.randomUUID().toString().substring(0, 4);
+		long id = load("tmoney", List.of(right, wrong), true);
+		assertThat(ids(data(partner(MockMvcRequestBuilders.get("/api/partner/v1/news").param("keyword", wrong))))).containsExactly(id);
+
+		JsonNode changed = data(mockMvc.perform(MockMvcRequestBuilders.patch("/api/v1/admin/article/{id}", id)
+			.header(ServiceApiKeyFilter.HEADER, SERVICE_KEY).contentType(MediaType.APPLICATION_JSON)
+			.content(objectMapper.writeValueAsString(Map.of("proposalId", "p-" + UUID.randomUUID(), "keywords", List.of(" " + right + " "),
+				"reason", "오탐 제거")))).andReturn());
+		assertThat(changed.path("changed").asBoolean()).isTrue();
+
+		assertThat(data(partner(MockMvcRequestBuilders.get("/api/partner/v1/news").param("keyword", wrong))).path("items")).isEmpty();
+		JsonNode detail = data(partner(MockMvcRequestBuilders.get("/api/partner/v1/news/{id}", id)));
+		assertThat(detail.path("keywords")).hasSize(1);
+		assertThat(detail.path("body")).hasSize(2);
+
+		// 같은 목록이면 무동작
+		assertThat(data(mockMvc.perform(MockMvcRequestBuilders.patch("/api/v1/admin/article/{id}", id)
+			.header(ServiceApiKeyFilter.HEADER, SERVICE_KEY).contentType(MediaType.APPLICATION_JSON)
+			.content(objectMapper.writeValueAsString(Map.of("proposalId", "p-" + UUID.randomUUID(), "keywords", List.of(right)))))
+			.andReturn()).path("changed").asBoolean()).isFalse();
+	}
 }

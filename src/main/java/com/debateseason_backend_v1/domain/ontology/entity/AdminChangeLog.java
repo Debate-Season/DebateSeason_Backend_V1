@@ -43,6 +43,7 @@ public class AdminChangeLog {
 		ARTICLE_UPSERT,
 		ARTICLE_STATUS,
 		ARTICLE_LINKS,
+		ARTICLE_EDIT,
 		// 다른 이력 1건을 되돌린 기록. proposal_id = "revert:{원본 id}" 라 같은 되돌리기는 한 번만 일어난다.
 		REVERT
 	}

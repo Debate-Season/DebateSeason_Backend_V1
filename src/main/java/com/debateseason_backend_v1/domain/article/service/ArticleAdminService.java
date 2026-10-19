@@ -20,7 +20,9 @@ import com.debateseason_backend_v1.domain.article.entity.ToronchulArticle;
 import com.debateseason_backend_v1.domain.article.entity.ToronchulArticleEvent;
 import com.debateseason_backend_v1.domain.article.entity.ToronchulArticleIssue;
 import com.debateseason_backend_v1.domain.article.entity.ToronchulArticleKeyword;
+import com.debateseason_backend_v1.domain.article.entity.ToronchulArticleRevision;
 import com.debateseason_backend_v1.domain.article.entity.ToronchulArticleSource;
+import com.debateseason_backend_v1.domain.article.model.request.ArticleEditRequest;
 import com.debateseason_backend_v1.domain.article.model.request.ArticleLinksRequest;
 import com.debateseason_backend_v1.domain.article.model.request.ArticleStatusChangeRequest;
 import com.debateseason_backend_v1.domain.article.model.request.ArticleUpsertRequest;
@@ -29,10 +31,15 @@ import com.debateseason_backend_v1.domain.article.repository.ToronchulArticleEve
 import com.debateseason_backend_v1.domain.article.repository.ToronchulArticleIssueRepository;
 import com.debateseason_backend_v1.domain.article.repository.ToronchulArticleKeywordRepository;
 import com.debateseason_backend_v1.domain.article.repository.ToronchulArticleRepository;
+import com.debateseason_backend_v1.domain.article.repository.ToronchulArticleRevisionRepository;
 import com.debateseason_backend_v1.domain.article.repository.ToronchulArticleSourceRepository;
 import com.debateseason_backend_v1.domain.issue.infrastructure.repository.IssueJpaRepository;
 import com.debateseason_backend_v1.domain.media.infrastructure.repository.MediaJpaRepository;
+import com.debateseason_backend_v1.domain.ontology.entity.AdminChangeLog;
 import com.debateseason_backend_v1.domain.ontology.entity.AdminChangeLog.Action;
+import com.debateseason_backend_v1.domain.ontology.repository.AdminChangeLogRepository;
+import com.debateseason_backend_v1.domain.partner.service.PartnerNewsCache;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.debateseason_backend_v1.domain.ontology.repository.NewsEventRepository;
 import com.debateseason_backend_v1.domain.ontology.service.ChangeLogWriter;
 
@@ -71,6 +78,9 @@ public class ArticleAdminService {
 	private final IssueJpaRepository issueJpaRepository;
 	private final NewsEventRepository newsEventRepository;
 	private final ChangeLogWriter changeLog;
+	private final ToronchulArticleRevisionRepository revisionRepository;
+	private final AdminChangeLogRepository changeLogRepository;
+	private final PartnerNewsCache partnerNewsCache;
 
 	@Transactional
 	public ArticleAdminResponse.Upsert upsert(ArticleUpsertRequest request, String decidedBy) {
@@ -153,6 +163,8 @@ public class ArticleAdminService {
 
 		changeLog.record(Action.ARTICLE_STATUS, ARTICLE, articleId, Map.of("status", current.name()),
 			Map.of("status", target.name()), request.reason(), null, decidedBy, request.approver());
+		// 회수(HIDDEN)가 고객사 응답에 바로 반영되게 (돌발 기사는 상황이 끝나면 바로 내린다)
+		partnerNewsCache.evict(articleId);
 		log.info("아티클 상태 변경 articleId={} {} -> {}", articleId, current, target);
 		return new ArticleAdminResponse.StatusChange(articleId, current, target, true, article.getDatePublished());
 	}
@@ -177,6 +189,113 @@ public class ArticleAdminService {
 			changeLog.record(Action.ARTICLE_LINKS, ARTICLE, articleId, before, after, null, null, decidedBy, request.approver());
 		}
 		return new ArticleAdminResponse.Links(articleId, after.get("events"), after.get("issues"));
+	}
+
+	/**
+	 * 아티클 수정 (게시된 기사 포함). 보낸 필드만 바꾼다 — 데스크 사실 지적을 반영한 수정본, 장소 키워드 규칙 변경 등.
+	 * 바뀌기 전 내용은 toronchul_article_revision 에 통째로 남기고, 이력(ARTICLE_EDIT)으로 되돌릴 수 있다.
+	 * 고객사 응답 캐시를 바로 비운다. 공개(웹) 응답은 캐시가 없어 즉시 반영된다.
+	 */
+	@Transactional
+	public ArticleAdminResponse.Edit edit(Long articleId, ArticleEditRequest request, String decidedBy) {
+
+		Optional<AdminChangeLog> done = changeLogRepository.findByProposalIdAndAction(request.proposalId(), Action.ARTICLE_EDIT);
+		if (done.isPresent()) {
+			ToronchulArticle article = find(done.get().getEntityId());
+			JsonNode before = changeLog.read(done.get().getBeforeValue());
+			return new ArticleAdminResponse.Edit(article.getId(), false, article.getUpdatedAt(),
+				before.path("revisionId").asLong(), done.get().getId());
+		}
+
+		ToronchulArticle article = find(articleId);
+		Map<String, Object> current = editable(article);
+		Map<String, Object> next = new LinkedHashMap<>(current);
+		if (request.headline() != null) {
+			next.put("headline", request.headline());
+		}
+		if (request.summary() != null) {
+			next.put("summary", request.summary());
+		}
+		if (request.body() != null) {
+			next.put("body", changeLog.write(request.body()));
+		}
+		if (request.keywords() != null) {
+			next.put("keywords", changeLog.write(normalizeKeywords(request.keywords())));
+		}
+		if (request.articleSection() != null) {
+			next.put("articleSection", request.articleSection());
+		}
+		if (next.equals(current)) {
+			return new ArticleAdminResponse.Edit(articleId, false, article.getUpdatedAt(), null, null);
+		}
+
+		ToronchulArticleRevision revision = revisionRepository.save(ToronchulArticleRevision.builder()
+			.articleId(articleId)
+			.headline(article.getHeadline())
+			.summary(article.getSummary())
+			.body(article.getBody())
+			.keywords(article.getKeywords())
+			.articleSection(article.getArticleSection())
+			.createdAt(LocalDateTime.now())
+			.build());
+		apply(article, next);
+		article = articleRepository.saveAndFlush(article);
+
+		AdminChangeLog log = changeLog.record(Action.ARTICLE_EDIT, ARTICLE, articleId, Map.of("revisionId", revision.getId()),
+			next, request.reason(), request.proposalId(), decidedBy, request.approver());
+		partnerNewsCache.evict(articleId);
+		return new ArticleAdminResponse.Edit(articleId, true, article.getUpdatedAt(), revision.getId(), log.getId());
+	}
+
+	/**
+	 * 수정 되돌리기 (POST /admin/change-log/{id}/revert 에서 부른다). 그 뒤 또 고쳐졌으면 덮어쓰지 않는다 — 409 REVERT_CONFLICT.
+	 */
+	@Transactional
+	public void revertEdit(Long articleId, JsonNode before, JsonNode after) {
+		ToronchulArticle article = find(articleId);
+		Map<String, Object> afterFields = new LinkedHashMap<>();
+		after.fieldNames().forEachRemaining(f -> afterFields.put(f, after.path(f).isNull() ? null : after.path(f).asText()));
+		if (!editable(article).equals(afterFields)) {
+			throw new CustomException(ErrorCode.REVERT_CONFLICT);
+		}
+		ToronchulArticleRevision revision = revisionRepository.findById(before.path("revisionId").asLong())
+			.orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_CHANGE_LOG));
+		Map<String, Object> restored = new LinkedHashMap<>();
+		restored.put("headline", revision.getHeadline());
+		restored.put("summary", revision.getSummary());
+		restored.put("body", revision.getBody());
+		restored.put("keywords", revision.getKeywords());
+		restored.put("articleSection", revision.getArticleSection());
+		apply(article, restored);
+		articleRepository.saveAndFlush(article);
+		partnerNewsCache.evict(articleId);
+	}
+
+	private Map<String, Object> editable(ToronchulArticle a) {
+		Map<String, Object> m = new LinkedHashMap<>();
+		m.put("headline", a.getHeadline());
+		m.put("summary", a.getSummary());
+		m.put("body", a.getBody());
+		m.put("keywords", a.getKeywords());
+		m.put("articleSection", a.getArticleSection());
+		return m;
+	}
+
+	private void apply(ToronchulArticle a, Map<String, Object> fields) {
+		a.setHeadline((String)fields.get("headline"));
+		a.setSummary((String)fields.get("summary"));
+		a.setBody((String)fields.get("body"));
+		a.setKeywords((String)fields.get("keywords"));
+		a.setArticleSection((String)fields.get("articleSection"));
+		List<String> keywords = new java.util.ArrayList<>();
+		if (a.getKeywords() != null) {
+			changeLog.read(a.getKeywords()).forEach(k -> keywords.add(k.asText()));
+		}
+		replaceKeywords(a.getId(), keywords);
+	}
+
+	private static List<String> normalizeKeywords(List<String> keywords) {
+		return keywords.stream().filter(Objects::nonNull).map(String::trim).filter(k -> !k.isEmpty()).distinct().toList();
 	}
 
 	@Transactional(readOnly = true)

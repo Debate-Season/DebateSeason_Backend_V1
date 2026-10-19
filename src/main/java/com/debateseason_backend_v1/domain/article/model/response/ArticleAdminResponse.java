@@ -29,6 +29,15 @@ public final class ArticleAdminResponse {
 	public record Links(Long articleId, List<Long> newsEventIds, List<Long> issueIds) {
 	}
 
+	@Schema(description = "수정 결과")
+	public record Edit(Long articleId,
+		@Schema(description = "바뀐 게 없거나 같은 proposalId 재호출이면 false") boolean changed,
+		@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "Asia/Seoul")
+		LocalDateTime updatedAt,
+		@Schema(description = "수정 전 내용을 남긴 리비전 id. 되돌리기는 changeLogId 로", nullable = true) Long revisionId,
+		@Schema(description = "변경 이력 id. POST /admin/change-log/{id}/revert 로 되돌린다", nullable = true) Long changeLogId) {
+	}
+
 	@Schema(description = "확인용 조회")
 	public record Summary(Long articleId, String articleKey, String edition, ArticleStatus status, String headline,
 		@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "Asia/Seoul")

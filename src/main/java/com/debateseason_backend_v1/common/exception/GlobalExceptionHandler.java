@@ -54,7 +54,9 @@ public class GlobalExceptionHandler {
 				errorCode.name(), status.value(), request.getRequestURI(), resolveMessage(e, errorCode));
 		}
 
-		return createErrorResponseEntity(errorCode);
+		// 던질 때 구체 메시지를 줬으면 응답에도 싣는다 ("존재하지 않는 media id: [..]", launch 조건 중 무엇이 모자란지 등).
+		// 예전에는 로그에만 남고 응답은 코드 기본 문구라, 호출한 쪽이 무엇을 고쳐야 할지 알 수 없었다.
+		return new ResponseEntity<>(ErrorResponse.of(errorCode, resolveMessage(e, errorCode)), status);
 	}
 
 	// CustomException(ErrorCode) 로 던지면 getMessage() 가 null 이라

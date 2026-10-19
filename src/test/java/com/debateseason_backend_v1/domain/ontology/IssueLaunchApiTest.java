@@ -101,6 +101,8 @@ class IssueLaunchApiTest {
 		MvcResult noEvents = launch(issueId, revision, proposal());
 		assertThat(noEvents.getResponse().getStatus()).isEqualTo(409);
 		assertThat(code(noEvents)).isEqualTo("ISSUE_NOT_LAUNCHABLE");
+		// 무엇이 모자란지 응답 메시지에 실린다
+		assertThat(noEvents.getResponse().getContentAsString(StandardCharsets.UTF_8)).contains("사건이 없습니다");
 
 		addEvent(issueId);
 		String proposalId = proposal();

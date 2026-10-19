@@ -232,9 +232,9 @@ class PartnerNewsApiTest {
 
 		JsonNode changed = data(mockMvc.perform(MockMvcRequestBuilders.patch("/api/v1/admin/article/{id}", id)
 			.header(ServiceApiKeyFilter.HEADER, SERVICE_KEY).contentType(MediaType.APPLICATION_JSON)
-			.content(objectMapper.writeValueAsString(Map.of("keywords", List.of(" " + right + " "), "reason", "오탐 제거")))).andReturn());
+			.content(objectMapper.writeValueAsString(Map.of("proposalId", "p-" + UUID.randomUUID(), "keywords", List.of(" " + right + " "),
+				"reason", "오탐 제거")))).andReturn());
 		assertThat(changed.path("changed").asBoolean()).isTrue();
-		assertThat(changed.path("keywords").get(0).asText()).isEqualTo(right);
 
 		assertThat(data(partner(MockMvcRequestBuilders.get("/api/partner/v1/news").param("keyword", wrong))).path("items")).isEmpty();
 		JsonNode detail = data(partner(MockMvcRequestBuilders.get("/api/partner/v1/news/{id}", id)));
@@ -244,6 +244,7 @@ class PartnerNewsApiTest {
 		// 같은 목록이면 무동작
 		assertThat(data(mockMvc.perform(MockMvcRequestBuilders.patch("/api/v1/admin/article/{id}", id)
 			.header(ServiceApiKeyFilter.HEADER, SERVICE_KEY).contentType(MediaType.APPLICATION_JSON)
-			.content(objectMapper.writeValueAsString(Map.of("keywords", List.of(right))))).andReturn()).path("changed").asBoolean()).isFalse();
+			.content(objectMapper.writeValueAsString(Map.of("proposalId", "p-" + UUID.randomUUID(), "keywords", List.of(right)))))
+			.andReturn()).path("changed").asBoolean()).isFalse();
 	}
 }

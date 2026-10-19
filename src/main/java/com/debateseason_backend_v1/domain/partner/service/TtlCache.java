@@ -47,6 +47,10 @@ class TtlCache<K, V> {
 		entries.put(key, new Entry<>(value, System.currentTimeMillis() + ttlMillis));
 	}
 
+	void remove(K key) {
+		entries.remove(key);
+	}
+
 	void clear() {
 		entries.clear();
 	}

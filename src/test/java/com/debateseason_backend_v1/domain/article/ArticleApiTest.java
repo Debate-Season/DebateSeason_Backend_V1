@@ -307,5 +307,6 @@ class ArticleApiTest {
 
 		assertThat(found.path("articleId").asLong()).isEqualTo(id);
 		assertThat(found.path("sourceCount").asInt()).isEqualTo(1);
+		assertThat(found.path("keywords").get(0).asText()).isEqualTo("코스피");
 	}
 }

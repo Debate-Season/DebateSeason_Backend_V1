@@ -21,6 +21,7 @@ import com.debateseason_backend_v1.domain.article.entity.ToronchulArticleEvent;
 import com.debateseason_backend_v1.domain.article.entity.ToronchulArticleIssue;
 import com.debateseason_backend_v1.domain.article.entity.ToronchulArticleKeyword;
 import com.debateseason_backend_v1.domain.article.entity.ToronchulArticleSource;
+import com.debateseason_backend_v1.domain.article.model.request.ArticleKeywordsRequest;
 import com.debateseason_backend_v1.domain.article.model.request.ArticleLinksRequest;
 import com.debateseason_backend_v1.domain.article.model.request.ArticleStatusChangeRequest;
 import com.debateseason_backend_v1.domain.article.model.request.ArticleUpsertRequest;
@@ -177,6 +178,37 @@ public class ArticleAdminService {
 			changeLog.record(Action.ARTICLE_LINKS, ARTICLE, articleId, before, after, null, null, decidedBy, request.approver());
 		}
 		return new ArticleAdminResponse.Links(articleId, after.get("events"), after.get("issues"));
+	}
+
+	/**
+	 * 연관 키워드만 교체한다. 게시된 기사도 된다 — 데이터 쪽이 장소 매칭 규칙을 고칠 때 이미 나간 기사를 바로잡는다.
+	 * 본문·제목은 여기서 바꾸지 않는다 (공개된 본문이 조용히 바뀌지 않게, 본문 수정은 리비전과 함께 따로).
+	 * 고객사 응답 캐시(60초) 때문에 반영이 최대 1분 늦다.
+	 */
+	@Transactional
+	public ArticleAdminResponse.Keywords replaceKeywords(Long articleId, ArticleKeywordsRequest request, String decidedBy) {
+
+		ToronchulArticle article = find(articleId);
+		List<String> normalized = request.keywords().stream()
+			.filter(Objects::nonNull).map(String::trim).filter(k -> !k.isEmpty()).distinct().toList();
+		List<String> before = currentKeywords(article);
+		if (before.equals(normalized)) {
+			return new ArticleAdminResponse.Keywords(articleId, normalized, false);
+		}
+
+		article.setKeywords(changeLog.write(normalized));
+		replaceKeywords(articleId, normalized);
+		changeLog.record(Action.ARTICLE_KEYWORDS, ARTICLE, articleId, Map.of("keywords", before), Map.of("keywords", normalized),
+			request.reason(), null, decidedBy, request.approver());
+		return new ArticleAdminResponse.Keywords(articleId, normalized, true);
+	}
+
+	private List<String> currentKeywords(ToronchulArticle article) {
+		List<String> list = new java.util.ArrayList<>();
+		if (article.getKeywords() != null) {
+			changeLog.read(article.getKeywords()).forEach(k -> list.add(k.asText()));
+		}
+		return list;
 	}
 
 	@Transactional(readOnly = true)

@@ -78,6 +78,7 @@ public class ServiceApiKeyFilter extends OncePerRequestFilter {
 		// 토론철 아티클 적재·발행 (데이터 레포가 데스킹을 마친 기사만 보낸다)
 		new Route(HttpMethod.POST, "/api/v1/admin/article"),
 		new Route(HttpMethod.PATCH, "/api/v1/admin/article/*/status"),
+		new Route(HttpMethod.PATCH, "/api/v1/admin/article/*"),
 		new Route(HttpMethod.PUT, "/api/v1/admin/article/*/links"),
 		new Route(HttpMethod.GET, "/api/v1/admin/article")
 	);

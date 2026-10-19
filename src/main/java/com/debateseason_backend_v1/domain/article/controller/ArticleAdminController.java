@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.debateseason_backend_v1.common.response.ApiResult;
+import com.debateseason_backend_v1.domain.article.model.request.ArticleKeywordsRequest;
 import com.debateseason_backend_v1.domain.article.model.request.ArticleLinksRequest;
 import com.debateseason_backend_v1.domain.article.model.request.ArticleStatusChangeRequest;
 import com.debateseason_backend_v1.domain.article.model.request.ArticleUpsertRequest;
@@ -65,5 +66,15 @@ public class ArticleAdminController {
 	@GetMapping
 	public ApiResult<ArticleAdminResponse.Summary> findByKey(@RequestParam String articleKey) {
 		return ApiResult.success("아티클", articleAdminService.findByKey(articleKey));
+	}
+
+	@Operation(summary = "아티클 키워드 교체", description = "연관 키워드만 통째로 바꿉니다(게시된 기사 포함, 키워드 색인도 함께). "
+		+ "앞뒤 공백·중복은 정리합니다. 본문 등 다른 필드는 바꾸지 않습니다. 고객사 응답은 최대 1분 뒤 반영.")
+	@PatchMapping("/{articleId}")
+	public ApiResult<ArticleAdminResponse.Keywords> replaceKeywords(@PathVariable Long articleId,
+		@Valid @RequestBody ArticleKeywordsRequest request, Authentication authentication) {
+
+		return ApiResult.success("아티클 키워드를 바꿨습니다.",
+			articleAdminService.replaceKeywords(articleId, request, Actor.of(authentication)));
 	}
 }

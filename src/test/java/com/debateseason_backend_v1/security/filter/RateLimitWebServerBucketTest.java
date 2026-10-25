@@ -95,4 +95,20 @@ class RateLimitWebServerBucketTest {
 		}
 		assertThat(call("GET", KEY)).isEqualTo(429);
 	}
+
+	@Test
+	@DisplayName("웹 키 집계: 맞은 키·틀린 키를 IP 와 함께 세고, 비우면 다음 구간은 0 부터. 키 값은 안 남긴다")
+	void webKeyUsage() throws Exception {
+		assertThat(filter.drainWebKeyUsage()).isNull();
+
+		call("GET", KEY);
+		call("GET", KEY);
+		call("GET", "wrong");
+		call("GET", null);
+
+		String line = filter.drainWebKeyUsage();
+		assertThat(line).isEqualTo("mismatch=1 [" + VERCEL_IP + "] web:web=2 [" + VERCEL_IP + "]");
+		assertThat(line).doesNotContain(KEY);
+		assertThat(filter.drainWebKeyUsage()).isNull();
+	}
 }

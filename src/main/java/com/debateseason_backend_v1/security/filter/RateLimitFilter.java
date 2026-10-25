@@ -3,11 +3,16 @@ package com.debateseason_backend_v1.security.filter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.LongAdder;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -42,6 +47,8 @@ public class RateLimitFilter extends OncePerRequestFilter {
 
 	private static final long ENTRY_EXPIRATION_MILLIS = TimeUnit.MINUTES.toMillis(10);
 	private static final long CLEANUP_INTERVAL_MINUTES = 5;
+	private static final long WEB_KEY_REPORT_MINUTES = 5;
+	private static final int WEB_KEY_SAMPLE_IPS = 5;
 
 	private final SecurityPathMatcher securityPathMatcher;
 	private final ObjectMapper objectMapper;
@@ -53,6 +60,11 @@ public class RateLimitFilter extends OncePerRequestFilter {
 
 	private final ConcurrentHashMap<String, BucketEntry> buckets = new ConcurrentHashMap<>();
 	private final ScheduledExecutorService cleanupExecutor;
+
+	// 웹 SSR 키 사용 집계 ("web:<키 이름>" = 맞은 키, "mismatch" = 헤더는 있는데 틀린 키). 키 값은 남기지 않는다.
+	// 백엔드는 429 때만 로그를 남겨서, 운영 웹 키가 백엔드와 일치하는지 볼 방법이 없었다 (2026-10-26).
+	private final ConcurrentHashMap<String, LongAdder> webKeyCounts = new ConcurrentHashMap<>();
+	private final ConcurrentHashMap<String, Set<String>> webKeyIps = new ConcurrentHashMap<>();
 
 	public RateLimitFilter(
 		SecurityPathMatcher securityPathMatcher,
@@ -81,6 +93,12 @@ public class RateLimitFilter extends OncePerRequestFilter {
 			this::cleanupExpiredEntries,
 			CLEANUP_INTERVAL_MINUTES,
 			CLEANUP_INTERVAL_MINUTES,
+			TimeUnit.MINUTES
+		);
+		this.cleanupExecutor.scheduleAtFixedRate(
+			this::reportWebKeyUsage,
+			WEB_KEY_REPORT_MINUTES,
+			WEB_KEY_REPORT_MINUTES,
 			TimeUnit.MINUTES
 		);
 	}
@@ -113,9 +131,12 @@ public class RateLimitFilter extends OncePerRequestFilter {
 		} else {
 			// 웹 SSR 은 토큰 없이 Vercel 서버 IP 몇 개에서 온다. IP 버킷을 쓰면 모든 방문자가 하나를 나눠 쓴다.
 			// 조회(GET)만 별도 버킷을 준다. 키가 없거나 틀리면 평소처럼 IP 버킷이다.
-			Optional<String> webServer = "GET".equalsIgnoreCase(request.getMethod())
-				? webServerKeys.resolve(request.getHeader(WebServerKeys.HEADER))
-				: Optional.empty();
+			String presented = request.getHeader(WebServerKeys.HEADER);
+			boolean get = "GET".equalsIgnoreCase(request.getMethod());
+			Optional<String> webServer = get ? webServerKeys.resolve(presented) : Optional.empty();
+			if (get && presented != null) {
+				countWebKey(webServer.map(name -> "web:" + name).orElse("mismatch"), resolveClientIp(request));
+			}
 			if (webServer.isPresent()) {
 				bucketKey = "web:" + webServer.get();
 				rateLimit = webServerRateLimit;
@@ -186,6 +207,47 @@ public class RateLimitFilter extends OncePerRequestFilter {
 
 		String jsonResponse = objectMapper.writeValueAsString(errorResponse);
 		response.getWriter().write(jsonResponse);
+	}
+
+	private void countWebKey(String outcome, String ip) {
+		webKeyCounts.computeIfAbsent(outcome, k -> new LongAdder()).increment();
+		Set<String> ips = webKeyIps.computeIfAbsent(outcome, k -> ConcurrentHashMap.newKeySet());
+		if (ips.size() < WEB_KEY_SAMPLE_IPS) {
+			ips.add(ip);
+		}
+	}
+
+	/**
+	 * 지난 구간의 웹 키 집계를 비우고 한 줄로 돌려준다. 요청이 없었으면 null.
+	 * 예: {@code web:web=812 [76.76.21.21, ...] mismatch=3 [1.2.3.4]} — mismatch 만 있으면 웹 env 의 키 값이 다르다.
+	 */
+	String drainWebKeyUsage() {
+		Map<String, String> parts = new TreeMap<>();
+		for (String outcome : webKeyCounts.keySet()) {
+			LongAdder count = webKeyCounts.remove(outcome);
+			Set<String> ips = webKeyIps.remove(outcome);
+			long n = count == null ? 0 : count.sum();
+			if (n > 0) {
+				parts.put(outcome, n + " " + new TreeSet<>(ips == null ? Set.of() : ips));
+			}
+		}
+		if (parts.isEmpty()) {
+			return null;
+		}
+		StringBuilder line = new StringBuilder();
+		parts.forEach((outcome, value) -> line.append(line.isEmpty() ? "" : " ").append(outcome).append('=').append(value));
+		return line.toString();
+	}
+
+	private void reportWebKeyUsage() {
+		try {
+			String line = drainWebKeyUsage();
+			if (line != null) {
+				log.info("Web SSR key usage (last {}m): {}", WEB_KEY_REPORT_MINUTES, line);
+			}
+		} catch (RuntimeException e) {
+			log.warn("Web SSR key usage report failed", e);
+		}
 	}
 
 	private void cleanupExpiredEntries() {

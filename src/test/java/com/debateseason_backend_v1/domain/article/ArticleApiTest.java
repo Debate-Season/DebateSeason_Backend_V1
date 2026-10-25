@@ -309,4 +309,44 @@ class ArticleApiTest {
 		assertThat(found.path("sourceCount").asInt()).isEqualTo(1);
 		assertThat(found.path("keywords").get(0).asText()).isEqualTo("코스피");
 	}
+
+	@Test
+	@DisplayName("목록: 비로그인, 게시된 토론철판만 게시 최신순, 커서로 끝까지, 관련 이슈 포함")
+	void list() throws Exception {
+		long older = upsert(article(key(), "toronchul", List.of(), List.of(issueId)));
+		long newer = upsert(article(key(), "toronchul", List.of(), List.of()));
+		long review = upsert(article(key(), "toronchul", List.of(), List.of()));
+		long tmoney = upsert(article(key(), "tmoney", List.of(), List.of()));
+		status(older, "PUBLISHED");
+		status(newer, "PUBLISHED");
+		status(tmoney, "PUBLISHED");
+
+		List<Long> seen = new ArrayList<>();
+		JsonNode olderItem = null;
+		String cursor = null;
+		int calls = 0;
+		do {
+			MockHttpServletRequestBuilder req = MockMvcRequestBuilders.get("/api/v1/article/list").param("size", "2");
+			if (cursor != null) {
+				req = req.param("cursor", cursor);
+			}
+			JsonNode page = data(anonymous(req));
+			for (JsonNode item : page.path("items")) {
+				seen.add(item.path("articleId").asLong());
+				if (item.path("articleId").asLong() == older) {
+					olderItem = item;
+				}
+			}
+			cursor = page.path("nextCursor").isNull() ? null : page.path("nextCursor").asText();
+			calls++;
+		} while (cursor != null && calls < 50);
+
+		assertThat(seen).contains(newer, older).doesNotContain(review, tmoney).doesNotHaveDuplicates();
+		assertThat(seen.indexOf(newer)).isLessThan(seen.indexOf(older));
+		assertThat(olderItem.path("issueIds").get(0).asLong()).isEqualTo(issueId);
+		assertThat(olderItem.has("body")).isFalse();
+		assertThat(olderItem.path("datePublished").asText()).matches("\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}");
+		assertThat(anonymous(MockMvcRequestBuilders.get("/api/v1/article/list").param("cursor", "garbage")).getResponse().getStatus())
+			.isEqualTo(400);
+	}
 }

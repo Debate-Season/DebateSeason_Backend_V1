@@ -27,6 +27,16 @@ public class ArticleController {
 		return ApiResult.success("아티클", articlePublicService.article(articleId));
 	}
 
+	@Operation(summary = "아티클 목록", description = "게시된 토론철판, 처음 게시 시각 내림차순. 본문 없이 제목·요약·게시 시각·섹션·관련 이슈. "
+		+ "size 기본 20·최대 100, 다음 페이지는 nextCursor.")
+	@GetMapping("/api/v1/article/list")
+	public ApiResult<ArticlePublicResponse.ListPage> list(
+		@Parameter(description = "이전 응답의 nextCursor") @RequestParam(required = false) String cursor,
+		@Parameter(description = "페이지 크기 (기본 20, 최대 100)") @RequestParam(required = false) Integer size) {
+
+		return ApiResult.success("아티클 목록", articlePublicService.list(cursor, size));
+	}
+
 	@Operation(summary = "이슈 사건 타임라인", description = "이슈에 연결된 사건, 발생일 내림차순(날짜 없는 사건은 뒤). 병합된 사건은 빠지고 "
 		+ "그 아티클은 흡수한 사건 밑에 보입니다. 사건마다 게시 아티클 카드(최신 발행순). 보관(ARCHIVED) 이슈는 404.")
 	@GetMapping("/api/v1/issue/events")

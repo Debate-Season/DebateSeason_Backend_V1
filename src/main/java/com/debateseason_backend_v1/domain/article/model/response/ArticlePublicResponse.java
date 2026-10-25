@@ -68,6 +68,26 @@ public final class ArticlePublicResponse {
 	) {
 	}
 
+	@Schema(name = "ArticleListItem", description = "아티클 목록 항목 (본문 제외)")
+	public record ListItem(
+		@Schema(description = "아티클 ID", example = "12") Long articleId,
+		String headline,
+		@Schema(description = "평문 2~3문장") String summary,
+		@Schema(description = "처음 게시된 시각 (Asia/Seoul)")
+		@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "Asia/Seoul")
+		LocalDateTime datePublished,
+		@Schema(example = "경제") String articleSection,
+		@Schema(description = "관련 이슈 — 사건 경유와 직접 연결의 합집합, 노출 중인 이슈만") List<Long> issueIds
+	) {
+	}
+
+	@Schema(name = "ArticleListPage", description = "아티클 목록 페이지")
+	public record ListPage(
+		@Schema(description = "게시 최신순") List<ListItem> items,
+		@Schema(description = "다음 페이지 cursor. 마지막이면 null", nullable = true) String nextCursor
+	) {
+	}
+
 	@Schema(name = "ArticleCard", description = "아티클 카드")
 	public record ArticleCard(
 		Long articleId,

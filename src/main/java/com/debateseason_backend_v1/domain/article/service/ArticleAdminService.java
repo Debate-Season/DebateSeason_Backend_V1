@@ -271,6 +271,14 @@ public class ArticleAdminService {
 		partnerNewsCache.evict(articleId);
 	}
 
+	private List<String> currentKeywords(ToronchulArticle article) {
+		List<String> list = new java.util.ArrayList<>();
+		if (article.getKeywords() != null) {
+			changeLog.read(article.getKeywords()).forEach(k -> list.add(k.asText()));
+		}
+		return list;
+	}
+
 	private Map<String, Object> editable(ToronchulArticle a) {
 		Map<String, Object> m = new LinkedHashMap<>();
 		m.put("headline", a.getHeadline());
@@ -305,7 +313,7 @@ public class ArticleAdminService {
 		Map<String, List<Long>> links = linksOf(article.getId());
 		return new ArticleAdminResponse.Summary(article.getId(), article.getArticleKey(), article.getEdition(),
 			article.getStatus(), article.getHeadline(), article.getDatePublished(), article.getUpdatedAt(),
-			links.get("events"), links.get("issues"), links.get("sources").size());
+			links.get("events"), links.get("issues"), links.get("sources").size(), currentKeywords(article));
 	}
 
 	// ── 내부 ────────────────────────────────────────────────────

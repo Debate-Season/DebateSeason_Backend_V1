@@ -60,6 +60,45 @@ public class ArticlePublicService {
 	private final IssueJpaRepository issueJpaRepository;
 	private final ChangeLogWriter json;
 
+	/**
+	 * 게시된 토론철판 목록, 처음 게시 시각 내림차순 (웹 '뉴스' 메뉴). cursor = "{epochSecond}_{nano}_{id}" 불투명 문자열.
+	 * 판·상태로 거르는 인덱스(edition, status, date_published)를 탄다.
+	 */
+	@Transactional(readOnly = true)
+	public ArticlePublicResponse.ListPage list(String cursor, Integer size) {
+		int limit = clamp(size);
+		LocalDateTime cursorAt = null;
+		long cursorId = 0;
+		if (cursor != null && !cursor.isBlank()) {
+			try {
+				String[] p = cursor.split("_");
+				cursorAt = LocalDateTime.ofEpochSecond(Long.parseLong(p[0]), Integer.parseInt(p[1]), java.time.ZoneOffset.UTC);
+				cursorId = Long.parseLong(p[2]);
+			} catch (RuntimeException e) {
+				throw new CustomException(ErrorCode.BAD_REQUEST, "cursor 형식이 잘못됐습니다.");
+			}
+		}
+		List<ToronchulArticle> rows = articleRepository.findPublishedPage(ToronchulArticle.TORONCHUL_EDITION, cursorAt, cursorId,
+			org.springframework.data.domain.PageRequest.of(0, limit + 1));
+		List<ToronchulArticle> page = rows.subList(0, Math.min(limit, rows.size()));
+		String next = null;
+		if (rows.size() > limit) {
+			LocalDateTime t = page.get(page.size() - 1).getDatePublished();
+			next = t.toEpochSecond(java.time.ZoneOffset.UTC) + "_" + t.getNano() + "_" + page.get(page.size() - 1).getId();
+		}
+		return new ArticlePublicResponse.ListPage(page.stream().map(a -> new ArticlePublicResponse.ListItem(a.getId(),
+			a.getHeadline(), a.getSummary(), a.getDatePublished(), a.getArticleSection(), issueIdsOf(a.getId()))).toList(), next);
+	}
+
+	/** 아티클의 노출 중인 관련 이슈: 사건(병합은 흡수한 사건) 경유 + 직접 연결. */
+	private List<Long> issueIdsOf(Long articleId) {
+		List<Long> linked = eventLinkRepository.findByArticleId(articleId).stream().map(ToronchulArticleEvent::getNewsEventId).toList();
+		Set<Long> issueIds = new LinkedHashSet<>();
+		visibleIssuesByEvent(resolveMerged(linked).stream().map(NewsEvent::getId).toList()).values().forEach(issueIds::addAll);
+		issueIds.addAll(visible(issueLinkRepository.findByArticleId(articleId).stream().map(ToronchulArticleIssue::getIssueId).toList()));
+		return issueIds.stream().sorted().toList();
+	}
+
 	@Transactional(readOnly = true)
 	public ArticlePublicResponse.Detail article(Long articleId) {
 		ToronchulArticle article = articleRepository.findById(articleId)

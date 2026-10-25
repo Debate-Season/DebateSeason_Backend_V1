@@ -44,6 +44,7 @@ public final class ArticleAdminResponse {
 		LocalDateTime datePublished,
 		@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "Asia/Seoul")
 		LocalDateTime updatedAt,
-		List<Long> newsEventIds, List<Long> issueIds, int sourceCount) {
+		List<Long> newsEventIds, List<Long> issueIds, int sourceCount,
+		@Schema(description = "연관 키워드 (색인과 같은 값)") List<String> keywords) {
 	}
 }

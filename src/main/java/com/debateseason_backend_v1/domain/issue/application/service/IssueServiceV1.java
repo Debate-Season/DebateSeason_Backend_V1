@@ -12,7 +12,6 @@ import com.debateseason_backend_v1.common.response.ApiResult;
 import com.debateseason_backend_v1.domain.chatroom.infrastructure.entity.manager.ChatRoomPaginationManager;
 import com.debateseason_backend_v1.domain.chatroom.infrastructure.entity.processor.ChatRoomProcessor;
 import com.debateseason_backend_v1.domain.chatroom.model.response.chatroom.type.ResponseWithTimeAndOpinion;
-import com.debateseason_backend_v1.domain.issue.community.CommunitySorterV4;
 import com.debateseason_backend_v1.domain.issue.infrastructure.entity.IssueMapper;
 import com.debateseason_backend_v1.domain.issue.model.response.PaginationDTO;
 import com.debateseason_backend_v1.domain.issue.infrastructure.entity.IssueEntity;
@@ -24,14 +23,11 @@ import com.debateseason_backend_v1.domain.issue.model.request.IssueRequest;
 import com.debateseason_backend_v1.domain.issue.mapper.IssueBriefResponse;
 import com.debateseason_backend_v1.domain.issue.mapper.IssueDetailResponse;
 import com.debateseason_backend_v1.domain.profile.domain.CommunityType;
-import com.debateseason_backend_v1.domain.profile.infrastructure.ProfileEntity;
-import com.debateseason_backend_v1.domain.profile.infrastructure.ProfileJpaRepository;
 import com.debateseason_backend_v1.domain.repository.ChatRoomRepository;
 import com.debateseason_backend_v1.domain.issue.infrastructure.repository.IssueJpaRepository;
 import com.debateseason_backend_v1.domain.repository.UserChatRoomRepository;
 import com.debateseason_backend_v1.domain.repository.UserIssueRepository;
 import com.debateseason_backend_v1.domain.repository.entity.UserIssue;
-import com.debateseason_backend_v1.domain.user.dto.UserDTO;
 import com.debateseason_backend_v1.domain.user.infrastructure.UserEntity;
 import com.debateseason_backend_v1.domain.user.infrastructure.UserJpaRepository;
 
@@ -51,7 +47,6 @@ public class IssueServiceV1 {
 	private final UserChatRoomRepository userChatRoomRepository;
 	private final UserJpaRepository userRepository;
 
-	private final ProfileJpaRepository profileRepository;
 
 	private final ChatRoomRepository chatRoomRepository;
 
@@ -63,8 +58,6 @@ public class IssueServiceV1 {
 	private final IssueProcessorManager issueProcessorManager;
 	private final ChatRoomProcessor chatRoomProcessor;
 
-	// CommunitySorterV2 -> V3로 변경( HashMap에 대한 동기화 문제가 발생할 수 있어서 V3로 변경. )
-	private final CommunitySorterV4 communityMananger;
 
 	// 1. save 이슈방
 	public ApiResult<Object> save(IssueRequest issueRequest, Long createdBy) {
@@ -115,25 +108,9 @@ public class IssueServiceV1 {
 			.bookMarks((long)tmp[2])
 			.build();
 
-		// 커뮤니티 맵 (비로그인 시 방문 기록 없이 기존 데이터만 반환)
-		if (userId != null) {
-			ProfileEntity profile = profileRepository.findByUserId(userId).orElseThrow(
-				() -> new CustomException(ErrorCode.NOT_FOUND_PROFILE)
-			);
-
-			CommunityType communityType = profile.getCommunityType();
-			if (communityType == null) {
-				throw new CustomException(ErrorCode.NOT_FOUND_COMMUNITY);
-			}
-
-			UserDTO userDTO = new UserDTO();
-			userDTO.setCommunity(communityType.getName());
-			userDTO.setId(userId);
-
-			communityMananger.record(userDTO, issueId);
-		}
-
-		LinkedHashMap<String, Integer> sortedMap = communityMananger.getSortedCommunity(issueId);
+		// 참여 커뮤니티: 이 이슈의 토론 주제에 찬반 투표한 사용자의 커뮤니티 (아이콘 경로 → 사람 수, 많은 순).
+		// 조회자 본인의 프로필은 보지 않는다 — 예전에는 프로필·커뮤니티가 없는 로그인 사용자의 상세 조회가 404 였다.
+		LinkedHashMap<String, Integer> sortedMap = voterCommunities(issueId);
 
 		//
 		List<Long> chatRoomIds = chatRoomPaginationManager.getChatRoomsByPage(issueId, ChatRoomId);
@@ -262,6 +239,19 @@ public class IssueServiceV1 {
 			.data(data)
 			.build();
 
+	}
+
+	private LinkedHashMap<String, Integer> voterCommunities(Long issueId) {
+		List<Object[]> rows = new ArrayList<>(issueJpaRepository.countVoterCommunities(issueId));
+		rows.sort((a, b2) -> Long.compare(((Number)b2[1]).longValue(), ((Number)a[1]).longValue()));
+		LinkedHashMap<String, Integer> result = new LinkedHashMap<>();
+		for (Object[] row : rows) {
+			Long communityId = ((Number)row[0]).longValue();
+			if (CommunityType.isValidId(communityId)) {
+				result.merge(CommunityType.findById(communityId).getIconUrl(), ((Number)row[1]).intValue(), Integer::sum);
+			}
+		}
+		return result;
 	}
 
 	private void markUserOpinion(List<Object[]> opinions,List<ResponseWithTimeAndOpinion> chatRooms){

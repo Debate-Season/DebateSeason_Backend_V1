@@ -137,7 +137,19 @@ public interface IssueJpaRepository extends JpaRepository<IssueEntity,Long> {
         """, nativeQuery = true)
 	Long countChatsTodayByIssueId(@Param("issueId") Long issueId);
 
+	// 이슈 상세의 "참여 커뮤니티": 이 이슈의 노출 중인 토론 주제에 찬반 투표한 사용자(중복 제거)를 커뮤니티별로 센다.
+	// 예전에는 상세를 연 로그인 사용자를 서버 메모리에 모아 재시작마다 0 이 됐다. 커뮤니티가 없는 투표자는 뺀다.
+	@Query(value = """
+		SELECT p.community_id, COUNT(DISTINCT ucr.user_id) AS voters
+		FROM user_chat_room ucr
+		JOIN chat_room r ON r.chat_room_id = ucr.chat_room_id
+		JOIN profile p ON p.user_id = ucr.user_id
+		WHERE r.issue_id = :issueId
+		  AND (r.room_type IS NULL OR r.room_type = 'THREAD')
+		  AND r.status NOT IN ('PREPARING','HIDDEN','DELETED')
+		  AND ucr.opinion IN ('AGREE','DISAGREE')
+		  AND p.community_id IS NOT NULL
+		GROUP BY p.community_id
+		""", nativeQuery = true)
+	List<Object[]> countVoterCommunities(@Param("issueId") Long issueId);
 }
-
-
-

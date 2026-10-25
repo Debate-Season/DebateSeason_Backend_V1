@@ -68,6 +68,7 @@ public class WebSecurityConfig {
 		"/api/v1/article",
 		"/api/v1/article/list",
 		"/api/v1/issue/events",
+		"/api/v1/event/recent",
 		// 고객사 API 는 JWT 를 보지 않는다. 인증은 PartnerApiKeyFilter(X-Partner-Key)가 한다
 		"/api/partner/**"
 	};

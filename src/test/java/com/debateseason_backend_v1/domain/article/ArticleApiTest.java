@@ -43,6 +43,9 @@ class ArticleApiTest {
 	private static final String SERVICE_KEY = "test-service-key-0123456789abcdef0123456789";
 
 	@Autowired
+	private org.springframework.jdbc.core.JdbcTemplate jdbc;
+
+	@Autowired
 	private MockMvc mockMvc;
 	@Autowired
 	private ObjectMapper objectMapper;
@@ -348,5 +351,51 @@ class ArticleApiTest {
 		assertThat(olderItem.path("datePublished").asText()).matches("\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}");
 		assertThat(anonymous(MockMvcRequestBuilders.get("/api/v1/article/list").param("cursor", "garbage")).getResponse().getStatus())
 			.isEqualTo(400);
+	}
+
+	@Test
+	@DisplayName("최근 사건: 목록 노출 이슈의 사건만 등록 최신순, 병합된 사건 제외, 대표 아티클은 게시된 최신 1건")
+	void recentEvents() throws Exception {
+		com.debateseason_backend_v1.fixtures.wiki.WikiFixture.publish(jdbc, issueId);
+		long hiddenIssue = data(admin(MockMvcRequestBuilders.post("/api/v1/admin/issue"),
+			Map.of("proposalId", "p-" + UUID.randomUUID(), "title", "위키 없는 이슈", "majorCategory", "경제"))).path("issueId").asLong();
+		long onHidden = data(admin(MockMvcRequestBuilders.post("/api/v1/admin/issue/{id}/events", hiddenIssue),
+			Map.of("proposalId", "p-" + UUID.randomUUID(), "events", List.of(Map.of("name", "숨은 사건", "date", "2026-10-02")))))
+			.path("eventIds").get(0).asLong();
+
+		List<Long> events = createEvents(
+			Map.of("name", "먼저 등록", "date", "2026-10-01"),
+			Map.of("name", "흡수될 사건", "date", "2026-10-03"),
+			Map.of("name", "나중 등록", "date", "2026-09-01"));
+		long first = events.get(0);
+		long absorbed = events.get(1);
+		long last = events.get(2);
+		data(admin(MockMvcRequestBuilders.post("/api/v1/admin/issue/{id}/events/merge", issueId),
+			Map.of("proposalId", "p-" + UUID.randomUUID(), "keepEventId", first, "dropEventId", absorbed)));
+
+		long older = upsert(article(key(), "toronchul", List.of(first), List.of()));
+		long newer = upsert(article(key(), "toronchul", List.of(first), List.of()));
+		long draft = upsert(article(key(), "toronchul", List.of(last), List.of()));
+		status(older, "PUBLISHED");
+		status(newer, "PUBLISHED");
+
+		JsonNode items = data(anonymous(MockMvcRequestBuilders.get("/api/v1/event/recent").param("size", "20")));
+		List<Long> ids = new ArrayList<>();
+		Map<Long, JsonNode> byId = new java.util.HashMap<>();
+		items.forEach(e -> {
+			ids.add(e.path("eventId").asLong());
+			byId.put(e.path("eventId").asLong(), e);
+		});
+
+		assertThat(ids).contains(first, last).doesNotContain(absorbed, onHidden);
+		assertThat(ids.indexOf(last)).isLessThan(ids.indexOf(first)); // 발생일이 아니라 등록 순서
+		assertThat(byId.get(first).path("issueIds").get(0).asLong()).isEqualTo(issueId);
+		assertThat(byId.get(first).path("date").asText()).isEqualTo("2026-10-01");
+		assertThat(byId.get(first).path("createdAt").asText()).matches("\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}");
+		assertThat(byId.get(first).path("article").path("articleId").asLong()).isIn(older, newer);
+		assertThat(byId.get(last).path("article").isNull()).isTrue();
+		assertThat(draft).isPositive();
+
+		assertThat(data(anonymous(MockMvcRequestBuilders.get("/api/v1/event/recent"))).size()).isLessThanOrEqualTo(5);
 	}
 }

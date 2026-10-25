@@ -1,5 +1,7 @@
 package com.debateseason_backend_v1.domain.article.controller;
 
+import java.util.List;
+
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -46,5 +48,14 @@ public class ArticleController {
 		@Parameter(description = "페이지 크기 (기본 20, 최대 100)") @RequestParam(required = false) Integer size) {
 
 		return ApiResult.success("이슈 사건 타임라인", articlePublicService.timeline(issueId, cursor, size));
+	}
+
+	@Operation(summary = "최근 사건", description = "목록에 나오는 이슈에 걸린 사건, 토론철 등록 시각(createdAt) 내림차순. "
+		+ "병합으로 흡수된 사건은 빠집니다. 사건마다 대표 아티클(게시된 최신 1건, 없으면 null). size 기본 5·최대 20.")
+	@GetMapping("/api/v1/event/recent")
+	public ApiResult<List<ArticlePublicResponse.RecentEvent>> recentEvents(
+		@Parameter(description = "개수 (기본 5, 최대 20)") @RequestParam(required = false) Integer size) {
+
+		return ApiResult.success("최근 사건", articlePublicService.recentEvents(size));
 	}
 }

@@ -99,6 +99,29 @@ public class ArticlePublicService {
 		return issueIds.stream().sorted().toList();
 	}
 
+	static final int RECENT_DEFAULT_SIZE = 5;
+	static final int RECENT_MAX_SIZE = 20;
+
+	/** 목록 노출 이슈에 걸린 사건, 생성 최신순 (웹 홈 '사건 발생!'). 병합으로 흡수된 사건은 빠진다. */
+	@Transactional(readOnly = true)
+	public List<ArticlePublicResponse.RecentEvent> recentEvents(Integer size) {
+		int limit = size == null || size <= 0 ? RECENT_DEFAULT_SIZE : Math.min(size, RECENT_MAX_SIZE);
+		List<Long> ids = newsEventRepository.findRecentListedIds(limit);
+		if (ids.isEmpty()) {
+			return List.of();
+		}
+		Map<Long, NewsEvent> events = newsEventRepository.findAllById(ids).stream()
+			.collect(Collectors.toMap(NewsEvent::getId, Function.identity()));
+		Map<Long, List<Long>> issues = new LinkedHashMap<>();
+		for (Object[] row : newsEventRepository.findListedIssuePairs(ids)) {
+			issues.computeIfAbsent(((Number) row[0]).longValue(), k -> new ArrayList<>()).add(((Number) row[1]).longValue());
+		}
+		Map<Long, List<ArticlePublicResponse.ArticleCard>> cards = articlesByEvent(ids);
+		return ids.stream().map(events::get).map(e -> new ArticlePublicResponse.RecentEvent(e.getId(), e.getName(),
+			e.getOccurredOn(), e.getOccurredAt(), e.getCreatedAt(), issues.getOrDefault(e.getId(), List.of()),
+			cards.getOrDefault(e.getId(), List.of()).stream().findFirst().orElse(null))).toList();
+	}
+
 	@Transactional(readOnly = true)
 	public ArticlePublicResponse.Detail article(Long articleId) {
 		ToronchulArticle article = articleRepository.findById(articleId)

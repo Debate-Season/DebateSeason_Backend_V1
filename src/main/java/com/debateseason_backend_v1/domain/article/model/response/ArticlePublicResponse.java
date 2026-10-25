@@ -97,4 +97,21 @@ public final class ArticlePublicResponse {
 		LocalDateTime datePublished
 	) {
 	}
+
+	@Schema(name = "RecentEvent", description = "최근 생성된 사건 (웹 홈 '사건 발생!')")
+	public record RecentEvent(
+		@Schema(description = "사건 ID", example = "312") Long eventId,
+		@Schema(example = "코스피 8,000선 돌파") String name,
+		@Schema(description = "발생일, 모르면 null", example = "2026-10-16", nullable = true)
+		@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd") LocalDate date,
+		@Schema(description = "최초 발생 시각 (Asia/Seoul), 모르면 null", example = "2026-10-16T21:30:00", nullable = true)
+		@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "Asia/Seoul")
+		LocalDateTime occurredAt,
+		@Schema(description = "토론철에 사건이 등록된 시각 (Asia/Seoul). 목록 정렬 기준")
+		@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "Asia/Seoul")
+		LocalDateTime createdAt,
+		@Schema(description = "이 사건이 붙은 목록 노출 이슈 (1개 이상)") List<Long> issueIds,
+		@Schema(description = "대표 아티클 — 게시된 것 중 최신 1건, 없으면 null", nullable = true) ArticleCard article
+	) {
+	}
 }
